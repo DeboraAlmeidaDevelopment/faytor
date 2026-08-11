@@ -1,0 +1,148 @@
+<!-- ==================== SUB-VIEW: GERADOR DE CNS ==================== -->
+<section
+  x-data="{
+    generatedCns: '',
+    withPunctuation: true,
+    copied: false,
+    generate() {
+      this.copied = false;
+      // We will generate a CNS starting with '1' or '2' (standard active CNS)
+      // Standard active CNS uses digits 1 or 2 as first number. Let's pick 1 or 2.
+      let startDigit = Math.random() < 0.5 ? '1' : '2';
+      let digits = [parseInt(startDigit)];
+      for (let i = 0; i < 10; i++) {
+        digits.push(Math.floor(Math.random() * 10));
+      }
+
+      // We have 11 digits now. Let's calculate the check digit (dv) so that
+      // the total 15 digit CNS validates correctly.
+      // Weighted sum for the first 11 digits: weights from 15 down to 5.
+      let sum = 0;
+      for (let i = 0; i < 11; i++) {
+        sum += digits[i] * (15 - i);
+      }
+
+      let rest = sum % 11;
+      let dv = 11 - rest;
+
+      if (dv === 11) {
+        dv = 0;
+      }
+
+      let resultDigits = [...digits];
+
+      if (dv === 10) {
+        // According to the official algorithm, if dv is 10, a correction of +2 is applied to the sum
+        // and the suffix becomes "001" + recalculated dv.
+        let newSum = sum + 2;
+        let newRest = newSum % 11;
+        let newDv = 11 - newRest;
+        resultDigits.push(0, 0, 1, newDv);
+      } else {
+        resultDigits.push(0, 0, 0, dv);
+      }
+
+      let raw = resultDigits.join('');
+      if (this.withPunctuation) {
+        // Standard CNS mask format: XXX XXXX XXXX XXXX
+        this.generatedCns = raw.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4');
+      } else {
+        this.generatedCns = raw;
+      }
+    },
+    copy() {
+      if (!this.generatedCns) return;
+      navigator.clipboard.writeText(this.generatedCns);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="generate()"
+  class="space-y-6"
+  aria-label="Gerador de CNS"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Documento</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de CNS (Cartão Nacional de Saúde)</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">
+      Gere números de CNS válidos (Cartão Nacional de Saúde do SUS) com ou sem formatação em segundos para desenvolvimento e testes.
+    </p>
+  </div>
+
+  <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm max-w-2xl">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex items-center space-x-6">
+        <label class="inline-flex items-center cursor-pointer select-none">
+          <input
+            type="checkbox"
+            x-model="withPunctuation"
+            @change="generate()"
+            class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-5 w-5 bg-transparent"
+          >
+          <span class="ml-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
+        </label>
+      </div>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
+        <div class="relative flex-1">
+          <input
+            type="text"
+            x-model="generatedCns"
+            readonly
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            aria-label="CNS Gerado"
+          >
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            @click="generate()"
+            class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo CNS"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.19M9 15.511L15.111 9H12" />
+            </svg>
+            <span>Gerar</span>
+          </button>
+
+          <button
+            @click="copy()"
+            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border"
+            :class="copied
+              ? 'bg-emerald-500 border-emerald-500 text-white'
+              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'"
+            aria-label="Copiar CNS gerado"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path x-show="!copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              <path x-show="copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span x-text="copied ? 'Copiado!' : 'Copiar'">Copiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO / Informative Content -->
+  <article class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4 max-w-4xl">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é o CNS (Cartão Nacional de Saúde)?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      O Cartão Nacional de Saúde (CNS) é o instrumento de identificação de todos os cidadãos brasileiros que utilizam os serviços públicos de saúde do SUS (Sistema Único de Saúde). Este número possui formato de 15 algarismos que registram o histórico clínico de consultas, exames realizados, vacinação e medicamentos retirados no programa Farmácia Popular.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como o algoritmo do CNS valida o número?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      O cálculo matemático por trás do <strong>gerador de CNS</strong> depende se o número se inicia com 1 ou 2 (cartões definitivos) ou de 7 a 9 (cartões temporários ou provisórios).
+      Para os cartões que começam com 1 ou 2, utiliza-se a soma dos produtos dos 11 primeiros dígitos multiplicados pelos pesos de 15 a 5. O resto obtido da divisão por 11 determina o dígito final. Caso o resto resulte em um dígito 10 (inválido por si só como único algarismo), é aplicada uma correção de mais 2 na soma inicial para que o dígito re-calculado seja válido, gerando uma formatação com sufixo "001" mais o dígito final.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve o gerador de CNS?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Seu uso é destinado estritamente para homologação de dados e testes de usabilidade de softwares de gestão de clínicas médicas, prontuários eletrônicos e plataformas governamentais. Os números de CNS gerados aqui obedecem às fórmulas oficiais estabelecidas pela Bridge/UFSC/DATASUS, não representando documentos vigentes emitidos pelo Ministério da Saúde.
+    </p>
+  </article>
+</section>

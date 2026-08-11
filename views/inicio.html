@@ -151,6 +151,56 @@
         </button>
       </article>
 
+      <!-- CPF Generator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Gerador de CPF</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Gere CPFs válidos com ou sem pontuação em apenas um clique para testes e desenvolvimento de sistemas.
+          </p>
+        </div>
+        <button
+          @click="selectTab('gerador-cpf')"
+          class="mt-6 text-xs font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Gerador de CPF"
+        >
+          Abrir ferramenta
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- CNPJ Generator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Gerador de CNPJ</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Gere CNPJs válidos formatados ou sem pontuação instantaneamente de acordo com o algoritmo oficial.
+          </p>
+        </div>
+        <button
+          @click="selectTab('gerador-cnpj')"
+          class="mt-6 text-xs font-semibold text-amber-600 dark:text-amber-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Gerador de CNPJ"
+        >
+          Abrir ferramenta
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
     </div>
   </div>
 
