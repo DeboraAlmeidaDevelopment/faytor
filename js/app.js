@@ -69,13 +69,8 @@ document.addEventListener('alpine:init', () => {
         this.currentTab = tabName;
         this.mobileMenuOpen = false;
 
-        // Scroll to the main content top smoothly
-        const mainContent = document.getElementById('main-content-area');
-        if (mainContent) {
-          mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        // Return to the page top so the top AdSense banner stays visible.
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     },
 
@@ -94,8 +89,7 @@ document.addEventListener('alpine:init', () => {
         if (!response.ok) {
           throw new Error(`Erro ao carregar a visualização: ${response.statusText}`);
         }
-        const html = await response.text();
-        this.viewContent = html;
+        this.viewContent = await response.text();
       } catch (err) {
         console.warn('Dynamic fetch blocked or failed. Checking for CORS constraint.', err);
 

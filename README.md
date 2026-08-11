@@ -16,14 +16,37 @@ Faytor é uma SPA (Single Page Application) estática com ferramentas rápidas p
 
 - HTML5, CSS3 e JavaScript;
 - [Alpine.js](https://alpinejs.dev/) via CDN;
-- [Tailwind CSS](https://tailwindcss.com/) Play CDN;
-- Google Fonts (Inter) via CDN.
+- [Tailwind CSS](https://tailwindcss.com/) 3.4.17 compilado e minificado localmente.
 
-O projeto não possui backend, banco de dados, `package.json` ou dependências locais para instalar.
+O projeto não possui backend ou banco de dados. O Tailwind é a única dependência de desenvolvimento e é usado para gerar o CSS de produção.
 
 ## Como executar localmente
 
-### Opção 1: Python
+### 1. Instalar dependências
+
+Com o Node.js instalado, execute:
+
+```bash
+npm install
+```
+
+### 2. Gerar o CSS de produção
+
+Execute o build do Tailwind:
+
+```bash
+npm run build
+```
+
+Para recompilar automaticamente durante alterações:
+
+```bash
+npm run watch
+```
+
+### 3. Iniciar o servidor local
+
+#### Opção 1: Python
 
 Tenha o [Python 3](https://www.python.org/downloads/) instalado. O Python é usado apenas para servir os arquivos por HTTP.
 
@@ -45,7 +68,7 @@ Depois, abra [http://localhost:8080](http://localhost:8080).
 
 Para encerrar o servidor, pressione `Ctrl+C` no terminal.
 
-### Opção 2: Node.js
+#### Opção 2: Node.js
 
 Se você já possui Node.js instalado, execute:
 
@@ -57,7 +80,7 @@ Na primeira execução, o `npx` pode solicitar autorização para baixar o pacot
 
 ## Existe algum comando de setup?
 
-Não há um comando `setup` obrigatório. Também não é necessário executar `npm install`, pois o projeto não usa um gerenciador de pacotes nem possui `package.json`.
+Não há um comando `setup` separado. Em uma instalação nova, execute `npm install` e depois `npm run build` antes de iniciar o servidor.
 
 O servidor HTTP local é necessário porque a aplicação carrega as subviews de `views/` usando `fetch`. Abrir o `index.html` diretamente pelo explorador de arquivos (`file://`) pode bloquear esse carregamento por causa das políticas do navegador.
 
@@ -77,7 +100,8 @@ O servidor HTTP local é necessário porque a aplicação carrega as subviews de
 
 ## Observações
 
-- Tailwind CSS, Alpine.js e a fonte Inter são carregados pela internet via CDN; para visualizar o layout completo, mantenha a conexão ativa.
+- Alpine.js continua sendo carregado pela internet via CDN; para inicializar a interatividade, mantenha a conexão ativa.
+- O Tailwind é compilado localmente e o CSS gerado fica em `css/tailwind.css`.
 - O tema e a última aba selecionada são persistidos no armazenamento local do navegador.
 - As ferramentas processam os dados no navegador e não exigem API ou servidor de aplicação.
 
