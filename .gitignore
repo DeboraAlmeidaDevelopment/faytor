@@ -1,0 +1,49 @@
+# IDEs e editores
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Variáveis de ambiente e arquivos locais
+.env
+.env.*
+!.env.example
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.temp
+*.cache
+
+# Node.js / JavaScript (caso o projeto passe a usar dependências locais)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.parcel-cache/
+.vite/
+dist/
+build/
+coverage/
+
+# Python (caso sejam usados scripts auxiliares)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+.env/
+pip-wheel-metadata/
+*.egg-info/
+
+# Arquivos gerados localmente
+*.local
