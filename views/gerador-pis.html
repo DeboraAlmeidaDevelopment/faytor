@@ -1,0 +1,132 @@
+<!-- ==================== SUB-VIEW: GERADOR DE PIS ==================== -->
+<section
+  x-data="{
+    generatedPis: '',
+    withPunctuation: true,
+    copied: false,
+    generate() {
+      this.copied = false;
+      // PIS/PASEP is composed of 11 digits:
+      // XXX.XXXXX.XX.Y
+      let digits = [];
+      for (let i = 0; i < 10; i++) {
+        digits.push(Math.floor(Math.random() * 10));
+      }
+
+      // Calculate verification digit using standard PIS algorithm:
+      // Weight array for first 10 digits: 3, 2, 9, 8, 7, 6, 5, 4, 3, 2
+      let weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      let sum = 0;
+      for (let i = 0; i < 10; i++) {
+        sum += digits[i] * weights[i];
+      }
+
+      let rest = sum % 11;
+      let dv = 11 - rest;
+      if (dv === 10 || dv === 11) {
+        dv = 0;
+      }
+
+      let raw = digits.join('') + dv;
+      if (this.withPunctuation) {
+        this.generatedPis = raw.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4');
+      } else {
+        this.generatedPis = raw;
+      }
+    },
+    copy() {
+      if (!this.generatedPis) return;
+      navigator.clipboard.writeText(this.generatedPis);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="generate()"
+  class="space-y-6"
+  aria-label="Gerador de PIS/PASEP"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Documento</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de PIS/PASEP</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">
+      Gere números de PIS (Programa de Integração Social) válidos de forma instantânea com um único clique.
+    </p>
+  </div>
+
+  <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm max-w-2xl">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex items-center space-x-6">
+        <label class="inline-flex items-center cursor-pointer select-none">
+          <input
+            type="checkbox"
+            x-model="withPunctuation"
+            @change="generate()"
+            class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-5 w-5 bg-transparent"
+          >
+          <span class="ml-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
+        </label>
+      </div>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
+        <div class="relative flex-1">
+          <input
+            type="text"
+            x-model="generatedPis"
+            readonly
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            aria-label="PIS Gerado"
+          >
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            @click="generate()"
+            class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo PIS"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.19M9 15.511L15.111 9H12" />
+            </svg>
+            <span>Gerar</span>
+          </button>
+
+          <button
+            @click="copy()"
+            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border"
+            :class="copied
+              ? 'bg-emerald-500 border-emerald-500 text-white'
+              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'"
+            aria-label="Copiar PIS gerado"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path x-show="!copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              <path x-show="copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span x-text="copied ? 'Copiado!' : 'Copiar'">Copiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO / Informative Content -->
+  <article class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4 max-w-4xl">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é o PIS/PASEP?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      O PIS (Programa de Integração Social) e o PASEP (Programa de Formação do Patrimônio do Servidor Público) são contribuições sociais devidas pelas empresas e órgãos públicos, com o objetivo de financiar o pagamento do seguro-desemprego, abono salarial e participação na receita dos órgãos e entidades para os trabalhadores públicos e privados.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como o algoritmo do PIS valida o número?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      O número do PIS é composto por 11 dígitos, sendo o último o dígito verificador. O algoritmo utiliza multiplicadores específicos para calcular a integridade.
+      Os pesos multiplicadores aplicados aos 10 primeiros dígitos, da esquerda para a direita, são: 3, 2, 9, 8, 7, 6, 5, 4, 3, e 2. Multiplicam-se os dígitos correspondentes por esses pesos, somam-se os resultados, e o total é dividido por 11. O resto obtido é subtraído de 11 para encontrar o dígito verificador. Se o dígito resultante for 10 ou 11, o dígito verificador real é considerado como 0.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve o gerador de PIS/PASEP?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Este <strong>gerador de PIS/PASEP</strong> é útil exclusivamente para validar regras de negócio em softwares de gestão de recursos humanos (RH), sistemas de contabilidade trabalhista e integração de folhas de pagamento. É proibida sua utilização para cadastro em plataformas financeiras reais ou simulação de benefícios trabalhistas legítimos.
+    </p>
+  </article>
+</section>

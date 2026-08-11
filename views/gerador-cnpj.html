@@ -1,0 +1,140 @@
+<!-- ==================== SUB-VIEW: GERADOR DE CNPJ ==================== -->
+<section
+  x-data="{
+    generatedCnpj: '',
+    withPunctuation: true,
+    copied: false,
+    generate() {
+      this.copied = false;
+      let digits = [];
+      // First 8 digits are random numbers
+      for (let i = 0; i < 8; i++) {
+        digits.push(Math.floor(Math.random() * 10));
+      }
+      // Standard CNPJ root suffix (0001 for main branch or random branches)
+      // Usually developers test with 0001
+      digits.push(0, 0, 0, 1);
+
+      // Weights for first verification digit: 5,4,3,2,9,8,7,6,5,4,3,2
+      let weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      let sum = 0;
+      for (let i = 0; i < 12; i++) {
+        sum += digits[i] * weights1[i];
+      }
+      let rem = sum % 11;
+      let dv1 = rem < 2 ? 0 : 11 - rem;
+      digits.push(dv1);
+
+      // Weights for second verification digit: 6,5,4,3,2,9,8,7,6,5,4,3,2
+      let weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      sum = 0;
+      for (let i = 0; i < 13; i++) {
+        sum += digits[i] * weights2[i];
+      }
+      rem = sum % 11;
+      let dv2 = rem < 2 ? 0 : 11 - rem;
+      digits.push(dv2);
+
+      let raw = digits.join('');
+      if (this.withPunctuation) {
+        this.generatedCnpj = raw.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+      } else {
+        this.generatedCnpj = raw;
+      }
+    },
+    copy() {
+      if (!this.generatedCnpj) return;
+      navigator.clipboard.writeText(this.generatedCnpj);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="generate()"
+  class="space-y-6"
+  aria-label="Gerador de CNPJ"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Documento</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de CNPJ</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">
+      Gere números de CNPJ válidos (Cadastro Nacional da Pessoa Jurídica) com ou sem formatação em segundos.
+    </p>
+  </div>
+
+  <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm max-w-2xl">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex items-center space-x-6">
+        <label class="inline-flex items-center cursor-pointer select-none">
+          <input
+            type="checkbox"
+            x-model="withPunctuation"
+            @change="generate()"
+            class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-5 w-5 bg-transparent"
+          >
+          <span class="ml-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
+        </label>
+      </div>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
+        <div class="relative flex-1">
+          <input
+            type="text"
+            x-model="generatedCnpj"
+            readonly
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            aria-label="CNPJ Gerado"
+          >
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            @click="generate()"
+            class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo CNPJ"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15.19M9 15.511L15.111 9H12" />
+            </svg>
+            <span>Gerar</span>
+          </button>
+
+          <button
+            @click="copy()"
+            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border"
+            :class="copied
+              ? 'bg-emerald-500 border-emerald-500 text-white'
+              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'"
+            aria-label="Copiar CNPJ gerado"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path x-show="!copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              <path x-show="copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span x-text="copied ? 'Copiado!' : 'Copiar'">Copiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO / Informative Content -->
+  <article class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4 max-w-4xl">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é e como funciona o Gerador de CNPJ?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Nossa plataforma disponibiliza um completo <strong>gerador de CNPJ</strong> estruturado com base no algoritmo oficial do Ministério da Fazenda. O número do CNPJ é composto por 14 algarismos divididos em três blocos: os primeiros oito representam o número básico, os quatro seguintes designam a filial (sendo o mais comum o sufixo "0001" representando a matriz) e os dois últimos compõem os dígitos verificadores calculados sob o módulo 11.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como é calculado o número de CNPJ?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      A verificação de integridade de um CNPJ utiliza pesos progressivos. No primeiro dígito verificador, o cálculo multiplica os 12 primeiros algarismos pelos multiplicadores ordenados: 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, e 2.
+      Já o segundo dígito inclui em sua base o primeiro dígito verificador recém-descoberto e aplica pesos na ordem de 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3 e 2. O resto de ambas as divisões por 11 determina o dígito final (se o resto for menor que 2, o dígito correspondente é configurado como 0).
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve o gerador de CNPJ?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Esta ferramenta foi criada exclusivamente para auxiliar programadores, arquitetos de sistemas e testadores na homologação e validação de softwares que requerem preenchimento e consistência de dados corporativos. A utilização destes números artificiais não possui qualquer vínculo com empresas ativas e evita o vazamento de informações corporativas reais em ambientes de testes e homologações locais.
+    </p>
+  </article>
+</section>

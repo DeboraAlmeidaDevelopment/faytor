@@ -19,7 +19,12 @@ document.addEventListener('alpine:init', () => {
       home: 'views/inicio.html',
       wordcounter: 'views/wordcounter.html',
       jsonformatter: 'views/jsonformatter.html',
-      base64: 'views/base64.html'
+      base64: 'views/base64.html',
+      'gerador-cpf': 'views/gerador-cpf.html',
+      'gerador-cnpj': 'views/gerador-cnpj.html',
+      'gerador-cns': 'views/gerador-cns.html',
+      'gerador-rg': 'views/gerador-rg.html',
+      'gerador-pis': 'views/gerador-pis.html'
     },
 
     init() {
