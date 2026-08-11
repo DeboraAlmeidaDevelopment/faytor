@@ -1,0 +1,65 @@
+/* Faytor SPA - Custom Stylesheet */
+
+/* Hide Cloaked Alpine.js elements before initialization */
+[x-cloak] {
+  display: none !important;
+}
+
+/* Base style resets and transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Accessibility: Visible, high-contrast focus rings for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 3px solid #7C3AED; /* Secondary violet highlight */
+  outline-offset: 2px;
+}
+
+.dark button:focus-visible,
+.dark a:focus-visible,
+.dark textarea:focus-visible,
+.dark input:focus-visible {
+  outline: 3px solid #2563EB; /* Primary electric blue highlight */
+  outline-offset: 2px;
+}
+
+/* Webkit Scrollbar Customization for modern look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #334155; /* Slate 700 */
+  border-radius: 9999px;
+  border: 2px solid #0F172A; /* Slate 900 */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* Slate 300 */
+  border-radius: 9999px;
+  border: 2px solid #f8fafc; /* Slate 50 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569; /* Slate 600 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* Slate 400 */
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}

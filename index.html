@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO - Primary Meta Tags -->
+  <title>Faytor - Base SPA de Ferramentas e Utilitários de Alta Performance</title>
+  <meta name="description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
+  <meta name="keywords" content="Faytor, ferramentas online, contador de palavras, formatador json, codificador base64, dev tools, utilitarios, web app, spa">
+  <meta name="author" content="Faytor">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://faytor.com/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://faytor.com/">
+  <meta property="og:title" content="Faytor - Base SPA de Ferramentas e Utilitários de Alta Performance">
+  <meta property="og:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
+  <meta property="og:image" content="https://faytor.com/assets/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://faytor.com/">
+  <meta property="twitter:title" content="Faytor - Base SPA de Ferramentas e Utilitários de Alta Performance">
+  <meta property="twitter:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
+  <meta property="twitter:image" content="https://faytor.com/assets/og-image.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2228%22 fill=%22%232563EB%22/><path d=%22M32 30C32 25.578 35.578 22 40 22H68C72.422 22 76 25.578 76 30C76 34.422 72.422 38 68 38H46V68C46 72.422 42.422 76 38 76C33.578 76 32 72.422 32 68V30Z%22 fill=%22white%22/></svg>">
+
+  <!-- Theme Color Integration -->
+  <meta name="theme-color" content="#0F172A">
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#2563EB', // Azul Tecnológico/Elétrico
+              light: '#3B82F6',
+              dark: '#1D4ED8',
+            },
+            secondary: {
+              DEFAULT: '#7C3AED', // Roxo/Violeta Escuro
+              light: '#8B5CF6',
+              dark: '#6D28D9',
+            },
+            darkBg: {
+              DEFAULT: '#0F172A', // Slate 900
+              card: '#1E293B',    // Slate 800
+              border: '#334155',  // Slate 700
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Separate Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Separate Custom JS & Alpine.js CDN -->
+  <script defer src="js/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body
+  class="h-full bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 antialiased"
+  x-data="appState"
+  x-cloak
+>
+
+  <!-- Accessibility Skip Link (Para navegação de teclado rápida) -->
+  <a href="#main-content-area" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-primary focus:text-white focus:rounded-xl focus:font-semibold focus:shadow-xl">
+    Pular para o conteúdo principal
+  </a>
+
+  <!-- LAYOUT CONTAINER -->
+  <div class="min-h-full flex flex-col lg:flex-row">
+
+    <!-- MOBILE TOP BAR -->
+    <header class="lg:hidden flex items-center justify-between px-6 py-4 bg-white dark:bg-darkBg-card border-b border-slate-200 dark:border-darkBg-border sticky top-0 z-40">
+      <div class="flex items-center space-x-3">
+        <!-- Brand Logo Icon -->
+        <div class="w-10 h-10 flex-shrink-0" aria-hidden="true">
+          <!-- LOGO ICON SVG INLINE -->
+          <svg class="h-10 w-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGradMobile" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2563EB" />
+                <stop offset="100%" stop-color="#7C3AED" />
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="28" fill="url(#logoGradMobile)" />
+            <path d="M32 30C32 25.578 35.578 22 40 22H68C72.422 22 76 25.578 76 30C76 34.422 72.422 38 68 38H46V68C46 72.422 42.422 76 38 76C33.578 76 32 72.422 32 68V30Z" fill="white" />
+            <path d="M46 48H64C68.422 48 72 51.578 72 56C72 60.422 68.422 64 64 64H46V48Z" fill="white" fill-opacity="0.3" />
+            <circle cx="68" cy="68" r="10" fill="#93C5FD" />
+          </svg>
+        </div>
+        <span class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+          Fay<span class="text-secondary">tor</span>
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <!-- Theme Switcher Button -->
+        <button
+          @click="toggleTheme()"
+          class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Alternar Tema"
+        >
+          <!-- Sun Icon -->
+          <svg x-show="theme === 'dark'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          </svg>
+          <!-- Moon Icon -->
+          <svg x-show="theme === 'light'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+
+        <!-- Burger Menu Button -->
+        <button
+          @click="mobileMenuOpen = !mobileMenuOpen"
+          class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          :aria-expanded="mobileMenuOpen.toString()"
+          aria-label="Abrir Menu de Navegação"
+          aria-controls="sidebar-navigation"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- SIDEBAR (Left Menu) -->
+    <!-- Desktop Sidebar (fixed left) & Mobile Sidebar (overlay menu) -->
+    <aside
+      id="sidebar-navigation"
+      class="fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white dark:bg-darkBg-card border-r border-slate-200 dark:border-darkBg-border transform lg:transform-none transition-transform duration-300 ease-in-out"
+      :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+      role="complementary"
+      aria-label="Navegação Principal Lateral"
+    >
+      <!-- Sidebar Header (Logo) -->
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-darkBg-border">
+        <div class="flex items-center space-x-3">
+          <!-- LOGO ICON SVG INLINE -->
+          <div class="w-10 h-10 flex-shrink-0" aria-hidden="true">
+            <svg class="h-10 w-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2563EB" />
+                  <stop offset="100%" stop-color="#7C3AED" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="28" fill="url(#logoGrad)" />
+              <path d="M32 30C32 25.578 35.578 22 40 22H68C72.422 22 76 25.578 76 30C76 34.422 72.422 38 68 38H46V68C46 72.422 42.422 76 38 76C33.578 76 32 72.422 32 68V30Z" fill="white" />
+              <path d="M46 48H64C68.422 48 72 51.578 72 56C72 60.422 68.422 64 64 64H46V48Z" fill="white" fill-opacity="0.3" />
+              <circle cx="68" cy="68" r="10" fill="#93C5FD" />
+            </svg>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            Fay<span class="text-secondary">tor</span>
+          </span>
+        </div>
+
+        <!-- Mobile close button inside sidebar -->
+        <button
+          @click="mobileMenuOpen = false"
+          class="lg:hidden p-1 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Fechar Menu"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sidebar Navigation Links -->
+      <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" role="tablist" aria-label="Abas de Ferramentas">
+
+        <!-- Tab: Início -->
+        <button
+          role="tab"
+          @click="selectTab('home')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
+          :class="currentTab === 'home'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+          :aria-selected="(currentTab === 'home').toString()"
+          aria-controls="main-content-area"
+          id="tab-home"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Início
+        </button>
+
+        <div class="pt-4 pb-2" role="presentation">
+          <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">Ferramentas</p>
+        </div>
+
+        <!-- Tab: Word Counter -->
+        <button
+          role="tab"
+          @click="selectTab('wordcounter')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
+          :class="currentTab === 'wordcounter'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+          :aria-selected="(currentTab === 'wordcounter').toString()"
+          aria-controls="main-content-area"
+          id="tab-wordcounter"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Contador de Palavras
+        </button>
+
+        <!-- Tab: JSON Formatter -->
+        <button
+          role="tab"
+          @click="selectTab('jsonformatter')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
+          :class="currentTab === 'jsonformatter'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+          :aria-selected="(currentTab === 'jsonformatter').toString()"
+          aria-controls="main-content-area"
+          id="tab-jsonformatter"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          Formatador JSON
+        </button>
+
+        <!-- Tab: Base64 Tool -->
+        <button
+          role="tab"
+          @click="selectTab('base64')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
+          :class="currentTab === 'base64'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+          :aria-selected="(currentTab === 'base64').toString()"
+          aria-controls="main-content-area"
+          id="tab-base64"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          Codificador Base64
+        </button>
+
+        <!-- Dynamic Indicator of Future tools (A11y friendly) -->
+        <div class="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 italic flex items-center select-none" role="status">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Mais ferramentas em breve...
+        </div>
+
+        <div class="pt-4 pb-2 border-t border-slate-200 dark:border-darkBg-border mt-4" role="presentation">
+          <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">Apoio</p>
+        </div>
+
+        <!-- Sidebar Google AdSense Block Placeholder -->
+        <div class="mx-2 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest text-center uppercase mb-1">
+            Anúncio
+          </div>
+          <div class="h-28 flex items-center justify-center bg-slate-200/50 dark:bg-slate-900/60 rounded text-center p-2">
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Google AdSense<br>(Bloco Lateral)</p>
+          </div>
+        </div>
+
+      </nav>
+
+      <!-- Sidebar Footer (Theme & Settings) -->
+      <div class="p-4 border-t border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/20">
+        <!-- Theme Toggle Button -->
+        <button
+          @click="toggleTheme()"
+          class="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Alternar tema de cores"
+        >
+          <div class="flex items-center">
+            <!-- Sun Icon (shown when theme is dark) -->
+            <svg x-show="theme === 'dark'" class="w-5 h-5 mr-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+            <!-- Moon Icon (shown when theme is light) -->
+            <svg x-show="theme === 'light'" class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <span x-text="theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'">Modo Escuro</span>
+          </div>
+          <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold" x-text="theme.toUpperCase()">DARK</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- BACKDROP (Mobile Sidebar Overlay) -->
+    <div
+      x-show="mobileMenuOpen"
+      @click="mobileMenuOpen = false"
+      class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      aria-hidden="true"
+    ></div>
+
+    <!-- MAIN CENTRAL CONTENT AREA -->
+    <div class="flex-1 lg:ml-64 flex flex-col min-w-0 min-h-screen">
+
+      <!-- GOOGLE ADSENSE TOP BANNER PLACEHOLDER (Responsivo) -->
+      <div class="px-4 lg:px-8 pt-6">
+        <div class="bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800/40 dark:to-slate-800/80 rounded-2xl p-4 border border-dashed border-slate-300 dark:border-slate-700 transition-all">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+              <span class="flex h-3 w-3 relative" aria-hidden="true">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+              </span>
+              <div>
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase block">Google AdSense</span>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500">Banner Superior Responsivo (728x90, 970x90 ou Automático)</p>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-500 dark:text-slate-400 select-all">
+              &lt;ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXX"&gt;
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC TAB CONTENT CONTAINER -->
+      <main
+        id="main-content-area"
+        class="flex-1 px-4 lg:px-8 py-8 focus:outline-none"
+        tabindex="-1"
+        aria-live="polite"
+      >
+        <!-- Loading State Indicator -->
+        <div x-show="isLoading" class="flex flex-col items-center justify-center py-16 space-y-4" aria-busy="true">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Carregando ferramenta...</p>
+        </div>
+
+        <!-- CORS Fallback Local-run Friendly Instruction -->
+        <div
+          x-show="corsFallback && !isLoading"
+          class="max-w-3xl mx-auto bg-gradient-to-br from-slate-100 to-slate-200 dark:from-darkBg-card dark:to-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-darkBg-border shadow-xl space-y-6"
+        >
+          <div class="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-2" aria-hidden="true">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Execução Local & Restrição de CORS Detectada</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Para manter o código 100% modular, limpo e organizado em arquivos separados (`/views`), a aplicação utiliza requisições assíncronas de rede (`fetch`) para carregar dinamicamente as telas das ferramentas.
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Por motivos de segurança, os navegadores modernos bloqueiam essa requisição quando o arquivo é aberto diretamente com cliques no arquivo local (`file://`).
+            </p>
+          </div>
+
+          <div class="border-t border-slate-200 dark:border-darkBg-border pt-6 space-y-4">
+            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Como resolver rapidamente para testar:</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-primary uppercase">Opção 1: Servidor Python (Recomendado)</span>
+                <p class="text-xs text-slate-400">Abra o terminal na pasta deste projeto e execute:</p>
+                <code class="block text-xs font-mono bg-slate-100 dark:bg-slate-950 p-2.5 rounded text-secondary-light font-semibold select-all">python -m http.server 8080</code>
+                <p class="text-xs text-slate-400">Depois acesse no navegador: <a href="http://localhost:8080" class="text-primary hover:underline font-medium">http://localhost:8080</a></p>
+              </div>
+
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+                <span class="text-xs font-bold text-secondary uppercase">Opção 2: VS Code Live Server</span>
+                <p class="text-xs text-slate-400">Se você utiliza o VS Code:</p>
+                <ul class="text-[11px] text-slate-400 list-disc list-inside space-y-1">
+                  <li>Instale a extensão <span class="font-semibold text-slate-200">Live Server</span>.</li>
+                  <li>Clique com o botão direito em <span class="font-semibold text-slate-200">index.html</span>.</li>
+                  <li>Selecione <span class="font-semibold text-slate-200">"Open with Live Server"</span>.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Render Target For Dynamic AJAX Views -->
+        <div x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none"></div>
+      </main>
+
+      <!-- GOOGLE ADSENSE BOTTOM BANNER PLACEHOLDER -->
+      <div class="px-4 lg:px-8 pb-8 mt-auto">
+        <div class="bg-white dark:bg-darkBg-card rounded-2xl p-6 border border-dashed border-slate-300 dark:border-slate-700 shadow-sm text-center">
+          <span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase block mb-2">Google AdSense</span>
+          <div class="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-900/60 rounded-xl py-8 px-4 w-full border border-slate-200 dark:border-slate-800 max-w-4xl mx-auto" aria-hidden="true">
+            <div class="space-y-2">
+              <svg class="w-8 h-8 text-amber-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600 dark:text-slate-400">Bloco de Anúncio Responsivo (Footer/Rodapé)</p>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500 max-w-lg mx-auto">
+                Este espaço adapta-se dinamicamente a banners horizontais grandes (ex: 970x250, 728x90) ou grids nativos recomendados para o final de artigos ou utilitários.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM FOOTER -->
+      <footer class="bg-white dark:bg-darkBg-card border-t border-slate-200 dark:border-darkBg-border py-6 px-4 lg:px-8 text-center text-xs text-slate-500 dark:text-slate-400" role="contentinfo">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
+          <div>
+            &copy; 2026 <span class="font-bold text-slate-700 dark:text-slate-300">Faytor</span>. Todos os direitos reservados.
+          </div>
+          <nav class="flex space-x-4" aria-label="Links de Ajuda e Legal">
+            <a href="#" class="hover:text-primary transition-colors focus-visible:underline">Políticas de Privacidade</a>
+            <span aria-hidden="true">•</span>
+            <a href="#" class="hover:text-primary transition-colors focus-visible:underline">Termos de Uso</a>
+            <span aria-hidden="true">•</span>
+            <a href="#" class="hover:text-primary transition-colors focus-visible:underline">Contato</a>
+          </nav>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+</body>
+</html>
