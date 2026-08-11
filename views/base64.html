@@ -1,0 +1,115 @@
+<!-- ==================== SUB-VIEW: BASE64 ==================== -->
+<section
+  x-data="{
+    inputText: '',
+    outputText: '',
+    errorMessage: '',
+    encode() {
+      this.errorMessage = '';
+      try {
+        if (!this.inputText) {
+          this.outputText = '';
+          return;
+        }
+        // Correct UTF-8 base64 encoding
+        this.outputText = btoa(unescape(encodeURIComponent(this.inputText)));
+      } catch (e) {
+        this.errorMessage = 'Erro ao codificar: ' + e.message;
+      }
+    },
+    decode() {
+      this.errorMessage = '';
+      try {
+        if (!this.inputText) {
+          this.outputText = '';
+          return;
+        }
+        this.outputText = decodeURIComponent(escape(atob(this.inputText)));
+      } catch (e) {
+        this.errorMessage = 'Erro ao decodificar. Certifique-se de que a entrada é uma string Base64 válida.';
+        this.outputText = '';
+      }
+    },
+    copy() {
+      navigator.clipboard.writeText(this.outputText);
+      alert('Copiado para a área de transferência!');
+    }
+  }"
+  class="space-y-6"
+  aria-label="Codificador e Decodificador Base64"
+>
+  <div>
+    <span class="text-xs font-semibold text-pink-600 dark:text-pink-400 uppercase tracking-widest">Segurança</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Codificador / Decodificador Base64</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">
+      Converta rapidamente sequências de texto legível para Base64 ou decodifique sequências existentes.
+    </p>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="flex flex-wrap gap-3">
+    <button
+      @click="encode()"
+      class="bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary/50 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md"
+      aria-label="Codificar texto de entrada para Base64"
+    >
+      Codificar (Texto ➔ Base64)
+    </button>
+    <button
+      @click="decode()"
+      class="bg-secondary hover:bg-secondary-dark focus:ring-4 focus:ring-secondary/50 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md"
+      aria-label="Decodificar entrada Base64 para texto original"
+    >
+      Decodificar (Base64 ➔ Texto)
+    </button>
+    <button
+      @click="copy()"
+      class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      :disabled="!outputText"
+      aria-label="Copiar resultado da conversão para a área de transferência"
+    >
+      Copiar Resultado
+    </button>
+  </div>
+
+  <!-- Error Alert -->
+  <div
+    x-show="errorMessage"
+    class="bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm flex items-center space-x-2"
+    role="alert"
+    aria-live="assertive"
+  >
+    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+    <span x-text="errorMessage"></span>
+  </div>
+
+  <!-- Textareas -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden flex flex-col">
+      <div class="px-5 py-3.5 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40">
+        <label for="base64-input" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Dados de Entrada</label>
+      </div>
+      <textarea
+        id="base64-input"
+        x-model="inputText"
+        class="w-full h-80 px-5 py-4 bg-transparent border-0 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 resize-none"
+        placeholder="Insira o texto bruto ou a string Base64..."
+      ></textarea>
+    </div>
+
+    <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden flex flex-col">
+      <div class="px-5 py-3.5 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40">
+        <label for="base64-output" class="text-sm font-semibold text-slate-700 dark:text-slate-300">Resultado</label>
+      </div>
+      <textarea
+        id="base64-output"
+        x-model="outputText"
+        readonly
+        class="w-full h-80 px-5 py-4 bg-slate-50/50 dark:bg-slate-900/40 border-0 focus:outline-none font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 resize-none"
+        placeholder="O resultado aparecerá aqui..."
+      ></textarea>
+    </div>
+  </div>
+</section>
