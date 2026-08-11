@@ -12,6 +12,18 @@ Faytor é uma SPA (Single Page Application) estática com ferramentas rápidas p
 - Repositório: [github.com/DeboraAlmeidaDevelopment/faytor](https://github.com/DeboraAlmeidaDevelopment/faytor)
 - Site configurado nos metadados: [faytor.com](https://faytor.com/)
 
+## Publicação no GitHub Pages
+
+O projeto usa GitHub Actions para instalar as dependências, compilar o Tailwind e publicar os arquivos estáticos. O workflow está em `.github/workflows/deploy-pages.yml`.
+
+No repositório do GitHub:
+
+1. Acesse **Settings → Pages**.
+2. Em **Build and deployment → Source**, selecione **GitHub Actions**.
+3. Faça push da branch `main` ou execute manualmente o workflow na aba **Actions**.
+
+O endereço padrão será `https://deboraalmeidadevelopment.github.io/faytor/`.
+
 ## Tecnologias
 
 - HTML5, CSS3 e JavaScript;
