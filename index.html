@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faytor - Base SPA</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#2563EB', // Azul Tecnológico/Elétrico
+              light: '#3B82F6',
+              dark: '#1D4ED8',
+            },
+            secondary: {
+              DEFAULT: '#7C3AED', // Roxo/Violeta Escuro
+              light: '#8B5CF6',
+              dark: '#6D28D9',
+            },
+            darkBg: {
+              DEFAULT: '#0F172A', // Slate 900
+              card: '#1E293B',    // Slate 800
+              border: '#334155',  // Slate 700
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Style adjustments for smooth transition and scrollbars -->
+  <style>
+    [x-cloak] { display: none !important; }
+
+    /* Custom Scrollbar for modern look */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .dark ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+
+  <!-- Alpine.js CDN -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body
+  class="h-full bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 antialiased"
+  x-data="appState"
+  x-cloak
+>
+
+  <!-- LAYOUT CONTAINER -->
+  <div class="min-h-full flex flex-col lg:flex-row">
+
+    <!-- MOBILE TOP BAR -->
+    <header class="lg:hidden flex items-center justify-between px-6 py-4 bg-white dark:bg-darkBg-card border-b border-slate-200 dark:border-darkBg-border sticky top-0 z-40">
+      <div class="flex items-center space-x-3">
+        <!-- Brand Logo Icon -->
+        <div class="w-10 h-10 flex-shrink-0">
+          <!-- LOGO ICON SVG INLINE -->
+          <svg class="h-10 w-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGradMobile" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2563EB" />
+                <stop offset="100%" stop-color="#7C3AED" />
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" rx="28" fill="url(#logoGradMobile)" />
+            <path d="M32 30C32 25.578 35.578 22 40 22H68C72.422 22 76 25.578 76 30C76 34.422 72.422 38 68 38H46V68C46 72.422 42.422 76 38 76C33.578 76 32 72.422 32 68V30Z" fill="white" />
+            <path d="M46 48H64C68.422 48 72 51.578 72 56C72 60.422 68.422 64 64 64H46V48Z" fill="white" fill-opacity="0.3" />
+            <circle cx="68" cy="68" r="10" fill="#93C5FD" />
+          </svg>
+        </div>
+        <span class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+          Fay<span class="text-secondary">tor</span>
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <!-- Theme Switcher Button -->
+        <button
+          @click="toggleTheme()"
+          class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none"
+          aria-label="Alternar Tema"
+        >
+          <!-- Sun Icon -->
+          <svg x-show="theme === 'dark'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          </svg>
+          <!-- Moon Icon -->
+          <svg x-show="theme === 'light'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+
+        <!-- Burger Menu Button -->
+        <button
+          @click="mobileMenuOpen = !mobileMenuOpen"
+          class="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none"
+          aria-label="Abrir Menu"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- SIDEBAR (Left Menu) -->
+    <!-- Desktop Sidebar (fixed left) & Mobile Sidebar (overlay menu) -->
+    <aside
+      class="fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white dark:bg-darkBg-card border-r border-slate-200 dark:border-darkBg-border transform lg:transform-none transition-transform duration-300 ease-in-out"
+      :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    >
+      <!-- Sidebar Header (Logo) -->
+      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-darkBg-border">
+        <div class="flex items-center space-x-3">
+          <!-- LOGO ICON SVG INLINE (Pode ser facilmente substituído pelo seu arquivo .svg) -->
+          <!-- LOGO SVG - SUBSTITUA SEU LOGO AQUI -->
+          <div class="w-10 h-10 flex-shrink-0">
+            <svg class="h-10 w-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2563EB" />
+                  <stop offset="100%" stop-color="#7C3AED" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="28" fill="url(#logoGrad)" />
+              <path d="M32 30C32 25.578 35.578 22 40 22H68C72.422 22 76 25.578 76 30C76 34.422 72.422 38 68 38H46V68C46 72.422 42.422 76 38 76C33.578 76 32 72.422 32 68V30Z" fill="white" />
+              <path d="M46 48H64C68.422 48 72 51.578 72 56C72 60.422 68.422 64 64 64H46V48Z" fill="white" fill-opacity="0.3" />
+              <circle cx="68" cy="68" r="10" fill="#93C5FD" />
+            </svg>
+          </div>
+          <span class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            Fay<span class="text-secondary">tor</span>
+          </span>
+        </div>
+
+        <!-- Mobile close button inside sidebar -->
+        <button
+          @click="mobileMenuOpen = false"
+          class="lg:hidden p-1 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sidebar Navigation Links -->
+      <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+
+        <!-- Tab: Início -->
+        <button
+          @click="selectTab('home')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200"
+          :class="currentTab === 'home'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Início
+        </button>
+
+        <div class="pt-4 pb-2">
+          <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Ferramentas</p>
+        </div>
+
+        <!-- Tab: Word Counter -->
+        <button
+          @click="selectTab('wordcounter')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200"
+          :class="currentTab === 'wordcounter'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Contador de Palavras
+        </button>
+
+        <!-- Tab: JSON Formatter -->
+        <button
+          @click="selectTab('jsonformatter')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200"
+          :class="currentTab === 'jsonformatter'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          Formatador JSON
+        </button>
+
+        <!-- Tab: Base64 Tool -->
+        <button
+          @click="selectTab('base64')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200"
+          :class="currentTab === 'base64'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          Codificador Base64
+        </button>
+
+        <!-- Tab: Future Tools placeholder -->
+        <div class="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 italic flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Mais ferramentas em breve...
+        </div>
+
+        <div class="pt-4 pb-2 border-t border-slate-200 dark:border-darkBg-border mt-4">
+          <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Apoio</p>
+        </div>
+
+        <!-- Sidebar Google AdSense Block Placeholder -->
+        <div class="mx-2 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest text-center uppercase mb-1">
+            Anúncio
+          </div>
+          <div class="h-28 flex items-center justify-center bg-slate-200/50 dark:bg-slate-900/60 rounded text-center p-2">
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">Google AdSense<br>(Bloco Lateral)</p>
+          </div>
+        </div>
+
+      </nav>
+
+      <!-- Sidebar Footer (Theme & Settings) -->
+      <div class="p-4 border-t border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/20">
+        <!-- Theme Toggle Button -->
+        <button
+          @click="toggleTheme()"
+          class="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
+        >
+          <div class="flex items-center">
+            <!-- Sun Icon (shown when theme is dark) -->
+            <svg x-show="theme === 'dark'" class="w-5 h-5 mr-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+            <!-- Moon Icon (shown when theme is light) -->
+            <svg x-show="theme === 'light'" class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <span x-text="theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'">Modo Escuro</span>
+          </div>
+          <span class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full" x-text="theme.toUpperCase()">DARK</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- BACKDROP (Mobile Sidebar) -->
+    <div
+      x-show="mobileMenuOpen"
+      @click="mobileMenuOpen = false"
+      class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+    ></div>
+
+    <!-- MAIN CENTRAL CONTENT AREA -->
+    <main class="flex-1 lg:ml-64 flex flex-col min-w-0 min-h-screen">
+
+      <!-- GOOGLE ADSENSE TOP BANNER PLACEHOLDER (Responsivo) -->
+      <!-- Ideal para preencher cabeçalho e ser bem visto pelo AdSense -->
+      <div class="px-4 lg:px-8 pt-6">
+        <div class="bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800/40 dark:to-slate-800/80 rounded-2xl p-4 border border-dashed border-slate-300 dark:border-slate-700 transition-all">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+              <span class="flex h-3 w-3 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+              </span>
+              <div>
+                <h4 class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Google AdSense</h4>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500">Banner Superior Responsivo (728x90, 970x90 ou Automático)</p>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-500 dark:text-slate-400">
+              &lt;ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXX"&gt;
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INNER WRAPPER FOR MAIN VIEWS -->
+      <div class="flex-1 px-4 lg:px-8 py-8">
+
+        <!-- ==================== TAB: INÍCIO (HOME) ==================== -->
+        <div
+          x-show="currentTab === 'home'"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          class="space-y-8"
+        >
+          <!-- Welcome Hero Section -->
+          <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-blue-700 to-secondary p-8 lg:p-12 text-white shadow-2xl shadow-primary/20">
+            <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="relative z-10 max-w-2xl">
+              <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Bem-vindo à Faytor SPA</span>
+              <h1 class="text-3xl lg:text-5xl font-black tracking-tight mt-4 leading-tight">
+                Sua suíte de ferramentas de alta performance.
+              </h1>
+              <p class="mt-4 text-blue-100 lg:text-lg">
+                Estrutura otimizada para monetização, desenhada com a velocidade do Tailwind CSS e a interatividade reativa do Alpine.js. Pronta para aprovação no Google AdSense.
+              </p>
+              <div class="mt-8 flex flex-wrap gap-4">
+                <button @click="selectTab('wordcounter')" class="bg-white text-primary hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95">
+                  Ver Ferramentas
+                </button>
+                <a href="#adsense-info" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl transition-all border border-white/20">
+                  Saber mais sobre AdSense
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Palette Showcase -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Cor Principal -->
+            <div class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-[#2563EB] flex-shrink-0 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20">
+                P
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100">Cor Principal</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">#2563EB (Azul Tecnológico)</p>
+                <p class="text-[11px] text-emerald-500 font-medium mt-1">✓ Alta Confiança AdSense</p>
+              </div>
+            </div>
+            <!-- Cor Secundária -->
+            <div class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-[#7C3AED] flex-shrink-0 flex items-center justify-center text-white font-black shadow-lg shadow-purple-500/20">
+                S
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100">Cor Secundária</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">#7C3AED (Violeta Inovação)</p>
+                <p class="text-[11px] text-purple-500 font-medium mt-1">✦ Visual Moderno & Criativo</p>
+              </div>
+            </div>
+            <!-- Cor Fundo -->
+            <div class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-[#0F172A] border border-slate-700 flex-shrink-0 flex items-center justify-center text-white font-black">
+                F
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 dark:text-slate-100">Fundo Dark Mode</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">#0F172A (Slate Escuro)</p>
+                <p class="text-[11px] text-blue-400 font-medium mt-1">☯ Suporta Light/Dark Theme</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Cards Grid -->
+          <div>
+            <h2 class="text-xl font-bold mb-6 text-slate-800 dark:text-slate-100">Ferramentas Prontas & Integradas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              <!-- Word Counter Card -->
+              <div class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Contador de Palavras</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Analise o tamanho dos seus textos, quantidade de palavras, caracteres, parágrafos e tempo estimado de leitura em tempo real.</p>
+                <button @click="selectTab('wordcounter')" class="mt-4 text-xs font-semibold text-primary dark:text-blue-400 group-hover:underline flex items-center">
+                  Abrir ferramenta
+                  <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+
+              <!-- JSON Formatter Card -->
+              <div class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-secondary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Formatador JSON</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Valide, embeleze ou mineficize strings JSON. Identifica erros de sintaxe de forma amigável e limpa.</p>
+                <button @click="selectTab('jsonformatter')" class="mt-4 text-xs font-semibold text-secondary dark:text-purple-400 group-hover:underline flex items-center">
+                  Abrir ferramenta
+                  <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+
+              <!-- Base64 Tool Card -->
+              <div class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group">
+                <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  </svg>
+                </div>
+                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Codificador Base64</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Converta rapidamente textos comuns para o padrão Base64 de codificação de dados ou faça o caminho inverso com decodificação rápida.</p>
+                <button @click="selectTab('base64')" class="mt-4 text-xs font-semibold text-pink-600 dark:text-pink-400 group-hover:underline flex items-center">
+                  Abrir ferramenta
+                  <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- AdSense Guidelines Information Section -->
+          <div id="adsense-info" class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8">
+            <h2 class="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100 flex items-center">
+              <svg class="w-6 h-6 mr-2 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              </svg>
+              Diretrizes para Aprovação Fácil no Google AdSense
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600 dark:text-slate-300">
+              <div class="space-y-3">
+                <p class="font-medium text-slate-800 dark:text-slate-200">1. Conteúdo Útil e Original</p>
+                <p>O Google AdSense exige ferramentas que tragam valor real para o usuário. Essa SPA já traz utilitários reais como o Contador de Palavras e Formatador JSON, que são muito procurados na internet e geram tráfego orgânico recorrente.</p>
+
+                <p class="font-medium text-slate-800 dark:text-slate-200">2. Navegação Simples e Clara</p>
+                <p>O menu lateral fixo à esquerda fornece uma hierarquia de navegação clara e direta, essencial para a experiência do usuário (UX) avaliada pelos revisores do AdSense.</p>
+              </div>
+              <div class="space-y-3">
+                <p class="font-medium text-slate-800 dark:text-slate-200">3. Cores Profissionais</p>
+                <p>O uso do azul (<span class="font-bold text-primary font-mono">#2563EB</span>) transmite credibilidade e segurança institucional, enquanto tons escuros reduzem a fadiga ocular, ideal para desenvolvedores.</p>
+
+                <p class="font-medium text-slate-800 dark:text-slate-200">4. Páginas Obrigatórias</p>
+                <p>Não se esqueça de criar abas ou páginas extras de <span class="underline">Política de Privacidade</span>, <span class="underline">Termos de Uso</span> e <span class="underline">Contato</span> antes de submeter seu domínio à aprovação.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- ==================== TAB: CONTADOR DE PALAVRAS ==================== -->
+        <div
+          x-show="currentTab === 'wordcounter'"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          x-data="{
+            text: '',
+            get stats() {
+              let trimmed = this.text.trim();
+              let words = trimmed === '' ? 0 : trimmed.split(/\s+/).length;
+              let chars = this.text.length;
+              let charsNoSpaces = this.text.replace(/\s+/g, '').length;
+              let paragraphs = trimmed === '' ? 0 : trimmed.split(/\n+/).length;
+              let readTime = Math.ceil(words / 200); // 200 words per minute average reading
+              return { words, chars, charsNoSpaces, paragraphs, readTime };
+            }
+          }"
+          class="space-y-6"
+        >
+          <div>
+            <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Utilitário</span>
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Contador de Palavras</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Insira ou cole o seu texto abaixo para ver estatísticas detalhadas e tempo estimado de leitura em tempo real.</p>
+          </div>
+
+          <!-- Counter Stats Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="bg-white dark:bg-darkBg-card p-4 rounded-xl border border-slate-200 dark:border-darkBg-border shadow-sm text-center">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-medium block uppercase tracking-wider">Palavras</span>
+              <span class="text-2xl font-extrabold text-primary dark:text-blue-400 block mt-1" x-text="stats.words">0</span>
+            </div>
+            <div class="bg-white dark:bg-darkBg-card p-4 rounded-xl border border-slate-200 dark:border-darkBg-border shadow-sm text-center">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-medium block uppercase tracking-wider">Caracteres</span>
+              <span class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 block mt-1" x-text="stats.chars">0</span>
+            </div>
+            <div class="bg-white dark:bg-darkBg-card p-4 rounded-xl border border-slate-200 dark:border-darkBg-border shadow-sm text-center">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-medium block uppercase tracking-wider">Sem Espaços</span>
+              <span class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 block mt-1" x-text="stats.charsNoSpaces">0</span>
+            </div>
+            <div class="bg-white dark:bg-darkBg-card p-4 rounded-xl border border-slate-200 dark:border-darkBg-border shadow-sm text-center">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-medium block uppercase tracking-wider">Parágrafos</span>
+              <span class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 block mt-1" x-text="stats.paragraphs">0</span>
+            </div>
+            <div class="bg-white dark:bg-darkBg-card p-4 rounded-xl border border-slate-200 dark:border-darkBg-border shadow-sm text-center col-span-2 md:col-span-1">
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-medium block uppercase tracking-wider">Tempo Leitura</span>
+              <span class="text-2xl font-extrabold text-secondary dark:text-purple-400 block mt-1" x-text="stats.readTime + ' min'">0 min</span>
+            </div>
+          </div>
+
+          <!-- Main Text Area -->
+          <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40 flex justify-between items-center">
+              <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Editor de Texto</span>
+              <button
+                @click="text = ''"
+                class="text-xs bg-slate-200 dark:bg-slate-700 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg transition-colors font-semibold"
+                :disabled="text.length === 0"
+              >
+                Limpar
+              </button>
+            </div>
+            <textarea
+              x-model="text"
+              class="w-full h-80 px-6 py-4 bg-transparent border-0 focus:ring-2 focus:ring-primary focus:outline-none text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-y"
+              placeholder="Cole ou digite seu texto aqui..."
+            ></textarea>
+          </div>
+        </div>
+
+
+        <!-- ==================== TAB: FORMATADOR JSON ==================== -->
+        <div
+          x-show="currentTab === 'jsonformatter'"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          x-data="{
+            inputJson: '',
+            outputJson: '',
+            errorMessage: '',
+            format(space) {
+              this.errorMessage = '';
+              try {
+                if (!this.inputJson.trim()) {
+                  this.outputJson = '';
+                  return;
+                }
+                let parsed = JSON.parse(this.inputJson);
+                this.outputJson = JSON.stringify(parsed, null, space);
+              } catch (e) {
+                this.errorMessage = 'Erro de Sintaxe JSON: ' + e.message;
+                this.outputJson = '';
+              }
+            },
+            minify() {
+              this.errorMessage = '';
+              try {
+                if (!this.inputJson.trim()) {
+                  this.outputJson = '';
+                  return;
+                }
+                let parsed = JSON.parse(this.inputJson);
+                this.outputJson = JSON.stringify(parsed);
+              } catch (e) {
+                this.errorMessage = 'Erro de Sintaxe JSON: ' + e.message;
+                this.outputJson = '';
+              }
+            },
+            copyToClipboard() {
+              navigator.clipboard.writeText(this.outputJson);
+              alert('Copiado para a área de transferência!');
+            }
+          }"
+          class="space-y-6"
+        >
+          <div>
+            <span class="text-xs font-semibold text-secondary dark:text-purple-400 uppercase tracking-widest">Desenvolvimento</span>
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Formatador & Validador JSON</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Embeleze, organize, valide ou compacte strings JSON em tempo de execução seguro e rápido.</p>
+          </div>
+
+          <!-- Actions and Errors -->
+          <div class="flex flex-wrap gap-3 items-center">
+            <button @click="format(2)" class="bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md">
+              Formatar (2 Espaços)
+            </button>
+            <button @click="format(4)" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md">
+              Formatar (4 Espaços)
+            </button>
+            <button @click="minify()" class="bg-secondary hover:bg-secondary-dark text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md">
+              Minificar / Compactar
+            </button>
+            <button
+              @click="copyToClipboard()"
+              class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold px-4 py-2.5 rounded-xl text-sm transition-all"
+              :disabled="!outputJson"
+            >
+              Copiar Resultado
+            </button>
+          </div>
+
+          <!-- Error Alert -->
+          <div x-show="errorMessage" class="bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm flex items-center space-x-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span x-text="errorMessage"></span>
+          </div>
+
+          <!-- Dual Text Editors Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Input Panel -->
+            <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden flex flex-col">
+              <div class="px-5 py-3.5 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40">
+                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">JSON de Entrada</span>
+              </div>
+              <textarea
+                x-model="inputJson"
+                class="w-full h-96 px-5 py-4 bg-transparent border-0 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 resize-none"
+                placeholder='Cole seu JSON bruto aqui, ex:\n{"faytor": "spa", "aprovado": true}'
+              ></textarea>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden flex flex-col">
+              <div class="px-5 py-3.5 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40 flex justify-between items-center">
+                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Resultado Formatado</span>
+              </div>
+              <textarea
+                x-model="outputJson"
+                readonly
+                class="w-full h-96 px-5 py-4 bg-slate-50/50 dark:bg-slate-900/40 border-0 focus:outline-none font-mono text-xs text-slate-800 dark:text-emerald-400 placeholder-slate-400 resize-none"
+                placeholder="O resultado formatado aparecerá aqui após o processamento..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ==================== TAB: BASE64 ==================== -->
+        <div
+          x-show="currentTab === 'base64'"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          x-data="{
+            inputText: '',
+            outputText: '',
+            errorMessage: '',
+            encode() {
+              this.errorMessage = '';
+              try {
+                if (!this.inputText) {
+                  this.outputText = '';
+                  return;
+                }
+                // Correct UTF-8 base64 encoding
+                this.outputText = btoa(unescape(encodeURIComponent(this.inputText)));
+              } catch (e) {
+                this.errorMessage = 'Erro ao codificar: ' + e.message;
+              }
+            },
+            decode() {
+              this.errorMessage = '';
+              try {
+                if (!this.inputText) {
+                  this.outputText = '';
+                  return;
+                }
+                this.outputText = decodeURIComponent(escape(atob(this.inputText)));
+              } catch (e) {
+                this.errorMessage = 'Erro ao decodificar. Certifique-se de que a entrada é uma string Base64 válida.';
+                this.outputText = '';
+              }
+            },
+            copy() {
+              navigator.clipboard.writeText(this.outputText);
+              alert('Copiado para a área de transferência!');
+            }
+          }"
+          class="space-y-6"
+        >
+          <div>
+            <span class="text-xs font-semibold text-pink-600 dark:text-pink-400 uppercase tracking-widest">Segurança</span>
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Codificador / Decodificador Base64</h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Converta rapidamente sequências de texto legível para Base64 ou decodifique sequências existentes.</p>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="flex flex-wrap gap-3">
+            <button @click="encode()" class="bg-primary hover:bg-primary-dark text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md">
+              Codificar (Texto ➔ Base64)
+            </button>
+            <button @click="decode()" class="bg-secondary hover:bg-secondary-dark text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md">
+              Decodificar (Base64 ➔ Texto)
+            </button>
+            <button
+              @click="copy()"
+              class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all"
+              :disabled="!outputText"
+            >
+              Copiar Resultado
+            </button>
+          </div>
+
+          <!-- Error Alert -->
+          <div x-show="errorMessage" class="bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm flex items-center space-x-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span x-text="errorMessage"></span>
+          </div>
+
+          <!-- Textareas -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden flex flex-col">
+              <div class="px-5 py-3.5 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40">
+                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Dados de Entrada</span>
+              </div>
+              <textarea
+                x-model="inputText"
+                class="w-full h-80 px-5 py-4 bg-transparent border-0 focus:ring-2 focus:ring-primary focus:outline-none font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 resize-none"
+                placeholder="Insira o texto bruto ou a string Base64..."
+              ></textarea>
+            </div>
+
+            <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm overflow-hidden flex flex-col">
+              <div class="px-5 py-3.5 border-b border-slate-200 dark:border-darkBg-border bg-slate-50 dark:bg-slate-800/40">
+                <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Resultado</span>
+              </div>
+              <textarea
+                x-model="outputText"
+                readonly
+                class="w-full h-80 px-5 py-4 bg-slate-50/50 dark:bg-slate-900/40 border-0 focus:outline-none font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 resize-none"
+                placeholder="O resultado aparecerá aqui..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- GOOGLE ADSENSE BOTTOM BANNER PLACEHOLDER (Responsivo) -->
+      <!-- Ideal para preencher o final da página e reter receita por rolagem -->
+      <div class="px-4 lg:px-8 pb-8 mt-auto">
+        <div class="bg-white dark:bg-darkBg-card rounded-2xl p-6 border border-dashed border-slate-300 dark:border-slate-700 shadow-sm transition-all text-center">
+          <span class="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-widest uppercase block mb-2">Google AdSense</span>
+          <div class="inline-flex items-center justify-center bg-slate-100 dark:bg-slate-900/60 rounded-xl py-8 px-4 w-full border border-slate-200 dark:border-slate-800 max-w-4xl mx-auto">
+            <div class="space-y-2">
+              <svg class="w-8 h-8 text-amber-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p class="text-xs font-semibold text-slate-600 dark:text-slate-400">Bloco de Anúncio Responsivo (Footer/Rodapé)</p>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500 max-w-lg mx-auto">
+                Este espaço adapta-se dinamicamente a banners horizontais grandes (ex: 970x250, 728x90) ou grids nativos recomendados para o final de artigos ou utilitários.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM FOOTER -->
+      <footer class="bg-white dark:bg-darkBg-card border-t border-slate-200 dark:border-darkBg-border py-6 px-4 lg:px-8 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
+          <div>
+            &copy; 2026 <span class="font-bold text-slate-700 dark:text-slate-300">Faytor</span>. Todos os direitos reservados.
+          </div>
+          <div class="flex space-x-4">
+            <a href="#" class="hover:text-primary transition-colors">Políticas de Privacidade</a>
+            <span>•</span>
+            <a href="#" class="hover:text-primary transition-colors">Termos de Uso</a>
+            <span>•</span>
+            <a href="#" class="hover:text-primary transition-colors">Contato</a>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- ALPINE.JS APP LOGIC -->
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('appState', () => ({
+        // State variables
+        currentTab: localStorage.getItem('currentTab') || 'home',
+        theme: localStorage.getItem('theme') || 'dark',
+        mobileMenuOpen: false,
+
+        init() {
+          // Sync theme classes on start
+          this.applyTheme();
+
+          // Smooth synchronization watchers
+          this.$watch('theme', val => {
+            localStorage.setItem('theme', val);
+            this.applyTheme();
+          });
+
+          this.$watch('currentTab', val => {
+            localStorage.setItem('currentTab', val);
+          });
+        },
+
+        applyTheme() {
+          if (this.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        },
+
+        toggleTheme() {
+          this.theme = this.theme === 'dark' ? 'light' : 'dark';
+        },
+
+        selectTab(tabName) {
+          this.currentTab = tabName;
+          this.mobileMenuOpen = false; // Auto close mobile sidebar drawer
+          // Scroll to top of content area on mobile tab switch
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }));
+    });
+  </script>
+
+</body>
+</html>
