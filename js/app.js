@@ -24,7 +24,12 @@ document.addEventListener('alpine:init', () => {
       'gerador-cnpj': 'views/gerador-cnpj.html',
       'gerador-cns': 'views/gerador-cns.html',
       'gerador-rg': 'views/gerador-rg.html',
-      'gerador-pis': 'views/gerador-pis.html'
+      'gerador-pis': 'views/gerador-pis.html',
+      'validador-cpf': 'views/validador-cpf.html',
+      'validador-cnpj': 'views/validador-cnpj.html',
+      'validador-cns': 'views/validador-cns.html',
+      'validador-rg': 'views/validador-rg.html',
+      'validador-pis': 'views/validador-pis.html'
     },
 
     init() {
