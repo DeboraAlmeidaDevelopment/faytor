@@ -11,7 +11,7 @@
     this.formattedVal = '';
     this.rawVal = '';
 
-    const clean = this.docInput.replace(/\D/g, '');
+    const clean = this.docInput.replace(/[^a-z0-9]/gi, '').toUpperCase();
     if (!clean) {
       this.isValid = null;
       return;
@@ -21,15 +21,23 @@
 
     if (clean.length !== 14) {
       this.isValid = false;
-      this.errorMessage = 'Um CNPJ deve possuir exatamente 14 dígitos numéricos.';
+      this.errorMessage = 'Um CNPJ deve possuir exatamente 14 posições.';
       return;
     }
 
-    if (/^(\d)\1{13}$/.test(clean)) {
+    if (!/^[A-Z0-9]{12}\d{2}$/.test(clean)) {
       this.isValid = false;
-      this.errorMessage = 'CNPJs com todos os dígitos iguais são inválidos.';
+      this.errorMessage = 'Formato inválido: as 12 primeiras posições aceitam letras ou números e os 2 dígitos finais devem ser numéricos.';
       return;
     }
+
+    if (/^(\w)\1{13}$/.test(clean)) {
+      this.isValid = false;
+      this.errorMessage = 'CNPJs com todas as posições iguais são inválidos.';
+      return;
+    }
+
+    const charValue = char => char >= '0' && char <= '9' ? Number(char) : char.charCodeAt(0) - 48;
 
     // Validate 1st digit
     let size = 12;
@@ -38,13 +46,13 @@
     let sum = 0;
     let pos = size - 7;
     for (let i = size; i >= 1; i--) {
-      sum += parseInt(numbers.charAt(size - i)) * pos--;
+      sum += charValue(numbers.charAt(size - i)) * pos--;
       if (pos < 2) pos = 9;
     }
     let remainder = sum % 11;
     let d1 = remainder < 2 ? 0 : 11 - remainder;
 
-    if (parseInt(digits.charAt(0)) !== d1) {
+    if (Number(digits.charAt(0)) !== d1) {
       this.isValid = false;
       this.errorMessage = 'Primeiro dígito verificador inválido.';
       return;
@@ -56,20 +64,20 @@
     sum = 0;
     pos = size - 7;
     for (let i = size; i >= 1; i--) {
-      sum += parseInt(numbers.charAt(size - i)) * pos--;
+      sum += charValue(numbers.charAt(size - i)) * pos--;
       if (pos < 2) pos = 9;
     }
     remainder = sum % 11;
     let d2 = remainder < 2 ? 0 : 11 - remainder;
 
-    if (parseInt(digits.charAt(1)) !== d2) {
+    if (Number(digits.charAt(1)) !== d2) {
       this.isValid = false;
       this.errorMessage = 'Segundo dígito verificador inválido.';
       return;
     }
 
     this.isValid = true;
-    this.formattedVal = clean.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    this.formattedVal = clean.replace(/([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\d{2})/, '$1.$2.$3/$4-$5');
   },
 
   clearAll() {
@@ -90,7 +98,7 @@
       Validador de CNPJ
     </h1>
     <p class="text-slate-500 dark:text-slate-400 text-sm max-w-2xl leading-relaxed">
-      Valide números de CNPJ (Cadastro Nacional da Pessoa Jurídica) em tempo real. Descubra de forma rápida se o formato e os dígitos verificadores calculados estão perfeitamente corretos.
+      Valide CNPJs numéricos e alfanuméricos (IN RFB 2.229/2024) em tempo real, verificando o formato e os dígitos verificadores.
     </p>
   </div>
 
@@ -179,14 +187,14 @@
       Como validar CNPJ online?
     </h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      A nossa ferramenta de <strong>validador de CNPJ</strong> analisa de forma matemática o número de Cadastro Nacional da Pessoa Jurídica de acordo com o algoritmo oficial da Receita Federal. O CNPJ é composto por 14 dígitos que são segmentados em três blocos: a raiz (os 8 primeiros dígitos), o sufixo (os 4 dígitos seguintes que representam a filial ou matriz, tradicionalmente 0001) e os 2 dígitos verificadores finais.
+      A nossa ferramenta de <strong>validador de CNPJ</strong> aceita os formatos numérico e alfanumérico. O CNPJ continua composto por 14 posições, segmentadas em três blocos: raiz, ordem do estabelecimento e dois dígitos verificadores finais.
     </p>
 
     <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
       O algoritmo de validação do CNPJ
     </h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Assim como no CPF, a validação de um CNPJ utiliza o cálculo por módulo 11. O diferencial é que os multiplicadores usados no CNPJ são diferentes, iniciando de 2 a 9 e reiniciando a partir daí. O primeiro dígito verificador valida a integridade dos 12 primeiros números, enquanto o segundo valida de forma encadeada os 13 primeiros algarismos.
+      A validação utiliza módulo 11. No formato alfanumérico, cada letra ou número das 12 primeiras posições é convertido pelo valor ASCII do caractere menos 48 (por exemplo, A=17), e os dois dígitos verificadores continuam numéricos.
     </p>
 
     <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">

@@ -39,6 +39,75 @@ window.pasteToInput = async inputId => {
   }
 };
 
+window.handleCnpjFormatChange = event => {
+  window.cnpjGenerator.format = event.target.value;
+  window.saveCnpjPreferences();
+  window.generateCnpj();
+};
+
+window.handleCnpjPunctuationChange = event => {
+  const checkbox = event.target;
+  const output = document.getElementById('cnpj-generated');
+  const thumb = document.getElementById('cnpj-switch-thumb');
+  if (!output || !thumb) return;
+
+  window.cnpjGenerator.withPunctuation = checkbox.checked;
+  window.saveCnpjPreferences();
+  thumb.classList.toggle('translate-x-1', !checkbox.checked);
+  thumb.classList.toggle('translate-x-6', checkbox.checked);
+  output.value = window.formatCnpjValue(output.value.replace(/[^A-Z0-9]/gi, '').toUpperCase());
+};
+
+window.cnpjGenerator = { format: 'numeric', withPunctuation: true };
+
+window.saveCnpjPreferences = () => {
+  localStorage.setItem('faytor.cnpj.preferences', JSON.stringify({
+    format: window.cnpjGenerator.format,
+    withPunctuation: window.cnpjGenerator.withPunctuation
+  }));
+};
+
+window.loadCnpjPreferences = () => {
+  const saved = JSON.parse(localStorage.getItem('faytor.cnpj.preferences') || '{}');
+  window.cnpjGenerator.format = saved.format === 'alphanumeric' ? 'alphanumeric' : 'numeric';
+  window.cnpjGenerator.withPunctuation = saved.withPunctuation !== false;
+};
+
+window.formatCnpjValue = raw => window.cnpjGenerator.withPunctuation
+  ? raw.replace(/^([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+  : raw;
+
+window.generateCnpj = () => {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const valueOf = char => char >= '0' && char <= '9' ? Number(char) : char.charCodeAt(0) - 48;
+  const calculate = (source, weights) => {
+    const sum = source.split('').reduce((total, char, index) => total + valueOf(char) * weights[index], 0);
+    const remainder = sum % 11;
+    return remainder < 2 ? 0 : 11 - remainder;
+  };
+  const root = window.cnpjGenerator.format === 'numeric'
+    ? `${Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('')}0001`
+    : Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const dv1 = calculate(root, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  const dv2 = calculate(`${root}${dv1}`, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  const output = document.getElementById('cnpj-generated');
+  if (output) output.value = window.formatCnpjValue(`${root}${dv1}${dv2}`);
+};
+
+window.copyCnpj = async () => {
+  const output = document.getElementById('cnpj-generated');
+  const button = document.getElementById('cnpj-copy-button');
+  if (!output || !output.value || !navigator.clipboard) return;
+  await navigator.clipboard.writeText(output.value);
+  if (!button) return;
+  button.classList.remove('bg-primary', 'hover:bg-blue-700', 'border-primary');
+  button.classList.add('bg-emerald-500', 'border-emerald-500');
+  window.setTimeout(() => {
+    button.classList.remove('bg-emerald-500', 'border-emerald-500');
+    button.classList.add('bg-primary', 'hover:bg-blue-700', 'border-primary');
+  }, 2000);
+};
+
 document.addEventListener('alpine:init', () => {
   Alpine.data('appState', () => ({
     // Reactive State
@@ -194,7 +263,20 @@ document.addEventListener('alpine:init', () => {
             window.setTimeout(() => this.initCpfGenerator(), 0);
           });
         }
-        if (['gerador-cnpj', 'gerador-cns', 'gerador-pis', 'gerador-rg'].includes(tabName)) {
+        if (tabName === 'gerador-cnpj') {
+          this.$nextTick(() => {
+            window.setTimeout(() => {
+              window.loadCnpjPreferences();
+              const formatSelect = document.querySelector('[aria-label="Selecionar formato do CNPJ"]');
+              const punctuationCheckbox = document.getElementById('cnpj-with-punctuation');
+              if (formatSelect) formatSelect.value = window.cnpjGenerator.format;
+              if (punctuationCheckbox) punctuationCheckbox.checked = window.cnpjGenerator.withPunctuation;
+              window.generateCnpj();
+              if (punctuationCheckbox) window.handleCnpjPunctuationChange({ target: punctuationCheckbox });
+            }, 0);
+          });
+        }
+        if (['gerador-cns', 'gerador-pis', 'gerador-rg'].includes(tabName)) {
           this.$nextTick(() => {
             window.setTimeout(() => this.initMaskedGenerator(tabName), 0);
           });
@@ -311,7 +393,6 @@ document.addEventListener('alpine:init', () => {
 
     initMaskedGenerator(tabName) {
       const config = {
-        'gerador-cnpj': { checkbox: 'cnpj-with-punctuation', output: 'cnpj-generated', thumb: 'cnpj-switch-thumb', storage: 'faytor.cnpj.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') },
         'gerador-cns': { checkbox: 'cns-with-punctuation', output: 'cns-generated', thumb: 'cns-switch-thumb', storage: 'faytor.cns.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4') },
         'gerador-pis': { checkbox: 'pis-with-punctuation', output: 'pis-generated', thumb: 'pis-switch-thumb', storage: 'faytor.pis.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4') },
         'gerador-rg': { checkbox: 'rg-with-punctuation', output: 'rg-generated', thumb: 'rg-switch-thumb', storage: 'faytor.rg.preferences', clean: value => value.replace(/[^0-9X]/gi, ''), format: raw => raw.replace(/^(\d{2})(\d{3})(\d{3})([\dX])$/, '$1.$2.$3-$4') }
