@@ -45,6 +45,8 @@ document.addEventListener('alpine:init', () => {
     currentTab: 'home',
     theme: localStorage.getItem('theme') || 'dark',
     mobileMenuOpen: false,
+    cookieConsent: localStorage.getItem('faytor.cookie-consent') || '',
+    showCookieBanner: false,
 
     // Dynamic View Loading State
     viewContent: '',
@@ -74,6 +76,9 @@ document.addEventListener('alpine:init', () => {
     },
 
     init() {
+      this.showCookieBanner = !this.cookieConsent;
+      if (this.cookieConsent === 'accepted') this.loadAdvertising();
+
       // Use the URL hash as a deep link, for example: /#gerador-cpf.
       // This allows a shared/search result link to open the correct tool.
       const hashTab = window.location.hash.slice(1);
@@ -127,6 +132,29 @@ document.addEventListener('alpine:init', () => {
      */
     toggleTheme() {
       this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    },
+
+    acceptCookies() {
+      this.cookieConsent = 'accepted';
+      localStorage.setItem('faytor.cookie-consent', this.cookieConsent);
+      this.showCookieBanner = false;
+      this.loadAdvertising();
+    },
+
+    rejectCookies() {
+      this.cookieConsent = 'rejected';
+      localStorage.setItem('faytor.cookie-consent', this.cookieConsent);
+      this.showCookieBanner = false;
+    },
+
+    loadAdvertising() {
+      if (document.querySelector('script[data-faytor-advertising]')) return;
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3673785596412790';
+      script.crossOrigin = 'anonymous';
+      script.dataset.faytorAdvertising = 'true';
+      document.head.appendChild(script);
     },
 
     /**

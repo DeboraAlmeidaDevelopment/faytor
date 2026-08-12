@@ -28,9 +28,6 @@
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="img/logo-icon.svg">
 
-  <!-- Google AdSense: anúncios automáticos -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3673785596412790" crossorigin="anonymous"></script>
-
   <!-- Preload da primeira view para reduzir o LCP em redes móveis -->
   <link rel="preload" href="views/inicio.html" as="fetch" type="text/html" crossorigin>
 
@@ -519,6 +516,41 @@
 
     </div>
   </div>
+
+  <!-- AVISO DE CONSENTIMENTO DE COOKIES -->
+  <section
+    x-show="showCookieBanner"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 translate-y-4"
+    x-transition:enter-end="opacity-100 translate-y-0"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100 translate-y-0"
+    x-transition:leave-end="opacity-0 translate-y-4"
+    class="fixed bottom-0 left-0 right-0 z-50 p-4 lg:p-6"
+    role="dialog"
+    aria-label="Consentimento de cookies"
+    aria-describedby="cookie-consent-description"
+  >
+    <div class="max-w-4xl mx-auto bg-white dark:bg-darkBg-card border border-slate-200 dark:border-darkBg-border rounded-2xl shadow-2xl p-5 lg:p-6">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-5">
+        <div class="flex-1 space-y-2">
+          <h2 class="font-bold text-slate-900 dark:text-white">Cookies e privacidade</h2>
+          <p id="cookie-consent-description" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            Usamos cookies e tecnologias semelhantes para exibir anúncios e manter o site sustentável. Você pode aceitar ou recusar cookies de publicidade. Saiba mais na
+            <a href="#" @click.prevent="selectTab('politica-de-privacidade')" class="text-primary hover:underline font-semibold">Política de Privacidade</a>.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 sm:flex-shrink-0">
+          <button @click="rejectCookies" class="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-primary">
+            Recusar
+          </button>
+          <button @click="acceptCookies" class="px-4 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-primary">
+            Aceitar cookies
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
 
 </body>
 </html>
