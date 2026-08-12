@@ -204,6 +204,89 @@
     </div>
   </div>
 
+  <!-- Validadores Feature Cards Grid -->
+  <div>
+    <h2 class="text-xl font-bold mb-6 text-slate-800 dark:text-slate-100">Validadores de Documentos</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <!-- CPF Validator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Validador de CPF</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Valide a integridade matemática de números de CPF em tempo real, verificando os dígitos de controle de forma segura.
+          </p>
+        </div>
+        <button
+          @click="selectTab('validador-cpf')"
+          class="mt-6 text-xs font-semibold text-primary dark:text-blue-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Validador de CPF"
+        >
+          Abrir validador
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- CNPJ Validator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-secondary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Validador de CNPJ</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Verifique o algoritmo de controle de CNPJs de empresas de forma local e privada, descobrindo inconsistências em tempo real.
+          </p>
+        </div>
+        <button
+          @click="selectTab('validador-cnpj')"
+          class="mt-6 text-xs font-semibold text-secondary dark:text-purple-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Validador de CNPJ"
+        >
+          Abrir validador
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- CNS Validator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 15H4M10 9H4m10 6h6m-6-6h6m-12 12h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Validador de CNS</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Confira a validade do Cartão Nacional de Saúde (CNS) do SUS baseado nas regras oficiais do Ministério da Saúde.
+          </p>
+        </div>
+        <button
+          @click="selectTab('validador-cns')"
+          class="mt-6 text-xs font-semibold text-pink-600 dark:text-pink-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Validador de CNS"
+        >
+          Abrir validador
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
+    </div>
+  </div>
+
   <!-- AdSense Guidelines Information Section -->
   <article id="adsense-info" class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8">
     <h2 class="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100 flex items-center">
