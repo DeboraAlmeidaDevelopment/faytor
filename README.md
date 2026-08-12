@@ -32,6 +32,8 @@ O endereço padrão será `https://deboraalmeidadevelopment.github.io/faytor/`.
 
 O projeto não possui backend ou banco de dados. O Tailwind é a única dependência de desenvolvimento e é usado para gerar o CSS de produção.
 
+O Google AdSense está configurado para anúncios automáticos com o ID de editor `ca-pub-3673785596412790`. O arquivo `ads.txt` também está na raiz do site. A veiculação depende da aprovação do domínio no AdSense e da propagação da configuração.
+
 ## Como executar localmente
 
 ### 1. Instalar dependências
