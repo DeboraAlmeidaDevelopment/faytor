@@ -6,13 +6,13 @@
     <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl" aria-hidden="true"></div>
     <div class="relative z-10 max-w-2xl">
       <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
-        Bem-vindo à Faytor SPA
+        Faytor Factory
       </span>
       <h1 class="text-3xl lg:text-5xl font-black tracking-tight mt-4 leading-tight">
-        Sua suíte de ferramentas de alta performance.
+        Faytor: A Fábrica de Utilitários de Alta Performance
       </h1>
-      <p class="mt-4 text-blue-50 lg:text-lg">
-        Estrutura otimizada para monetização, desenhada com a velocidade do Tailwind CSS e a interatividade reativa do Alpine.js. Pronta para aprovação no Google AdSense.
+      <p class="mt-4 text-blue-50 lg:text-lg leading-relaxed">
+        Uma suíte moderna de ferramentas online ultra-velozes e 100% privadas. Formate, gere, valide e analise seus dados instantaneamente diretamente do seu navegador, sem instalações e sem enviar suas informações a servidores externos.
       </p>
       <div class="mt-8 flex flex-wrap gap-4">
         <button
@@ -23,52 +23,15 @@
           Ver Ferramentas
         </button>
         <a
-          href="#adsense-info"
+          href="#"
+          @click.prevent="selectTab('sobre-nos')"
           class="bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl transition-all border border-white/20 flex items-center justify-center"
-          aria-label="Ir para seção informativa sobre AdSense"
+          aria-label="Saiba mais sobre a Faytor Factory"
         >
-          Saber mais sobre AdSense
+          Saiba mais sobre a factory
         </a>
       </div>
     </div>
-  </div>
-
-  <!-- Color Palette Showcase -->
-  <h2 class="sr-only">Paleta de cores</h2>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Cor Principal -->
-    <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm flex items-center space-x-4">
-      <div class="w-12 h-12 rounded-xl bg-[#2563EB] flex-shrink-0 flex items-center justify-center text-white font-black shadow-lg shadow-blue-500/20" aria-hidden="true">
-        P
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-800 dark:text-slate-100">Cor Principal</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">#2563EB (Azul Tecnológico)</p>
-        <p class="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium mt-1">✓ Alta Confiança AdSense</p>
-      </div>
-    </article>
-    <!-- Cor Secundária -->
-    <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm flex items-center space-x-4">
-      <div class="w-12 h-12 rounded-xl bg-[#7C3AED] flex-shrink-0 flex items-center justify-center text-white font-black shadow-lg shadow-purple-500/20" aria-hidden="true">
-        S
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-800 dark:text-slate-100">Cor Secundária</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">#7C3AED (Violeta Inovação)</p>
-        <p class="text-[11px] text-purple-700 dark:text-purple-400 font-medium mt-1">✦ Visual Moderno & Criativo</p>
-      </div>
-    </article>
-    <!-- Cor Fundo -->
-    <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm flex items-center space-x-4">
-      <div class="w-12 h-12 rounded-xl bg-[#0F172A] border border-slate-700 flex-shrink-0 flex items-center justify-center text-white font-black" aria-hidden="true">
-        F
-      </div>
-      <div>
-        <h3 class="font-bold text-slate-800 dark:text-slate-100">Fundo Dark Mode</h3>
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">#0F172A (Slate Escuro)</p>
-        <p class="text-[11px] text-blue-700 dark:text-blue-400 font-medium mt-1">☯ Suporta Light/Dark Theme</p>
-      </div>
-    </article>
   </div>
 
   <!-- Feature Cards Grid -->
@@ -286,39 +249,5 @@
 
     </div>
   </div>
-
-  <!-- AdSense Guidelines Information Section -->
-  <article id="adsense-info" class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8">
-    <h2 class="text-xl font-bold mb-4 text-slate-800 dark:text-slate-100 flex items-center">
-      <svg class="w-6 h-6 mr-2 text-amber-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-      </svg>
-      Diretrizes para Aprovação Fácil no Google AdSense
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600 dark:text-slate-300">
-      <div class="space-y-3">
-        <h3 class="font-medium text-slate-800 dark:text-slate-200">1. Conteúdo Útil e Original</h3>
-        <p>
-          O Google AdSense exige ferramentas que tragam valor real para o usuário. Essa SPA já traz utilitários reais como o Contador de Palavras e Formatador JSON, que são muito procurados na internet e geram tráfego orgânico recorrente.
-        </p>
-
-        <h3 class="font-medium text-slate-800 dark:text-slate-200">2. Navegação Simples e Clara</h3>
-        <p>
-          O menu lateral fixo à esquerda fornece uma hierarquia de navegação clara e direta, essencial para a experiência do usuário (UX) avaliada pelos revisores do AdSense.
-        </p>
-      </div>
-      <div class="space-y-3">
-        <h3 class="font-medium text-slate-800 dark:text-slate-200">3. Cores Profissionais</h3>
-        <p>
-          O uso do azul (<span class="font-bold text-primary font-mono">#2563EB</span>) transmite credibilidade e segurança institucional, enquanto tons escuros reduzem a fadiga ocular, ideal para desenvolvedores.
-        </p>
-
-        <h3 class="font-medium text-slate-800 dark:text-slate-200">4. Páginas Obrigatórias</h3>
-        <p>
-          Não se esqueça de criar abas ou páginas extras de <span class="underline">Política de Privacidade</span>, <span class="underline">Termos de Uso</span> e <span class="underline">Contato</span> antes de submeter seu domínio à aprovação.
-        </p>
-      </div>
-    </div>
-  </article>
 
 </section>

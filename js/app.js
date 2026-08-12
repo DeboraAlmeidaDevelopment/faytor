@@ -29,7 +29,11 @@ document.addEventListener('alpine:init', () => {
       'validador-cnpj': 'views/validador-cnpj.html',
       'validador-cns': 'views/validador-cns.html',
       'validador-rg': 'views/validador-rg.html',
-      'validador-pis': 'views/validador-pis.html'
+      'validador-pis': 'views/validador-pis.html',
+      'politica-de-privacidade': 'views/politica-de-privacidade.html',
+      'termos-de-uso': 'views/termos-de-uso.html',
+      'contato': 'views/contato.html',
+      'sobre-nos': 'views/sobre-nos.html'
     },
 
     init() {
