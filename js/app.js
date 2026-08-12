@@ -101,7 +101,9 @@ document.addEventListener('alpine:init', () => {
         }
         this.viewContent = await response.text();
         if (tabName === 'gerador-cpf') {
-          this.$nextTick(() => this.initCpfGenerator());
+          this.$nextTick(() => {
+            window.setTimeout(() => this.initCpfGenerator(), 0);
+          });
         }
       } catch (err) {
         console.warn('Dynamic fetch blocked or failed. Checking for CORS constraint.', err);
