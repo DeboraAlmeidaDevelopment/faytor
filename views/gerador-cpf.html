@@ -1,52 +1,5 @@
 <!-- ==================== SUB-VIEW: GERADOR DE CPF ==================== -->
-<section
-  x-data="{
-    generatedCpf: '',
-    withPunctuation: true,
-    copied: false,
-    generate() {
-      this.copied = false;
-      let digits = [];
-      for (let i = 0; i < 9; i++) {
-        digits.push(Math.floor(Math.random() * 10));
-      }
-
-      // Calculate first verification digit
-      let sum = 0;
-      for (let i = 0; i < 9; i++) {
-        sum += digits[i] * (10 - i);
-      }
-      let rem = sum % 11;
-      let dv1 = rem < 2 ? 0 : 11 - rem;
-      digits.push(dv1);
-
-      // Calculate second verification digit
-      sum = 0;
-      for (let i = 0; i < 10; i++) {
-        sum += digits[i] * (11 - i);
-      }
-      rem = sum % 11;
-      let dv2 = rem < 2 ? 0 : 11 - rem;
-      digits.push(dv2);
-
-      let raw = digits.join('');
-      if (this.withPunctuation) {
-        this.generatedCpf = raw.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-      } else {
-        this.generatedCpf = raw;
-      }
-    },
-    copy() {
-      if (!this.generatedCpf) return;
-      navigator.clipboard.writeText(this.generatedCpf);
-      this.copied = true;
-      setTimeout(() => { this.copied = false; }, 2000);
-    }
-  }"
-  x-init="generate()"
-  class="space-y-6"
-  aria-label="Gerador de CPF"
->
+<section class="space-y-6" aria-label="Gerador de CPF">
   <div>
     <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Documento</span>
     <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de CPF</h1>
@@ -56,17 +9,62 @@
   </div>
 
   <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm max-w-2xl">
-    <div class="flex flex-col space-y-4">
+    <div class="flex flex-col space-y-5">
       <!-- Options -->
-      <div class="flex items-center space-x-6">
-        <label class="inline-flex items-center cursor-pointer select-none">
+      <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(220px,280px)] gap-4 items-end">
+        <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação</span>
           <input
+            id="cpf-with-punctuation"
             type="checkbox"
-            x-model="withPunctuation"
-            @change="generate()"
-            class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-5 w-5 bg-transparent"
+            class="peer sr-only"
           >
-          <span class="ml-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:bg-slate-700 dark:peer-focus-visible:ring-offset-darkBg-card dark:peer-checked:bg-primary" aria-hidden="true">
+            <span id="cpf-switch-thumb" class="inline-block h-5 w-5 translate-x-1 rounded-full bg-white shadow-sm transition-transform"></span>
+          </span>
+        </label>
+
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Estado de origem</span>
+          <div class="relative">
+            <select
+              id="cpf-state"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none"
+              aria-label="Selecionar estado de origem do CPF"
+            >
+            <option value="random">Aleatório</option>
+            <option value="AC">Acre (AC)</option>
+            <option value="AL">Alagoas (AL)</option>
+            <option value="AP">Amapá (AP)</option>
+            <option value="AM">Amazonas (AM)</option>
+            <option value="BA">Bahia (BA)</option>
+            <option value="CE">Ceará (CE)</option>
+            <option value="DF">Distrito Federal (DF)</option>
+            <option value="ES">Espírito Santo (ES)</option>
+            <option value="GO">Goiás (GO)</option>
+            <option value="MA">Maranhão (MA)</option>
+            <option value="MT">Mato Grosso (MT)</option>
+            <option value="MS">Mato Grosso do Sul (MS)</option>
+            <option value="MG">Minas Gerais (MG)</option>
+            <option value="PA">Pará (PA)</option>
+            <option value="PB">Paraíba (PB)</option>
+            <option value="PR">Paraná (PR)</option>
+            <option value="PE">Pernambuco (PE)</option>
+            <option value="PI">Piauí (PI)</option>
+            <option value="RJ">Rio de Janeiro (RJ)</option>
+            <option value="RN">Rio Grande do Norte (RN)</option>
+            <option value="RS">Rio Grande do Sul (RS)</option>
+            <option value="RO">Rondônia (RO)</option>
+            <option value="RR">Roraima (RR)</option>
+            <option value="SC">Santa Catarina (SC)</option>
+            <option value="SP">São Paulo (SP)</option>
+            <option value="SE">Sergipe (SE)</option>
+              <option value="TO">Tocantins (TO)</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
         </label>
       </div>
 
@@ -75,7 +73,7 @@
         <div class="relative flex-1">
           <input
             type="text"
-            x-model="generatedCpf"
+            id="cpf-generated"
             readonly
             class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
             aria-label="CPF Gerado"
@@ -84,7 +82,7 @@
 
         <div class="flex gap-2">
           <button
-            @click="generate()"
+            id="cpf-generate"
             class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
             aria-label="Gerar novo CPF"
           >
@@ -95,18 +93,14 @@
           </button>
 
           <button
-            @click="copy()"
-            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border"
-            :class="copied
-              ? 'bg-emerald-500 border-emerald-500 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'"
+            id="cpf-copy"
+            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
             aria-label="Copiar CPF gerado"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path x-show="!copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              <path x-show="copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path id="cpf-copy-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
             </svg>
-            <span x-text="copied ? 'Copiado!' : 'Copiar'">Copiar</span>
+            <span id="cpf-copy-label">Copiar</span>
           </button>
         </div>
       </div>
