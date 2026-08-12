@@ -36,7 +36,7 @@
       }
     },
     copy() {
-      const value = document.getElementById('rg-generated').value;
+      const value = this.generatedRg;
       if (!value) return;
       navigator.clipboard.writeText(value);
       this.copied = true;

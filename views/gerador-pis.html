@@ -35,7 +35,7 @@
       }
     },
     copy() {
-      const value = document.getElementById('pis-generated').value;
+      const value = this.generatedPis;
       if (!value) return;
       navigator.clipboard.writeText(value);
       this.copied = true;

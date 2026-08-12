@@ -26,6 +26,19 @@ window.handleMaskedGeneratorChange = event => {
   localStorage.setItem(settings.storage, JSON.stringify({ withPunctuation: checkbox.checked }));
 };
 
+window.pasteToInput = async inputId => {
+  const input = document.getElementById(inputId);
+  if (!input || !navigator.clipboard) return;
+
+  try {
+    input.value = await navigator.clipboard.readText();
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+  } catch (error) {
+    console.warn('Não foi possível acessar o conteúdo da área de transferência.', error);
+  }
+};
+
 document.addEventListener('alpine:init', () => {
   Alpine.data('appState', () => ({
     // Reactive State

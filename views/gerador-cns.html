@@ -51,7 +51,7 @@
       }
     },
     copy() {
-      const value = document.getElementById('cns-generated').value;
+      const value = this.generatedCns;
       if (!value) return;
       navigator.clipboard.writeText(value);
       this.copied = true;

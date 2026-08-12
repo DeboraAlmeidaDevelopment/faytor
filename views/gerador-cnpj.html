@@ -43,7 +43,7 @@
       }
     },
     copy() {
-      const value = document.getElementById('cnpj-generated').value;
+      const value = this.generatedCnpj;
       if (!value) return;
       navigator.clipboard.writeText(value);
       this.copied = true;
