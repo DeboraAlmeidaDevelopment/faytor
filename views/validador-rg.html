@@ -1,0 +1,184 @@
+<div class="max-w-4xl mx-auto space-y-6" x-data="{
+  docInput: '',
+  isValid: null,
+  errorMessage: '',
+  formattedVal: '',
+  rawVal: '',
+
+  validate() {
+    this.errorMessage = '';
+    this.isValid = null;
+    this.formattedVal = '';
+    this.rawVal = '';
+
+    // Remove any formatting character except X/x at the end
+    let clean = this.docInput.toUpperCase().replace(/[^0-9X]/g, '');
+    if (!clean) {
+      this.isValid = null;
+      return;
+    }
+
+    this.rawVal = clean;
+
+    if (clean.length !== 9) {
+      this.isValid = false;
+      this.errorMessage = 'Um RG do Estado de São Paulo (SSP-SP) deve possuir exatamente 9 dígitos (sendo o último dígito opcionalmente X).';
+      return;
+    }
+
+    // Validation algorithm for SSP-SP RG
+    let sum = 0;
+    for (let i = 0; i < 8; i++) {
+      sum += parseInt(clean[i]) * (2 + i);
+    }
+
+    const lastChar = clean[8];
+    let dVal;
+    if (lastChar === 'X') {
+      dVal = 10;
+    } else {
+      dVal = parseInt(lastChar);
+    }
+
+    const expected = sum % 11;
+    // For RG standard in SP, the remainder of division by 11 should match the check digit.
+    // If sum % 11 is 10, the digit is represented by 'X'.
+    if (expected !== dVal) {
+      this.isValid = false;
+      this.errorMessage = 'O dígito verificador final está incorreto para o padrão SP.';
+      return;
+    }
+
+    this.isValid = true;
+    this.formattedVal = clean.replace(/(\d{2})(\d{3})(\d{3})([0-9X])/, '$1.$2.$3-$4');
+  },
+
+  clearAll() {
+    this.docInput = '';
+    this.isValid = null;
+    this.errorMessage = '';
+    this.formattedVal = '';
+    this.rawVal = '';
+  }
+}" x-init="$watch('docInput', () => validate())">
+
+  <!-- Meta Informational Tag for Accessibility -->
+  <div class="text-xs font-bold text-primary dark:text-blue-400 tracking-wider uppercase">Ferramenta de Validação</div>
+
+  <!-- Page Header SEO Optimised -->
+  <div class="space-y-2">
+    <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+      Validador de RG (Registro Geral)
+    </h1>
+    <p class="text-slate-500 dark:text-slate-400 text-sm max-w-2xl leading-relaxed">
+      Valide números de Cédula de Identidade (RG) emitidos pelo Estado de São Paulo (SSP-SP). Verifique o formato de 9 dígitos e confira o dígito verificador (incluindo o caractere "X").
+    </p>
+  </div>
+
+  <!-- MAIN INTERACTIVE CARD -->
+  <div class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-xl space-y-6">
+    <div class="space-y-2">
+      <label for="rg-input" class="block text-sm font-bold text-slate-700 dark:text-slate-300">
+        Digite o RG (SSP-SP) para validação:
+      </label>
+      <div class="relative rounded-2xl shadow-sm">
+        <input
+          type="text"
+          id="rg-input"
+          x-model="docInput"
+          placeholder="Ex: 12.345.678-9 ou 12.345.678-X"
+          class="block w-full rounded-2xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-primary text-lg font-mono p-4 pr-12 transition-all placeholder-slate-400 dark:placeholder-slate-500"
+          aria-describedby="validation-status"
+        >
+        <!-- Clear Button -->
+        <button
+          x-show="docInput.length > 0"
+          @click="clearAll()"
+          class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          aria-label="Limpar campo"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- FEEDBACK BLOCK -->
+    <div id="validation-status" aria-live="polite">
+      <!-- Empty State -->
+      <div x-show="isValid === null" class="flex items-center space-x-3 text-slate-400 dark:text-slate-500 text-sm py-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Aguardando a digitação do RG para análise...</span>
+      </div>
+
+      <!-- Valid State -->
+      <div x-show="isValid === true" class="space-y-4" x-transition>
+        <div class="flex items-center space-x-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 p-4 rounded-2xl">
+          <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <span class="font-extrabold text-base">Este RG é Válido!</span>
+            <p class="text-xs opacity-90 mt-0.5">O registro geral apresenta um formato estrutural e dígito verificador corretos conforme a SSP-SP.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Formatado (Máscara)</span>
+            <span class="text-lg font-mono font-bold text-slate-800 dark:text-slate-100 block mt-1" x-text="formattedVal"></span>
+          </div>
+          <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Somente Números (Limpo)</span>
+            <span class="text-lg font-mono font-bold text-slate-800 dark:text-slate-100 block mt-1" x-text="rawVal"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invalid State -->
+      <div x-show="isValid === false" class="flex items-start space-x-3 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 p-4 rounded-2xl" x-transition>
+        <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <span class="font-extrabold text-base">RG Inválido</span>
+          <p class="text-sm opacity-90 mt-0.5" x-text="errorMessage"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOOGLE ADSENSE IN-FEED -->
+  <div class="bg-slate-100 dark:bg-slate-800/30 rounded-2xl p-4 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider block uppercase mb-1">Google AdSense</span>
+    <p class="text-xs text-slate-400 dark:text-slate-500">Bloco de anúncio nativo ou responsivo</p>
+  </div>
+
+  <!-- SEO SEO/COPYWRITING SECTION -->
+  <div class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-6">
+    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
+      O que é o Registro Geral (RG)?
+    </h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      A Carteira de Identidade ou <strong>Registro Geral (RG)</strong> é o documento básico de identificação civil emitido pelas Secretarias de Segurança Pública (SSP) dos Estados e do Distrito Federal no Brasil. Historicamente, cada estado brasileiro possui seu próprio padrão e numeração individual, o que possibilita que uma pessoa tenha múltiplos números de RG válidos em estados diferentes.
+    </p>
+
+    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
+      Por que o RG de São Paulo tem o dígito verificador "X"?
+    </h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      No algoritmo de validação do RG do Estado de São Paulo, os multiplicadores aplicados aos 8 primeiros dígitos iniciam-se em 2 e vão até 9. O resto da divisão por 11 corresponde ao dígito verificador. Caso o resto da divisão resulte em 10, utiliza-se a letra romana <strong>"X"</strong> como representação padrão, evitando-se o uso de dois dígitos no bloco de controle.
+    </p>
+
+    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
+      Validação Nacional unificada
+    </h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Devido à falta de uma padronização histórica unificada entre estados, nossa ferramenta foca na validação precisa do padrão do estado de São Paulo (SSP-SP), que é o mais comum e representativo em termos de sistemas web e integradores comerciais de grande porte.
+    </p>
+  </div>
+
+</div>
