@@ -64,8 +64,10 @@ document.addEventListener('alpine:init', () => {
       // Use the URL hash as a deep link, for example: /#gerador-cpf.
       // This allows a shared/search result link to open the correct tool.
       const hashTab = window.location.hash.slice(1);
-      this.currentTab = this.views[hashTab]
-        ? hashTab
+      const pathTab = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      const initialTab = this.views[pathTab] ? pathTab : hashTab;
+      this.currentTab = this.views[initialTab]
+        ? initialTab
         : (localStorage.getItem('currentTab') || 'home');
 
       // Initialize layout theme
