@@ -2,10 +2,34 @@
  * Faytor SPA - Modular Application State Management & View Routing
  */
 
+window.handleMaskedGeneratorChange = event => {
+  const settings = {
+    'cnpj-with-punctuation': { output: 'cnpj-generated', thumb: 'cnpj-switch-thumb', storage: 'faytor.cnpj.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') },
+    'cns-with-punctuation': { output: 'cns-generated', thumb: 'cns-switch-thumb', storage: 'faytor.cns.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4') },
+    'pis-with-punctuation': { output: 'pis-generated', thumb: 'pis-switch-thumb', storage: 'faytor.pis.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4') },
+    'rg-with-punctuation': { output: 'rg-generated', thumb: 'rg-switch-thumb', storage: 'faytor.rg.preferences', clean: value => value.replace(/[^0-9X]/gi, ''), format: value => value.replace(/^(\d{2})(\d{3})(\d{3})([\dX])$/, '$1.$2.$3-$4') }
+  }[event.target.id];
+  if (!settings) return;
+
+  const checkbox = event.target;
+  const output = document.getElementById(settings.output);
+  const thumb = document.getElementById(settings.thumb);
+  if (!output || !thumb) return;
+
+  const root = output.closest('[x-data]');
+  const viewState = root && window.Alpine ? Alpine.$data(root) : null;
+  if (viewState) viewState.withPunctuation = checkbox.checked;
+  thumb.classList.toggle('translate-x-1', !checkbox.checked);
+  thumb.classList.toggle('translate-x-6', checkbox.checked);
+  const raw = settings.clean(output.value);
+  output.value = checkbox.checked ? settings.format(raw) : raw;
+  localStorage.setItem(settings.storage, JSON.stringify({ withPunctuation: checkbox.checked }));
+};
+
 document.addEventListener('alpine:init', () => {
   Alpine.data('appState', () => ({
     // Reactive State
-    currentTab: localStorage.getItem('currentTab') || 'home',
+    currentTab: 'home',
     theme: localStorage.getItem('theme') || 'dark',
     mobileMenuOpen: false,
 
@@ -37,6 +61,13 @@ document.addEventListener('alpine:init', () => {
     },
 
     init() {
+      // Use the URL hash as a deep link, for example: /#gerador-cpf.
+      // This allows a shared/search result link to open the correct tool.
+      const hashTab = window.location.hash.slice(1);
+      this.currentTab = this.views[hashTab]
+        ? hashTab
+        : (localStorage.getItem('currentTab') || 'home');
+
       // Initialize layout theme
       this.applyTheme();
 
@@ -52,6 +83,14 @@ document.addEventListener('alpine:init', () => {
       this.$watch('currentTab', val => {
         localStorage.setItem('currentTab', val);
         this.loadView(val);
+      });
+
+      window.addEventListener('hashchange', () => {
+        const tabName = window.location.hash.slice(1);
+        if (this.views[tabName] && tabName !== this.currentTab) {
+          this.currentTab = tabName;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       });
     },
 
@@ -81,6 +120,9 @@ document.addEventListener('alpine:init', () => {
     selectTab(tabName) {
       if (this.views[tabName]) {
         this.currentTab = tabName;
+        if (window.location.hash !== `#${tabName}`) {
+          window.location.hash = tabName;
+        }
         this.mobileMenuOpen = false;
 
         // Return to the page top so the top AdSense banner stays visible.
@@ -107,6 +149,11 @@ document.addEventListener('alpine:init', () => {
         if (tabName === 'gerador-cpf') {
           this.$nextTick(() => {
             window.setTimeout(() => this.initCpfGenerator(), 0);
+          });
+        }
+        if (['gerador-cnpj', 'gerador-cns', 'gerador-pis', 'gerador-rg'].includes(tabName)) {
+          this.$nextTick(() => {
+            window.setTimeout(() => this.initMaskedGenerator(tabName), 0);
           });
         }
       } catch (err) {
@@ -217,6 +264,39 @@ document.addEventListener('alpine:init', () => {
 
       checkbox.dataset.initialized = 'true';
       generate();
+    },
+
+    initMaskedGenerator(tabName) {
+      const config = {
+        'gerador-cnpj': { checkbox: 'cnpj-with-punctuation', output: 'cnpj-generated', thumb: 'cnpj-switch-thumb', storage: 'faytor.cnpj.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') },
+        'gerador-cns': { checkbox: 'cns-with-punctuation', output: 'cns-generated', thumb: 'cns-switch-thumb', storage: 'faytor.cns.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4') },
+        'gerador-pis': { checkbox: 'pis-with-punctuation', output: 'pis-generated', thumb: 'pis-switch-thumb', storage: 'faytor.pis.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4') },
+        'gerador-rg': { checkbox: 'rg-with-punctuation', output: 'rg-generated', thumb: 'rg-switch-thumb', storage: 'faytor.rg.preferences', clean: value => value.replace(/[^0-9X]/gi, ''), format: raw => raw.replace(/^(\d{2})(\d{3})(\d{3})([\dX])$/, '$1.$2.$3-$4') }
+      }[tabName];
+      if (!config) return;
+
+      const checkbox = document.getElementById(config.checkbox);
+      const output = document.getElementById(config.output);
+      const thumb = document.getElementById(config.thumb);
+      if (!checkbox || !output || !thumb || checkbox.dataset.initialized === 'true') return;
+
+      const updateSwitch = () => {
+        thumb.classList.toggle('translate-x-1', !checkbox.checked);
+        thumb.classList.toggle('translate-x-6', checkbox.checked);
+      };
+      const formatExisting = () => {
+        const raw = config.clean(output.value);
+        output.value = checkbox.checked ? config.format(raw) : raw;
+        output.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
+      const saved = JSON.parse(localStorage.getItem(config.storage) || '{}');
+      checkbox.checked = saved.withPunctuation !== false;
+      const viewState = Alpine.$data(output.closest('[x-data]'));
+      if (viewState) viewState.withPunctuation = checkbox.checked;
+      updateSwitch();
+      checkbox.dataset.initialized = 'true';
+      formatExisting();
     }
   }));
 });

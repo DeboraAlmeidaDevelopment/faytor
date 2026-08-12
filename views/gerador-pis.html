@@ -28,15 +28,16 @@
       }
 
       let raw = digits.join('') + dv;
-      if (this.withPunctuation) {
+      if (document.getElementById('pis-with-punctuation').checked) {
         this.generatedPis = raw.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4');
       } else {
         this.generatedPis = raw;
       }
     },
     copy() {
-      if (!this.generatedPis) return;
-      navigator.clipboard.writeText(this.generatedPis);
+      const value = document.getElementById('pis-generated').value;
+      if (!value) return;
+      navigator.clipboard.writeText(value);
       this.copied = true;
       setTimeout(() => { this.copied = false; }, 2000);
     }
@@ -60,12 +61,13 @@
         <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
-            x-model="withPunctuation"
-            @change="generate()"
+            checked
+            id="pis-with-punctuation"
+            onchange="window.handleMaskedGeneratorChange(event)"
             class="peer sr-only"
           >
-          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
-          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary dark:bg-slate-700" aria-hidden="true"><span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="withPunctuation ? 'translate-x-6' : 'translate-x-1'"></span></span>
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação?</span>
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary dark:bg-slate-700" aria-hidden="true"><span id="pis-switch-thumb" class="inline-block h-5 w-5 translate-x-6 rounded-full bg-white shadow-sm transition-transform"></span></span>
         </label>
       </div>
 
@@ -74,12 +76,13 @@
         <div class="flex flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
           <input
             type="text"
+            id="pis-generated"
             x-model="generatedPis"
             readonly
             class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
             aria-label="PIS Gerado"
           >
-          <button type="button" @click="copy()" class="w-28 flex-shrink-0 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 rounded-none border-l border-primary text-sm transition-all flex items-center justify-center" aria-label="Copiar PIS gerado"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg></button>
+          <button type="button" @click="copy()" class="w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-l text-sm transition-all flex items-center justify-center" :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'" aria-label="Copiar PIS gerado"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg></button>
         </div>
 
         <div class="flex gap-2">
