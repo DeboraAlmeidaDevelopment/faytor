@@ -100,6 +100,9 @@ document.addEventListener('alpine:init', () => {
           throw new Error(`Erro ao carregar a visualização: ${response.statusText}`);
         }
         this.viewContent = await response.text();
+        if (tabName === 'gerador-cpf') {
+          this.$nextTick(() => this.initCpfGenerator());
+        }
       } catch (err) {
         console.warn('Dynamic fetch blocked or failed. Checking for CORS constraint.', err);
 
@@ -115,6 +118,96 @@ document.addEventListener('alpine:init', () => {
       } finally {
         this.isLoading = false;
       }
+    },
+
+    /**
+     * Initializes the CPF generator after its view is inserted with x-html.
+     */
+    initCpfGenerator() {
+      const checkbox = document.getElementById('cpf-with-punctuation');
+      const stateSelect = document.getElementById('cpf-state');
+      const output = document.getElementById('cpf-generated');
+      const generateButton = document.getElementById('cpf-generate');
+      const copyButton = document.getElementById('cpf-copy');
+      const switchThumb = document.getElementById('cpf-switch-thumb');
+
+      if (!checkbox || !stateSelect || !output || !generateButton || !copyButton || !switchThumb) return;
+      if (checkbox.dataset.initialized === 'true') return;
+
+      const storageKey = 'faytor.cpf.preferences';
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      const stateRegions = {
+        AC: 2, AL: 4, AP: 2, AM: 2, BA: 5, CE: 3, DF: 1, ES: 3,
+        GO: 1, MA: 3, MT: 1, MS: 1, MG: 6, PA: 2, PB: 4, PR: 9,
+        PE: 4, PI: 3, RJ: 7, RN: 4, RS: 0, RO: 2, RR: 2, SC: 9,
+        SP: 8, SE: 5, TO: 1
+      };
+
+      checkbox.checked = saved.withPunctuation !== false;
+      stateSelect.value = stateRegions[saved.state] !== undefined ? saved.state : 'random';
+
+      const updateSwitch = () => {
+        switchThumb.classList.toggle('translate-x-1', !checkbox.checked);
+        switchThumb.classList.toggle('translate-x-6', checkbox.checked);
+      };
+      updateSwitch();
+
+      const formatCpf = raw => checkbox.checked
+        ? raw.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+        : raw;
+
+      const generate = () => {
+        const digits = [];
+        for (let i = 0; i < 8; i += 1) digits.push(Math.floor(Math.random() * 10));
+        digits.push(stateSelect.value === 'random'
+          ? Math.floor(Math.random() * 10)
+          : stateRegions[stateSelect.value]);
+
+        let sum = 0;
+        for (let i = 0; i < 9; i += 1) sum += digits[i] * (10 - i);
+        let remainder = sum % 11;
+        digits.push(remainder < 2 ? 0 : 11 - remainder);
+
+        sum = 0;
+        for (let i = 0; i < 10; i += 1) sum += digits[i] * (11 - i);
+        remainder = sum % 11;
+        digits.push(remainder < 2 ? 0 : 11 - remainder);
+
+        output.value = formatCpf(digits.join(''));
+        localStorage.setItem(storageKey, JSON.stringify({
+          withPunctuation: checkbox.checked,
+          state: stateSelect.value
+        }));
+        copyButton.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
+        copyButton.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+        document.getElementById('cpf-copy-label').textContent = 'Copiar';
+      };
+
+      checkbox.addEventListener('change', () => {
+        updateSwitch();
+        output.value = formatCpf(output.value.replace(/\D/g, ''));
+        localStorage.setItem(storageKey, JSON.stringify({
+          withPunctuation: checkbox.checked,
+          state: stateSelect.value
+        }));
+      });
+      stateSelect.addEventListener('change', generate);
+      generateButton.addEventListener('click', generate);
+      copyButton.addEventListener('click', async () => {
+        if (!output.value) return;
+        await navigator.clipboard.writeText(output.value);
+        copyButton.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+        copyButton.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+        document.getElementById('cpf-copy-label').textContent = 'Copiado!';
+        window.setTimeout(() => {
+          copyButton.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
+          copyButton.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
+          document.getElementById('cpf-copy-label').textContent = 'Copiar';
+        }, 2000);
+      });
+
+      checkbox.dataset.initialized = 'true';
+      generate();
     }
   }));
 });
