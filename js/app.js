@@ -134,10 +134,11 @@ document.addEventListener('alpine:init', () => {
       const stateSelect = document.getElementById('cpf-state');
       const output = document.getElementById('cpf-generated');
       const generateButton = document.getElementById('cpf-generate');
-      const copyButton = document.getElementById('cpf-copy');
+      const generateCopyButton = document.getElementById('cpf-generate-copy');
+      const fieldCopyButton = document.getElementById('cpf-copy-field');
       const switchThumb = document.getElementById('cpf-switch-thumb');
 
-      if (!checkbox || !stateSelect || !output || !generateButton || !copyButton || !switchThumb) return;
+      if (!checkbox || !stateSelect || !output || !generateButton || !generateCopyButton || !fieldCopyButton || !switchThumb) return;
       if (checkbox.dataset.initialized === 'true') return;
 
       const storageKey = 'faytor.cpf.preferences';
@@ -184,9 +185,8 @@ document.addEventListener('alpine:init', () => {
           withPunctuation: checkbox.checked,
           state: stateSelect.value
         }));
-        copyButton.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
-        copyButton.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
-        document.getElementById('cpf-copy-label').textContent = 'Copiar';
+        fieldCopyButton.classList.remove('bg-emerald-500', 'border-emerald-500');
+        fieldCopyButton.classList.add('bg-primary', 'hover:bg-blue-700', 'text-white');
       };
 
       checkbox.addEventListener('change', () => {
@@ -199,17 +199,20 @@ document.addEventListener('alpine:init', () => {
       });
       stateSelect.addEventListener('change', generate);
       generateButton.addEventListener('click', generate);
-      copyButton.addEventListener('click', async () => {
+      const copyCpf = async () => {
         if (!output.value) return;
         await navigator.clipboard.writeText(output.value);
-        copyButton.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
-        copyButton.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-        document.getElementById('cpf-copy-label').textContent = 'Copiado!';
+        fieldCopyButton.classList.remove('bg-primary', 'hover:bg-blue-700');
+        fieldCopyButton.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
         window.setTimeout(() => {
-          copyButton.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
-          copyButton.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
-          document.getElementById('cpf-copy-label').textContent = 'Copiar';
+          fieldCopyButton.classList.remove('bg-emerald-500', 'border-emerald-500');
+          fieldCopyButton.classList.add('bg-primary', 'hover:bg-blue-700', 'text-white');
         }, 2000);
+      };
+      fieldCopyButton.addEventListener('click', copyCpf);
+      generateCopyButton.addEventListener('click', async () => {
+        generate();
+        await copyCpf();
       });
 
       checkbox.dataset.initialized = 'true';
