@@ -63,3 +63,61 @@ input:focus-visible {
 html {
   scroll-behavior: smooth;
 }
+
+/* Keep the legal footer readable on narrow mobile screens. */
+@media (max-width: 639px) {
+  footer[role="contentinfo"] {
+    height: 56px;
+    min-height: 56px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  footer[role="contentinfo"] > div {
+    row-gap: 0;
+  }
+
+  .mobile-footer-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+
+  .mobile-footer-primary nav {
+    gap: 0.125rem;
+  }
+
+  .mobile-footer-primary nav a {
+    padding: 0.125rem;
+  }
+
+  .mobile-footer-primary nav svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  footer[role="contentinfo"] .mobile-footer-legal {
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+
+  footer[role="contentinfo"] {
+    line-height: 1.2;
+  }
+
+  footer[role="contentinfo"] nav {
+    flex-wrap: wrap;
+  }
+}
+
+/* Restore the three-column footer layout on tablets and desktop. */
+@media (min-width: 640px) {
+  .mobile-footer-primary {
+    display: contents;
+  }
+}

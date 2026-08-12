@@ -2,12 +2,120 @@
  * Faytor SPA - Modular Application State Management & View Routing
  */
 
+window.handleMaskedGeneratorChange = event => {
+  const settings = {
+    'cnpj-with-punctuation': { output: 'cnpj-generated', thumb: 'cnpj-switch-thumb', storage: 'faytor.cnpj.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') },
+    'cns-with-punctuation': { output: 'cns-generated', thumb: 'cns-switch-thumb', storage: 'faytor.cns.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4') },
+    'pis-with-punctuation': { output: 'pis-generated', thumb: 'pis-switch-thumb', storage: 'faytor.pis.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4') },
+    'rg-with-punctuation': { output: 'rg-generated', thumb: 'rg-switch-thumb', storage: 'faytor.rg.preferences', clean: value => value.replace(/[^0-9X]/gi, ''), format: value => value.replace(/^(\d{2})(\d{3})(\d{3})([\dX])$/, '$1.$2.$3-$4') }
+  }[event.target.id];
+  if (!settings) return;
+
+  const checkbox = event.target;
+  const output = document.getElementById(settings.output);
+  const thumb = document.getElementById(settings.thumb);
+  if (!output || !thumb) return;
+
+  const root = output.closest('[x-data]');
+  const viewState = root && window.Alpine ? Alpine.$data(root) : null;
+  if (viewState) viewState.withPunctuation = checkbox.checked;
+  thumb.classList.toggle('translate-x-1', !checkbox.checked);
+  thumb.classList.toggle('translate-x-6', checkbox.checked);
+  const raw = settings.clean(output.value);
+  output.value = checkbox.checked ? settings.format(raw) : raw;
+  localStorage.setItem(settings.storage, JSON.stringify({ withPunctuation: checkbox.checked }));
+};
+
+window.pasteToInput = async inputId => {
+  const input = document.getElementById(inputId);
+  if (!input || !navigator.clipboard) return;
+
+  try {
+    input.value = await navigator.clipboard.readText();
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+  } catch (error) {
+    console.warn('Não foi possível acessar o conteúdo da área de transferência.', error);
+  }
+};
+
+window.handleCnpjFormatChange = event => {
+  window.cnpjGenerator.format = event.target.value;
+  window.saveCnpjPreferences();
+  window.generateCnpj();
+};
+
+window.handleCnpjPunctuationChange = event => {
+  const checkbox = event.target;
+  const output = document.getElementById('cnpj-generated');
+  const thumb = document.getElementById('cnpj-switch-thumb');
+  if (!output || !thumb) return;
+
+  window.cnpjGenerator.withPunctuation = checkbox.checked;
+  window.saveCnpjPreferences();
+  thumb.classList.toggle('translate-x-1', !checkbox.checked);
+  thumb.classList.toggle('translate-x-6', checkbox.checked);
+  output.value = window.formatCnpjValue(output.value.replace(/[^A-Z0-9]/gi, '').toUpperCase());
+};
+
+window.cnpjGenerator = { format: 'numeric', withPunctuation: true };
+
+window.saveCnpjPreferences = () => {
+  localStorage.setItem('faytor.cnpj.preferences', JSON.stringify({
+    format: window.cnpjGenerator.format,
+    withPunctuation: window.cnpjGenerator.withPunctuation
+  }));
+};
+
+window.loadCnpjPreferences = () => {
+  const saved = JSON.parse(localStorage.getItem('faytor.cnpj.preferences') || '{}');
+  window.cnpjGenerator.format = saved.format === 'alphanumeric' ? 'alphanumeric' : 'numeric';
+  window.cnpjGenerator.withPunctuation = saved.withPunctuation !== false;
+};
+
+window.formatCnpjValue = raw => window.cnpjGenerator.withPunctuation
+  ? raw.replace(/^([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+  : raw;
+
+window.generateCnpj = () => {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const valueOf = char => char >= '0' && char <= '9' ? Number(char) : char.charCodeAt(0) - 48;
+  const calculate = (source, weights) => {
+    const sum = source.split('').reduce((total, char, index) => total + valueOf(char) * weights[index], 0);
+    const remainder = sum % 11;
+    return remainder < 2 ? 0 : 11 - remainder;
+  };
+  const root = window.cnpjGenerator.format === 'numeric'
+    ? `${Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('')}0001`
+    : Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const dv1 = calculate(root, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  const dv2 = calculate(`${root}${dv1}`, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+  const output = document.getElementById('cnpj-generated');
+  if (output) output.value = window.formatCnpjValue(`${root}${dv1}${dv2}`);
+};
+
+window.copyCnpj = async () => {
+  const output = document.getElementById('cnpj-generated');
+  const button = document.getElementById('cnpj-copy-button');
+  if (!output || !output.value || !navigator.clipboard) return;
+  await navigator.clipboard.writeText(output.value);
+  if (!button) return;
+  button.classList.remove('bg-primary', 'hover:bg-blue-700', 'border-primary');
+  button.classList.add('bg-emerald-500', 'border-emerald-500');
+  window.setTimeout(() => {
+    button.classList.remove('bg-emerald-500', 'border-emerald-500');
+    button.classList.add('bg-primary', 'hover:bg-blue-700', 'border-primary');
+  }, 2000);
+};
+
 document.addEventListener('alpine:init', () => {
   Alpine.data('appState', () => ({
     // Reactive State
-    currentTab: localStorage.getItem('currentTab') || 'home',
+    currentTab: 'home',
     theme: localStorage.getItem('theme') || 'dark',
     mobileMenuOpen: false,
+    cookieConsent: localStorage.getItem('faytor.cookie-consent') || '',
+    showCookieBanner: false,
 
     // Dynamic View Loading State
     viewContent: '',
@@ -37,6 +145,18 @@ document.addEventListener('alpine:init', () => {
     },
 
     init() {
+      this.showCookieBanner = !this.cookieConsent;
+      if (this.cookieConsent === 'accepted') this.loadAdvertising();
+
+      // Use the URL hash as a deep link, for example: /#gerador-cpf.
+      // This allows a shared/search result link to open the correct tool.
+      const hashTab = window.location.hash.slice(1);
+      const pathTab = window.location.pathname.replace(/^\/+|\/+$/g, '');
+      const initialTab = this.views[pathTab] ? pathTab : hashTab;
+      this.currentTab = this.views[initialTab]
+        ? initialTab
+        : (localStorage.getItem('currentTab') || 'home');
+
       // Initialize layout theme
       this.applyTheme();
 
@@ -52,6 +172,14 @@ document.addEventListener('alpine:init', () => {
       this.$watch('currentTab', val => {
         localStorage.setItem('currentTab', val);
         this.loadView(val);
+      });
+
+      window.addEventListener('hashchange', () => {
+        const tabName = window.location.hash.slice(1);
+        if (this.views[tabName] && tabName !== this.currentTab) {
+          this.currentTab = tabName;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
       });
     },
 
@@ -75,12 +203,38 @@ document.addEventListener('alpine:init', () => {
       this.theme = this.theme === 'dark' ? 'light' : 'dark';
     },
 
+    acceptCookies() {
+      this.cookieConsent = 'accepted';
+      localStorage.setItem('faytor.cookie-consent', this.cookieConsent);
+      this.showCookieBanner = false;
+      this.loadAdvertising();
+    },
+
+    rejectCookies() {
+      this.cookieConsent = 'rejected';
+      localStorage.setItem('faytor.cookie-consent', this.cookieConsent);
+      this.showCookieBanner = false;
+    },
+
+    loadAdvertising() {
+      if (document.querySelector('script[data-faytor-advertising]')) return;
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3673785596412790';
+      script.crossOrigin = 'anonymous';
+      script.dataset.faytorAdvertising = 'true';
+      document.head.appendChild(script);
+    },
+
     /**
      * Set dynamic tab and close mobile drawer
      */
     selectTab(tabName) {
       if (this.views[tabName]) {
         this.currentTab = tabName;
+        if (window.location.hash !== `#${tabName}`) {
+          window.location.hash = tabName;
+        }
         this.mobileMenuOpen = false;
 
         // Return to the page top so the top AdSense banner stays visible.
@@ -109,6 +263,24 @@ document.addEventListener('alpine:init', () => {
             window.setTimeout(() => this.initCpfGenerator(), 0);
           });
         }
+        if (tabName === 'gerador-cnpj') {
+          this.$nextTick(() => {
+            window.setTimeout(() => {
+              window.loadCnpjPreferences();
+              const formatSelect = document.querySelector('[aria-label="Selecionar formato do CNPJ"]');
+              const punctuationCheckbox = document.getElementById('cnpj-with-punctuation');
+              if (formatSelect) formatSelect.value = window.cnpjGenerator.format;
+              if (punctuationCheckbox) punctuationCheckbox.checked = window.cnpjGenerator.withPunctuation;
+              window.generateCnpj();
+              if (punctuationCheckbox) window.handleCnpjPunctuationChange({ target: punctuationCheckbox });
+            }, 0);
+          });
+        }
+        if (['gerador-cns', 'gerador-pis', 'gerador-rg'].includes(tabName)) {
+          this.$nextTick(() => {
+            window.setTimeout(() => this.initMaskedGenerator(tabName), 0);
+          });
+        }
       } catch (err) {
         console.warn('Dynamic fetch blocked or failed. Checking for CORS constraint.', err);
 
@@ -134,10 +306,11 @@ document.addEventListener('alpine:init', () => {
       const stateSelect = document.getElementById('cpf-state');
       const output = document.getElementById('cpf-generated');
       const generateButton = document.getElementById('cpf-generate');
-      const copyButton = document.getElementById('cpf-copy');
+      const generateCopyButton = document.getElementById('cpf-generate-copy');
+      const fieldCopyButton = document.getElementById('cpf-copy-field');
       const switchThumb = document.getElementById('cpf-switch-thumb');
 
-      if (!checkbox || !stateSelect || !output || !generateButton || !copyButton || !switchThumb) return;
+      if (!checkbox || !stateSelect || !output || !generateButton || !generateCopyButton || !fieldCopyButton || !switchThumb) return;
       if (checkbox.dataset.initialized === 'true') return;
 
       const storageKey = 'faytor.cpf.preferences';
@@ -184,9 +357,8 @@ document.addEventListener('alpine:init', () => {
           withPunctuation: checkbox.checked,
           state: stateSelect.value
         }));
-        copyButton.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
-        copyButton.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
-        document.getElementById('cpf-copy-label').textContent = 'Copiar';
+        fieldCopyButton.classList.remove('bg-emerald-500', 'border-emerald-500');
+        fieldCopyButton.classList.add('bg-primary', 'hover:bg-blue-700', 'text-white');
       };
 
       checkbox.addEventListener('change', () => {
@@ -199,21 +371,56 @@ document.addEventListener('alpine:init', () => {
       });
       stateSelect.addEventListener('change', generate);
       generateButton.addEventListener('click', generate);
-      copyButton.addEventListener('click', async () => {
+      const copyCpf = async () => {
         if (!output.value) return;
         await navigator.clipboard.writeText(output.value);
-        copyButton.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
-        copyButton.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-        document.getElementById('cpf-copy-label').textContent = 'Copiado!';
+        fieldCopyButton.classList.remove('bg-primary', 'hover:bg-blue-700');
+        fieldCopyButton.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
         window.setTimeout(() => {
-          copyButton.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
-          copyButton.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300');
-          document.getElementById('cpf-copy-label').textContent = 'Copiar';
+          fieldCopyButton.classList.remove('bg-emerald-500', 'border-emerald-500');
+          fieldCopyButton.classList.add('bg-primary', 'hover:bg-blue-700', 'text-white');
         }, 2000);
+      };
+      fieldCopyButton.addEventListener('click', copyCpf);
+      generateCopyButton.addEventListener('click', async () => {
+        generate();
+        await copyCpf();
       });
 
       checkbox.dataset.initialized = 'true';
       generate();
+    },
+
+    initMaskedGenerator(tabName) {
+      const config = {
+        'gerador-cns': { checkbox: 'cns-with-punctuation', output: 'cns-generated', thumb: 'cns-switch-thumb', storage: 'faytor.cns.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4') },
+        'gerador-pis': { checkbox: 'pis-with-punctuation', output: 'pis-generated', thumb: 'pis-switch-thumb', storage: 'faytor.pis.preferences', clean: value => value.replace(/\D/g, ''), format: raw => raw.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4') },
+        'gerador-rg': { checkbox: 'rg-with-punctuation', output: 'rg-generated', thumb: 'rg-switch-thumb', storage: 'faytor.rg.preferences', clean: value => value.replace(/[^0-9X]/gi, ''), format: raw => raw.replace(/^(\d{2})(\d{3})(\d{3})([\dX])$/, '$1.$2.$3-$4') }
+      }[tabName];
+      if (!config) return;
+
+      const checkbox = document.getElementById(config.checkbox);
+      const output = document.getElementById(config.output);
+      const thumb = document.getElementById(config.thumb);
+      if (!checkbox || !output || !thumb || checkbox.dataset.initialized === 'true') return;
+
+      const updateSwitch = () => {
+        thumb.classList.toggle('translate-x-1', !checkbox.checked);
+        thumb.classList.toggle('translate-x-6', checkbox.checked);
+      };
+      const formatExisting = () => {
+        const raw = config.clean(output.value);
+        output.value = checkbox.checked ? config.format(raw) : raw;
+        output.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
+      const saved = JSON.parse(localStorage.getItem(config.storage) || '{}');
+      checkbox.checked = saved.withPunctuation !== false;
+      const viewState = Alpine.$data(output.closest('[x-data]'));
+      if (viewState) viewState.withPunctuation = checkbox.checked;
+      updateSwitch();
+      checkbox.dataset.initialized = 'true';
+      formatExisting();
     }
   }));
 });

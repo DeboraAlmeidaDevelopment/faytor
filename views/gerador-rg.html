@@ -29,21 +29,22 @@
       }
 
       let raw = digits.join('') + dv;
-      if (this.withPunctuation) {
+      if (document.getElementById('rg-with-punctuation').checked) {
         this.generatedRg = raw.replace(/^(\d{2})(\d{3})(\d{3})([\dX])$/, '$1.$2.$3-$4');
       } else {
         this.generatedRg = raw;
       }
     },
     copy() {
-      if (!this.generatedRg) return;
-      navigator.clipboard.writeText(this.generatedRg);
+      const value = this.generatedRg;
+      if (!value) return;
+      navigator.clipboard.writeText(value);
       this.copied = true;
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
   x-init="generate()"
-  class="space-y-6"
+  class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de RG"
 >
   <div>
@@ -54,35 +55,40 @@
     </p>
   </div>
 
-  <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm max-w-2xl">
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
     <div class="flex flex-col space-y-4">
       <!-- Options -->
-      <div class="flex items-center space-x-6">
-        <label class="inline-flex items-center cursor-pointer select-none">
+      <div class="flex flex-col sm:flex-row items-start justify-start gap-8">
+        <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
-            x-model="withPunctuation"
-            @change="generate()"
-            class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-5 w-5 bg-transparent"
+            checked
+            id="rg-with-punctuation"
+            onchange="window.handleMaskedGeneratorChange(event)"
+            class="peer sr-only"
           >
-          <span class="ml-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação?</span>
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary dark:bg-slate-700" aria-hidden="true"><span id="rg-switch-thumb" class="inline-block h-5 w-5 translate-x-6 rounded-full bg-white shadow-sm transition-transform"></span></span>
         </label>
       </div>
 
       <!-- Generator Box -->
       <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
-        <div class="relative flex-1">
+        <div class="flex flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
           <input
             type="text"
+            id="rg-generated"
             x-model="generatedRg"
             readonly
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
             aria-label="RG Gerado"
           >
+          <button type="button" @click="copy()" class="w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-l text-sm transition-all flex items-center justify-center" :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'" aria-label="Copiar RG gerado"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg></button>
         </div>
 
         <div class="flex gap-2">
           <button
+            type="button"
             @click="generate()"
             class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
             aria-label="Gerar novo RG"
@@ -94,18 +100,15 @@
           </button>
 
           <button
-            @click="copy()"
-            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border"
-            :class="copied
-              ? 'bg-emerald-500 border-emerald-500 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'"
-            aria-label="Copiar RG gerado"
+            type="button"
+            @click="generate(); copy()"
+            class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo RG e copiar para a área de transferência"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path x-show="!copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              <path x-show="copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
             </svg>
-            <span x-text="copied ? 'Copiado!' : 'Copiar'">Copiar</span>
+            <span>Gerar e Copiar</span>
           </button>
         </div>
       </div>
@@ -113,7 +116,7 @@
   </div>
 
   <!-- SEO / Informative Content -->
-  <article class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4 max-w-4xl">
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Como funciona o cálculo do dígito verificador do RG?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
       A verificação do dígito da cédula de identidade (RG) varia de acordo com cada estado brasileiro, não existindo um algoritmo único federal. O padrão paulista (SSP-SP) é composto por 9 caracteres no formato XX.XXX.XXX-Y, onde Y é o dígito verificador (DV).

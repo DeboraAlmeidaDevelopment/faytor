@@ -3,54 +3,53 @@
   x-data="{
     generatedCnpj: '',
     withPunctuation: true,
+    format: 'numeric',
     copied: false,
+    charValue(char) {
+      return char >= '0' && char <= '9' ? Number(char) : char.charCodeAt(0) - 48;
+    },
+    calculateDv(value) {
+      const calculate = (source, weights) => {
+        const sum = source.split('').reduce((total, char, index) => total + this.charValue(char) * weights[index], 0);
+        const remainder = sum % 11;
+        return remainder < 2 ? 0 : 11 - remainder;
+      };
+      const dv1 = calculate(value, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+      const dv2 = calculate(`${value}${dv1}`, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
+      return `${value}${dv1}${dv2}`;
+    },
+    formatValue(raw) {
+      return this.withPunctuation ? raw.replace(/^([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\d{2})$/, '$1.$2.$3/$4-$5') : raw;
+    },
     generate() {
       this.copied = false;
-      let digits = [];
-      // First 8 digits are random numbers
-      for (let i = 0; i < 8; i++) {
-        digits.push(Math.floor(Math.random() * 10));
-      }
-      // Standard CNPJ root suffix (0001 for main branch or random branches)
-      // Usually developers test with 0001
-      digits.push(0, 0, 0, 1);
-
-      // Weights for first verification digit: 5,4,3,2,9,8,7,6,5,4,3,2
-      let weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      let sum = 0;
-      for (let i = 0; i < 12; i++) {
-        sum += digits[i] * weights1[i];
-      }
-      let rem = sum % 11;
-      let dv1 = rem < 2 ? 0 : 11 - rem;
-      digits.push(dv1);
-
-      // Weights for second verification digit: 6,5,4,3,2,9,8,7,6,5,4,3,2
-      let weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      sum = 0;
-      for (let i = 0; i < 13; i++) {
-        sum += digits[i] * weights2[i];
-      }
-      rem = sum % 11;
-      let dv2 = rem < 2 ? 0 : 11 - rem;
-      digits.push(dv2);
-
-      let raw = digits.join('');
-      if (this.withPunctuation) {
-        this.generatedCnpj = raw.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-      } else {
-        this.generatedCnpj = raw;
-      }
+      const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const root = this.format === 'numeric'
+        ? `${Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('')}0001`
+        : Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      this.generatedCnpj = this.formatValue(this.calculateDv(root));
+    },
+    changeFormat() {
+      this.generate();
+    },
+    togglePunctuation() {
+      const checkbox = document.getElementById('cnpj-with-punctuation');
+      this.withPunctuation = checkbox.checked;
+      const thumb = document.getElementById('cnpj-switch-thumb');
+      thumb.classList.toggle('translate-x-1', !checkbox.checked);
+      thumb.classList.toggle('translate-x-6', checkbox.checked);
+      this.generatedCnpj = this.formatValue(this.generatedCnpj.replace(/[^A-Z0-9]/gi, '').toUpperCase());
     },
     copy() {
-      if (!this.generatedCnpj) return;
-      navigator.clipboard.writeText(this.generatedCnpj);
+      const value = this.generatedCnpj;
+      if (!value) return;
+      navigator.clipboard.writeText(value);
       this.copied = true;
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
   x-init="generate()"
-  class="space-y-6"
+  class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de CNPJ"
 >
   <div>
@@ -61,36 +60,64 @@
     </p>
   </div>
 
-  <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm max-w-2xl">
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
     <div class="flex flex-col space-y-4">
       <!-- Options -->
-      <div class="flex items-center space-x-6">
-        <label class="inline-flex items-center cursor-pointer select-none">
+      <div class="flex flex-col sm:flex-row items-start justify-start gap-8">
+        <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
           <input
             type="checkbox"
-            x-model="withPunctuation"
-            @change="generate()"
-            class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-5 w-5 bg-transparent"
+            checked
+            id="cnpj-with-punctuation"
+            onchange="window.handleCnpjPunctuationChange(event)"
+            class="peer sr-only"
           >
-          <span class="ml-2 text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação (máscara)</span>
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Com pontuação?</span>
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:bg-slate-700 dark:peer-focus-visible:ring-offset-darkBg-card dark:peer-checked:bg-primary" aria-hidden="true">
+            <span id="cnpj-switch-thumb" class="inline-block h-5 w-5 translate-x-6 rounded-full bg-white shadow-sm transition-transform"></span>
+          </span>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-64">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Formato</span>
+          <div class="relative">
+            <select onchange="window.handleCnpjFormatChange(event)" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Selecionar formato do CNPJ">
+              <option value="numeric">Numérico (atual)</option>
+              <option value="alphanumeric">Alfanumérico (IN RFB 2.229/2024)</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
         </label>
       </div>
 
       <!-- Generator Box -->
       <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
-        <div class="relative flex-1">
+        <div class="flex flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
           <input
             type="text"
-            x-model="generatedCnpj"
+            id="cnpj-generated"
             readonly
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
             aria-label="CNPJ Gerado"
           >
+          <button
+            type="button"
+            id="cnpj-copy-button"
+            onclick="window.copyCnpj()"
+            class="w-28 flex-shrink-0 bg-primary hover:bg-blue-700 border-primary text-white font-semibold px-3 py-3.5 rounded-none border-l text-sm transition-all flex items-center justify-center"
+            aria-label="Copiar CNPJ gerado"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
+            </svg>
+          </button>
         </div>
 
         <div class="flex gap-2">
           <button
-            @click="generate()"
+            type="button"
+            onclick="window.generateCnpj()"
             class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
             aria-label="Gerar novo CNPJ"
           >
@@ -101,18 +128,15 @@
           </button>
 
           <button
-            @click="copy()"
-            class="flex-1 sm:flex-none font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2 border"
-            :class="copied
-              ? 'bg-emerald-500 border-emerald-500 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'"
-            aria-label="Copiar CNPJ gerado"
+            type="button"
+            onclick="window.generateCnpj(); window.copyCnpj()"
+            class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo CNPJ e copiar para a área de transferência"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path x-show="!copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              <path x-show="copied" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
             </svg>
-            <span x-text="copied ? 'Copiado!' : 'Copiar'">Copiar</span>
+            <span>Gerar e Copiar</span>
           </button>
         </div>
       </div>
@@ -120,7 +144,7 @@
   </div>
 
   <!-- SEO / Informative Content -->
-  <article class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4 max-w-4xl">
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é e como funciona o Gerador de CNPJ?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
       Nossa plataforma disponibiliza um completo <strong>gerador de CNPJ</strong> estruturado com base no algoritmo oficial do Ministério da Fazenda. O número do CNPJ é composto por 14 algarismos divididos em três blocos: os primeiros oito representam o número básico, os quatro seguintes designam a filial (sendo o mais comum o sufixo "0001" representando a matriz) e os dois últimos compõem os dígitos verificadores calculados sob o módulo 11.
