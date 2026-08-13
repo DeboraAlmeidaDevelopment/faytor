@@ -91,14 +91,14 @@
       <label for="cpf-input" class="block text-sm font-bold text-slate-700 dark:text-slate-300">
         Digite o número do CPF para validação:
       </label>
-      <div class="relative flex flex-col gap-3 sm:block sm:relative">
+      <div class="relative flex flex-col gap-0 overflow-hidden rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 sm:block sm:relative sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent">
         <div class="relative flex-1 min-w-0">
           <input
             type="text"
             id="cpf-input"
             x-model="docInput"
             placeholder="Ex: 000.000.000-00 ou apenas números"
-            class="block w-full rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-primary font-mono p-4 pr-12 sm:pr-32 transition-all placeholder-slate-400 dark:placeholder-slate-500"
+            class="block w-full rounded-none border-0 bg-transparent text-slate-900 dark:text-white focus:border-primary focus:ring-primary font-mono p-4 pr-12 sm:rounded-2xl sm:border sm:border-slate-300 sm:dark:border-slate-700 sm:bg-slate-50 sm:dark:bg-slate-900/50 sm:pr-32 transition-all placeholder-slate-400 dark:placeholder-slate-500"
             style="font-size: clamp(14px, 4vw, 18px);"
             aria-describedby="validation-status"
           >
@@ -117,7 +117,7 @@
         <button
           type="button"
           @click="pasteToInput('cpf-input')"
-          class="w-full sm:w-28 sm:absolute sm:inset-y-0 sm:right-0 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 rounded-2xl sm:rounded-r-2xl sm:rounded-l-none border border-primary sm:border-0 sm:border-l sm:border-primary text-sm transition-all flex items-center justify-center space-x-2"
+          class="w-full sm:w-28 sm:absolute sm:inset-y-0 sm:right-0 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 rounded-none border-0 border-t border-primary sm:rounded-r-2xl sm:rounded-l-none sm:border-0 sm:border-l sm:border-primary text-sm transition-all flex items-center justify-center space-x-2"
           aria-label="Colar CPF da área de transferência"
         >
           <span class="text-xs font-bold">Colar</span>
