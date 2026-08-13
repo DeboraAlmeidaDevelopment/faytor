@@ -1,0 +1,178 @@
+<!-- ==================== SUB-VIEW: GERADOR DE NOMES ==================== -->
+<section
+  x-data="{
+    generatedName: '',
+    sex: localStorage.getItem('faytor.nomes.sexo') || 'aleatorio',
+    copied: false,
+    maleNames: [
+      'Gabriel', 'Lucas', 'Pedro', 'Mateus', 'Guilherme', 'Rafael', 'Felipe', 'Thiago',
+      'Bruno', 'Rodrigo', 'André', 'Gustavo', 'Leonardo', 'Daniel', 'Marcos', 'Marcelo',
+      'Fernando', 'Douglas', 'Eduardo', 'Henrique', 'Arthur', 'Bernardo', 'Heitor',
+      'Davi', 'Samuel', 'Lorenzo', 'Enzo', 'Alexandre', 'Ricardo', 'Caio', 'Murilo',
+      'Vinícius', 'Vitor', 'Igor', 'Otávio', 'Luiz', 'João', 'Francisco', 'Antônio', 'Carlos'
+    ],
+    femaleNames: [
+      'Maria', 'Ana', 'Julia', 'Yasmin', 'Beatriz', 'Mariana', 'Leticia', 'Camila',
+      'Amanda', 'Larissa', 'Bruna', 'Isabella', 'Luana', 'Carolina', 'Gabriela', 'Vitória',
+      'Heloisa', 'Alice', 'Sophia', 'Laura', 'Valentina', 'Manuela', 'Helena', 'Giovanna',
+      'Clara', 'Eduarda', 'Nicole', 'Luiza', 'Fernanda', 'Rebeca', 'Lívia', 'Sarah',
+      'Lorena', 'Rafaela', 'Melissa', 'Cecília', 'Esther', 'Emanuelly', 'Isadora'
+    ],
+    surnames: [
+      'Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves', 'Pereira',
+      'Lima', 'Gomes', 'Costa', 'Ribeiro', 'Martins', 'Carvalho', 'Almeida', 'Lopes',
+      'Soares', 'Rocha', 'Dias', 'Nascimento', 'Moreira', 'Nunes', 'Mendes', 'Vieira',
+      'Teixeira', 'Cardoso', 'Araújo', 'Melo', 'Cavalcanti', 'Pinto', 'Cabral', 'Campos',
+      'Figueiredo', 'Andrade', 'Fonseca', 'Barros', 'Miranda', 'Freitas', 'Castro'
+    ],
+    generate() {
+      this.copied = false;
+      let firstList = [];
+      if (this.sex === 'masculino') {
+        firstList = this.maleNames;
+      } else if (this.sex === 'feminino') {
+        firstList = this.femaleNames;
+      } else {
+        firstList = Math.random() < 0.5 ? this.maleNames : this.femaleNames;
+      }
+
+      const firstName = firstList[Math.floor(Math.random() * firstList.length)];
+
+      // Select 1 or 2 unique surnames
+      let s1 = this.surnames[Math.floor(Math.random() * this.surnames.length)];
+      let s2 = this.surnames[Math.floor(Math.random() * this.surnames.length)];
+      while (s1 === s2) {
+        s2 = this.surnames[Math.floor(Math.random() * this.surnames.length)];
+      }
+
+      if (Math.random() < 0.6) {
+        this.generatedName = `${firstName} ${s1} ${s2}`;
+      } else {
+        this.generatedName = `${firstName} ${s1}`;
+      }
+    },
+    saveSex(val) {
+      this.sex = val;
+      localStorage.setItem('faytor.nomes.sexo', val);
+      this.generate();
+    },
+    copy() {
+      const value = this.generatedName;
+      if (!value) return;
+      navigator.clipboard.writeText(value);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="generate()"
+  class="w-full max-w-4xl mx-auto space-y-6"
+  aria-label="Gerador de Nomes"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Identidade</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de Nomes Aleatórios</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">
+      Gere nomes de pessoas realistas (brasileiros) masculinos, femininos ou aleatórios instantaneamente para testes de software e design de interfaces.
+    </p>
+  </div>
+
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex flex-col sm:flex-row items-start justify-start gap-8">
+        <label class="flex w-full flex-col gap-1 sm:w-64">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Gênero / Sexo</span>
+          <div class="relative">
+            <select
+              :value="sex"
+              @change="saveSex($event.target.value)"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none"
+              aria-label="Selecionar gênero para geração de nome"
+            >
+              <option value="aleatorio">Aleatório (Ambos)</option>
+              <option value="feminino">Feminino</option>
+              <option value="masculino">Masculino</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </label>
+      </div>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
+        <div class="flex flex-col sm:flex-row flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+          <input
+            type="text"
+            id="nome-generated"
+            x-model="generatedName"
+            readonly
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            style="font-size: clamp(12px, 4.5vw, 20px);"
+            aria-label="Nome Gerado"
+          >
+          <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-t sm:border-t-0 sm:border-l text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar nome gerado"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
+            </svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            type="button"
+            @click="generate()"
+            class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo nome"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Gerar</span>
+          </button>
+
+          <button
+            type="button"
+            @click="generate(); copy()"
+            class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo nome e copiar para a área de transferência"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
+            </svg>
+            <span>Gerar e Copiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO / Informative Content -->
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Por que utilizar um gerador de nomes brasileiros?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Durante o desenvolvimento de novos sistemas, sites ou aplicativos, é comum a necessidade de preencher bancos de dados de teste ou preencher layouts visuais (como personas e cadastros de usuários) com dados realistas. Criar nomes fictícios de cabeça pode ser repetitivo e levar a padrões limitados. O nosso <strong>gerador de nomes aleatórios</strong> resolve esse problema ao fornecer combinações autênticas de nomes próprios e sobrenomes comumente utilizados no Brasil.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como funciona a geração de nomes com gênero/sexo?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      A nossa ferramenta permite filtrar a criação por gênero/sexo: masculino ou feminino, além da opção padrão de nomes totalmente aleatórios. Ao selecionar uma opção, o sistema cruza um dicionário robusto de prenomes tipicamente masculinos ou femininos com um dicionário de sobrenomes portugueses tradicionais e amplamente difundidos no Brasil (como Silva, Santos, Oliveira, Souza e muitos outros). A combinação aleatória de um prenome e até dois sobrenomes garante milhares de variações possíveis de nomes realistas.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Uso seguro e privacidade garantida</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Diferente de geradores que consultam servidores externos ou expõem dados reais de pessoas físicas, nosso gerador funciona 100% no lado do cliente (client-side) utilizando JavaScript. Nenhuma informação é enviada pela rede, garantindo que o seu fluxo de trabalho seja ultra-rápido, privado e em conformidade com as diretrizes de proteção de dados.
+    </p>
+  </article>
+</section>

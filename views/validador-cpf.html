@@ -91,34 +91,38 @@
       <label for="cpf-input" class="block text-sm font-bold text-slate-700 dark:text-slate-300">
         Digite o número do CPF para validação:
       </label>
-      <div class="relative overflow-hidden rounded-2xl shadow-sm">
-        <input
-          type="text"
-          id="cpf-input"
-          x-model="docInput"
-          placeholder="Ex: 000.000.000-00 ou apenas números"
-          class="block w-full rounded-2xl border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white focus:border-primary focus:ring-primary text-lg font-mono p-4 pr-32 transition-all placeholder-slate-400 dark:placeholder-slate-500"
-          aria-describedby="validation-status"
-        >
+      <div class="relative flex flex-col sm:flex-row items-stretch rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 overflow-hidden shadow-sm">
+        <div class="relative flex-1 min-w-0 flex items-center">
+          <input
+            type="text"
+            id="cpf-input"
+            x-model="docInput"
+            placeholder="Ex: 000.000.000-00 ou apenas números"
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-4 font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-0 placeholder-slate-400 dark:placeholder-slate-500"
+            style="font-size: clamp(14px, 4vw, 18px);"
+            aria-describedby="validation-status"
+          >
+          <!-- Clear Button -->
+          <button
+            x-show="docInput.length > 0"
+            @click="clearAll()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            aria-label="Limpar campo"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         <button
           type="button"
           @click="pasteToInput('cpf-input')"
-          class="absolute inset-y-0 right-0 w-28 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 rounded-r-2xl border-l border-primary text-sm transition-all flex items-center justify-center space-x-2"
+          class="w-full sm:w-28 flex-shrink-0 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 rounded-none border-t sm:border-t-0 sm:border-l border-slate-300 dark:border-slate-700 text-sm transition-all flex items-center justify-center space-x-2"
           aria-label="Colar CPF da área de transferência"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <span class="text-xs font-bold">Colar</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-5-2h4a1 1 0 011 1v1H9V4a1 1 0 011-1zM7 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1M9 12h6m-6 4h4" />
-          </svg>
-        </button>
-        <!-- Clear Button -->
-        <button
-          x-show="docInput.length > 0"
-          @click="clearAll()"
-          class="absolute inset-y-0 right-28 z-10 w-10 p-0 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-          aria-label="Limpar campo"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>

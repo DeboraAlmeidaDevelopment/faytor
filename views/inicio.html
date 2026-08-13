@@ -164,6 +164,81 @@
         </button>
       </article>
 
+      <!-- Names Generator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Gerador de Nomes</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Gere nomes brasileiros (masculinos, femininos ou aleatórios) altamente realistas com um único clique.
+          </p>
+        </div>
+        <button
+          @click="selectTab('gerador-nomes')"
+          class="mt-6 text-xs font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Gerador de Nomes"
+        >
+          Abrir ferramenta
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- Cell phone Generator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Gerador de Celular</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Gere números de telefones celulares válidos de qualquer estado brasileiro, formatados ou brutos.
+          </p>
+        </div>
+        <button
+          @click="selectTab('gerador-celular')"
+          class="mt-6 text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Gerador de Celular"
+        >
+          Abrir ferramenta
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
+      <!-- Email Generator Card -->
+      <article class="bg-white dark:bg-darkBg-card p-6 rounded-2xl border border-slate-200 dark:border-darkBg-border shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all group flex flex-col justify-between">
+        <div>
+          <div class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" aria-hidden="true">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Gerador de E-mail</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Gere endereços de e-mail fictícios extremamente realistas com domínios populares como Gmail, Hotmail, Yahoo e Outlook.
+          </p>
+        </div>
+        <button
+          @click="selectTab('gerador-email')"
+          class="mt-6 text-xs font-semibold text-violet-600 dark:text-violet-400 group-hover:underline flex items-center self-start"
+          aria-label="Abrir Gerador de E-mail"
+        >
+          Abrir ferramenta
+          <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </article>
+
     </div>
   </div>
 

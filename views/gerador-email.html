@@ -1,0 +1,189 @@
+<!-- ==================== SUB-VIEW: GERADOR DE E-MAIL ==================== -->
+<section
+  x-data="{
+    generatedEmail: '',
+    domain: localStorage.getItem('faytor.email.domain') || 'random',
+    copied: false,
+    maleNames: [
+      'gabriel', 'lucas', 'pedro', 'mateus', 'guilherme', 'rafael', 'felipe', 'thiago',
+      'bruno', 'rodrigo', 'andre', 'gustavo', 'leonardo', 'daniel', 'marcos', 'marcelo',
+      'fernando', 'douglas', 'eduardo', 'henrique', 'arthur', 'bernardo', 'heitor',
+      'davi', 'samuel', 'lorenzo', 'enzo', 'alexandre', 'ricardo', 'caio', 'murilo',
+      'vinicius', 'vitor', 'igor', 'otavio', 'luiz', 'joao', 'francisco', 'antonio', 'carlos'
+    ],
+    femaleNames: [
+      'maria', 'ana', 'julia', 'yasmin', 'beatriz', 'mariana', 'leticia', 'camila',
+      'amanda', 'larissa', 'bruna', 'isabella', 'luana', 'carolina', 'gabriela', 'vitoria',
+      'heloisa', 'alice', 'sophia', 'laura', 'valentina', 'manuela', 'helena', 'giovanna',
+      'clara', 'eduarda', 'nicole', 'luiza', 'fernanda', 'rebeca', 'livia', 'sarah',
+      'lorena', 'rafaela', 'melissa', 'cecilia', 'esther', 'emanuelly', 'isadora'
+    ],
+    surnames: [
+      'silva', 'santos', 'oliveira', 'souza', 'rodrigues', 'ferreira', 'alves', 'pereira',
+      'lima', 'gomes', 'costa', 'ribeiro', 'martins', 'carvalho', 'almeida', 'lopes',
+      'soares', 'rocha', 'dias', 'nascimento', 'moreira', 'nunes', 'mendes', 'vieira',
+      'teixeira', 'cardoso', 'araujo', 'melo', 'cavalcanti', 'pinto', 'cabral', 'campos',
+      'figueiredo', 'andrade', 'fonseca', 'barros', 'miranda', 'freitas', 'castro'
+    ],
+    domains: [
+      '@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com.br',
+      '@bol.com.br', '@uol.com.br', '@terra.com.br', '@ig.com.br',
+      '@proton.me', '@icloud.com'
+    ],
+    generate() {
+      this.copied = false;
+      const isMale = Math.random() < 0.5;
+      const first = isMale
+        ? this.maleNames[Math.floor(Math.random() * this.maleNames.length)]
+        : this.femaleNames[Math.floor(Math.random() * this.femaleNames.length)];
+      const last = this.surnames[Math.floor(Math.random() * this.surnames.length)];
+
+      const formats = [
+        `${first}.${last}`,
+        `${first}${last}`,
+        `${first}_${last}`,
+        `${first}${Math.floor(Math.random() * 90) + 10}`,
+        `${first}.${last}${Math.floor(Math.random() * 900) + 99}`
+      ];
+      const username = formats[Math.floor(Math.random() * formats.length)];
+
+      let selectedDomain = this.domain;
+      if (selectedDomain === 'random') {
+        selectedDomain = this.domains[Math.floor(Math.random() * this.domains.length)];
+      }
+
+      this.generatedEmail = `${username}${selectedDomain}`;
+    },
+    saveDomain(val) {
+      this.domain = val;
+      localStorage.setItem('faytor.email.domain', val);
+      this.generate();
+    },
+    copy() {
+      const value = this.generatedEmail;
+      if (!value) return;
+      navigator.clipboard.writeText(value);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="generate()"
+  class="w-full max-w-4xl mx-auto space-y-6"
+  aria-label="Gerador de E-mail"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Internet</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de E-mail</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">
+      Gere endereços de e-mail temporários e fictícios com domínios populares em segundos para testes de sistemas e desenvolvimento web.
+    </p>
+  </div>
+
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex flex-col sm:flex-row items-start justify-start gap-8">
+        <label class="flex w-full flex-col gap-1 sm:w-64">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Domínio do E-mail</span>
+          <div class="relative">
+            <select
+              :value="domain"
+              @change="saveDomain($event.target.value)"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none"
+              aria-label="Selecionar domínio de e-mail"
+            >
+              <option value="random">Aleatório (Vários Provedores)</option>
+              <option value="@gmail.com">@gmail.com</option>
+              <option value="@hotmail.com">@hotmail.com</option>
+              <option value="@outlook.com">@outlook.com</option>
+              <option value="@yahoo.com.br">@yahoo.com.br</option>
+              <option value="@bol.com.br">@bol.com.br</option>
+              <option value="@uol.com.br">@uol.com.br</option>
+              <option value="@terra.com.br">@terra.com.br</option>
+              <option value="@ig.com.br">@ig.com.br</option>
+              <option value="@proton.me">@proton.me</option>
+              <option value="@icloud.com">@icloud.com</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </label>
+      </div>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
+        <div class="flex flex-col sm:flex-row flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+          <input
+            type="text"
+            id="email-generated"
+            x-model="generatedEmail"
+            readonly
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            style="font-size: clamp(10px, 3.5vw, 18px);"
+            aria-label="E-mail Gerado"
+          >
+          <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-t sm:border-t-0 sm:border-l text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar e-mail gerado"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
+            </svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            type="button"
+            @click="generate()"
+            class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo e-mail"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Gerar</span>
+          </button>
+
+          <button
+            type="button"
+            @click="generate(); copy()"
+            class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2"
+            aria-label="Gerar novo e-mail e copiar para a área de transferência"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
+            </svg>
+            <span>Gerar e Copiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEO / Informative Content -->
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Por que utilizar um gerador de e-mail temporário de testes?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      No ciclo de desenvolvimento de sistemas modernos de TI, testes de login, fluxos de cadastros, validação de regras de negócios e assinaturas dependem diretamente de inserções de endereços de correios eletrônicos. Usar o mesmo e-mail repetidas vezes pode poluir as bases de dados ou gerar conflitos de unicidade de dados. Nosso <strong>gerador de e-mail</strong> resolve isso ao prover dados fictícios instantâneos com layouts extremamente parecidos com endereços reais de usuários ativos.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Quais domínios e formatos de e-mail são fornecidos?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      A nossa ferramenta permite criar endereços eletrônicos baseados em domínios nacionais e internacionais amplamente utilizados pela população, incluindo as opções de Gmail, Hotmail, Outlook, Yahoo, BOL, UOL, Terra, IG, Proton e iCloud. A composição da parte local (o nome de usuário do e-mail) cruza formatos comuns contendo nomes e sobrenomes brasileiros reais combinados com pontos, sublinhados ou anos de nascimento randômicos.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Conformidade e segurança LGPD</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      A privacidade e a segurança das suas informações e testes são de extrema relevância. Por operar em processamento local direto no seu navegador sem realizar chamadas externas ao servidor, garantimos que nenhum dado é armazenado temporariamente ou compartilhado com terceiros. A ferramenta é livre de rastreamento, tornando-se segura e alinhada às melhores diretrizes de proteção e privacidade de dados em desenvolvimento de TI.
+    </p>
+  </article>
+</section>

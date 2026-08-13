@@ -73,16 +73,31 @@
 
       <!-- Generator Box -->
       <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
-        <div class="flex flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+        <div class="flex flex-col sm:flex-row flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
           <input
             type="text"
             id="pis-generated"
             x-model="generatedPis"
             readonly
-            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            style="font-size: clamp(14px, 5vw, 24px);"
             aria-label="PIS Gerado"
           >
-          <button type="button" @click="copy()" class="w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-l text-sm transition-all flex items-center justify-center" :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'" aria-label="Copiar PIS gerado"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg></button>
+          <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-t sm:border-t-0 sm:border-l text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar PIS gerado"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />
+            </svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
         </div>
 
         <div class="flex gap-2">
