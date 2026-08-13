@@ -102,19 +102,20 @@
 
       <!-- Generator Box -->
       <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
-        <div class="flex flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+        <div class="flex flex-col sm:flex-row flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
           <input
             type="text"
             id="nome-generated"
             x-model="generatedName"
             readonly
-            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-sm sm:text-base md:text-xl lg:text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            style="font-size: clamp(12px, 4.5vw, 20px);"
             aria-label="Nome Gerado"
           >
           <button
             type="button"
             @click="copy()"
-            class="w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-l text-sm transition-all flex items-center justify-center space-x-1"
+            class="w-full sm:w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-t sm:border-t-0 sm:border-l text-sm transition-all flex items-center justify-center space-x-1"
             :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
             aria-label="Copiar nome gerado"
           >
