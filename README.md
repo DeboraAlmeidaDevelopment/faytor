@@ -60,7 +60,17 @@ npm run watch
 
 ### 3. Iniciar o servidor local
 
-#### Opção 1: Python
+#### Opção recomendada: servidor SPA do projeto
+
+Use o servidor incluído no projeto. Ele entrega `index.html` quando uma rota interna, como `/gerador-celular`, é atualizada:
+
+```bash
+npm run dev
+```
+
+Depois, abra [http://localhost:8080](http://localhost:8080).
+
+#### Opção alternativa: Python
 
 Tenha o [Python 3](https://www.python.org/downloads/) instalado. O Python é usado apenas para servir os arquivos por HTTP.
 
@@ -96,7 +106,7 @@ Na primeira execução, o `npx` pode solicitar autorização para baixar o pacot
 
 Não há um comando `setup` separado. Em uma instalação nova, execute `npm install` e depois `npm run build` antes de iniciar o servidor.
 
-O servidor HTTP local é necessário porque a aplicação carrega as subviews de `views/` usando `fetch`. Abrir o `index.html` diretamente pelo explorador de arquivos (`file://`) pode bloquear esse carregamento por causa das políticas do navegador.
+O servidor HTTP local é necessário porque a aplicação carrega as subviews de `views/` usando `fetch`. Para testar e atualizar rotas internas, use `npm run dev`; o `python -m http.server` não possui fallback de SPA e retorna 404 nessas URLs. Abrir o `index.html` diretamente pelo explorador de arquivos (`file://`) também pode bloquear o carregamento por causa das políticas do navegador.
 
 ## Estrutura principal
 
