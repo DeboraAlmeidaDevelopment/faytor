@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "dev": "node server.mjs",
     "build": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --minify",
     "watch": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --watch"
   },
