@@ -147,24 +147,53 @@ document.addEventListener('alpine:init', () => {
       'sobre-nos': 'views/sobre-nos.html'
     },
 
+    // Descriptive, SEO-friendly page titles
+    titles: {
+      home: 'Faytor - Base SPA de Ferramentas e Utilitários de Alta Performance',
+      wordcounter: 'Contador de Palavras - Ferramenta Online Grátis | Faytor',
+      jsonformatter: 'Formatador JSON - Formatar, Validar e Visualizar JSON | Faytor',
+      base64: 'Codificador e Decodificador Base64 Online | Faytor',
+      'gerador-cpf': 'Gerador de CPF Online - Gerar CPF Válido para Testes | Faytor',
+      'gerador-cnpj': 'Gerador de CNPJ Online - Gerar CNPJ Válido para Testes | Faytor',
+      'gerador-cns': 'Gerador de CNS Online - Cartão Nacional de Saúde | Faytor',
+      'gerador-rg': 'Gerador de RG Online - Gerar Registro Geral para Testes | Faytor',
+      'gerador-pis': 'Gerador de PIS/PASEP Online - Gerar PIS Válido | Faytor',
+      'gerador-nomes': 'Gerador de Nomes Online - Nomes Fictícios Aleatórios | Faytor',
+      'gerador-celular': 'Gerador de Celular Online - Números de Telefone Válidos | Faytor',
+      'gerador-email': 'Gerador de E-mail Temporário e Aleatório | Faytor',
+      'validador-cpf': 'Validador de CPF Online - Verificar CPF Válido | Faytor',
+      'validador-cnpj': 'Validador de CNPJ Online - Verificar CNPJ Válido | Faytor',
+      'validador-cns': 'Validador de CNS Online - Verificar Cartão de Saúde | Faytor',
+      'validador-rg': 'Validador de RG Online - Verificar Registro Geral | Faytor',
+      'validador-pis': 'Validador de PIS/PASEP Online - Verificar PIS Válido | Faytor',
+      'politica-de-privacidade': 'Política de Privacidade | Faytor',
+      'termos-de-uso': 'Termos de Uso | Faytor',
+      'contato': 'Contato - Fale Conosco | Faytor',
+      'sobre-nos': 'Sobre Nós - Conheça o Faytor | Faytor'
+    },
+
     init() {
       this.showCookieBanner = !this.cookieConsent;
       if (this.cookieConsent === 'accepted') this.loadAdvertising();
 
-      // Use the URL hash as a deep link, for example: /#gerador-cpf.
-      // This allows a shared/search result link to open the correct tool.
+      // Retrieve deep-link tab name using URL pathname or legacy hash fallback
       const hashTab = window.location.hash.slice(1);
       const pathTab = window.location.pathname.replace(/^\/+|\/+$/g, '');
-      const initialTab = this.views[pathTab] ? pathTab : hashTab;
-      this.currentTab = this.views[initialTab]
-        ? initialTab
-        : (localStorage.getItem('currentTab') || 'home');
+      const initialTab = this.views[pathTab] ? pathTab : (this.views[hashTab] ? hashTab : 'home');
+      this.currentTab = initialTab;
+
+      // Clean browser address bar if using legacy hash
+      if (hashTab && this.views[hashTab]) {
+        const newPath = hashTab === 'home' ? '/' : `/${hashTab}`;
+        window.history.replaceState({ tab: hashTab }, '', newPath);
+      }
 
       // Initialize layout theme
       this.applyTheme();
 
-      // Load initial view content
+      // Load initial view content and update tab title
       this.loadView(this.currentTab);
+      this.updateTitle(this.currentTab);
 
       // Watchers for persistent state storage
       this.$watch('theme', val => {
@@ -175,15 +204,22 @@ document.addEventListener('alpine:init', () => {
       this.$watch('currentTab', val => {
         localStorage.setItem('currentTab', val);
         this.loadView(val);
+        this.updateTitle(val);
       });
 
-      window.addEventListener('hashchange', () => {
-        const tabName = window.location.hash.slice(1);
-        if (this.views[tabName] && tabName !== this.currentTab) {
+      window.addEventListener('popstate', (event) => {
+        const pathTab = window.location.pathname.replace(/^\/+|\/+$/g, '');
+        const tabName = this.views[pathTab] ? pathTab : 'home';
+        if (tabName !== this.currentTab) {
           this.currentTab = tabName;
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
+    },
+
+    updateTitle(tabName) {
+      const title = this.titles[tabName] || this.titles.home;
+      document.title = title;
     },
 
     /**
@@ -235,8 +271,9 @@ document.addEventListener('alpine:init', () => {
     selectTab(tabName) {
       if (this.views[tabName]) {
         this.currentTab = tabName;
-        if (window.location.hash !== `#${tabName}`) {
-          window.location.hash = tabName;
+        const newPath = tabName === 'home' ? '/' : `/${tabName}`;
+        if (window.location.pathname !== newPath) {
+          window.history.pushState({ tab: tabName }, '', newPath);
         }
         this.mobileMenuOpen = false;
 
