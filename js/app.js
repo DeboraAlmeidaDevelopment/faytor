@@ -149,7 +149,7 @@ document.addEventListener('alpine:init', () => {
 
     // Descriptive, SEO-friendly page titles
     titles: {
-      home: 'Faytor - Base SPA de Ferramentas e Utilitários de Alta Performance',
+      home: 'Faytor - Ferramentas e Utilitários de Alta Performance',
       wordcounter: 'Contador de Palavras - Ferramenta Online Grátis | Faytor',
       jsonformatter: 'Formatador JSON - Formatar, Validar e Visualizar JSON | Faytor',
       base64: 'Codificador e Decodificador Base64 Online | Faytor',
@@ -170,6 +170,30 @@ document.addEventListener('alpine:init', () => {
       'termos-de-uso': 'Termos de Uso | Faytor',
       'contato': 'Contato - Fale Conosco | Faytor',
       'sobre-nos': 'Sobre Nós - Conheça o Faytor | Faytor'
+    },
+
+    descriptions: {
+      home: 'Faytor reúne ferramentas online gratuitas para geração, validação e utilidades do dia a dia.',
+      wordcounter: 'Conte palavras, caracteres e parágrafos online com o contador de palavras gratuito do Faytor.',
+      jsonformatter: 'Formate, valide e visualize JSON online de forma rápida e gratuita.',
+      base64: 'Codifique e decodifique textos em Base64 online gratuitamente.',
+      'gerador-cpf': 'Gere números de CPF válidos para testes e desenvolvimento.',
+      'gerador-cnpj': 'Gere números de CNPJ válidos para testes e desenvolvimento.',
+      'gerador-cns': 'Gere números de CNS válidos para testes e desenvolvimento.',
+      'gerador-rg': 'Gere números de RG fictícios para testes e desenvolvimento.',
+      'gerador-pis': 'Gere números de PIS/PASEP válidos para testes e desenvolvimento.',
+      'gerador-nomes': 'Gere nomes fictícios aleatórios online para testes e desenvolvimento.',
+      'gerador-celular': 'Gere números de celular fictícios para testes e desenvolvimento.',
+      'gerador-email': 'Gere endereços de e-mail fictícios e aleatórios para testes.',
+      'validador-cpf': 'Valide números de CPF online de forma rápida e gratuita.',
+      'validador-cnpj': 'Valide números de CNPJ online de forma rápida e gratuita.',
+      'validador-cns': 'Valide números de CNS online de forma rápida e gratuita.',
+      'validador-rg': 'Confira números de RG online para testes e desenvolvimento.',
+      'validador-pis': 'Valide números de PIS/PASEP online de forma rápida e gratuita.',
+      'politica-de-privacidade': 'Leia a política de privacidade do Faytor.',
+      'termos-de-uso': 'Leia os termos de uso do Faytor.',
+      contato: 'Entre em contato com a equipe do Faytor.',
+      'sobre-nos': 'Conheça o Faytor e suas ferramentas online gratuitas.'
     },
 
     init() {
@@ -193,7 +217,7 @@ document.addEventListener('alpine:init', () => {
 
       // Load initial view content and update tab title
       this.loadView(this.currentTab);
-      this.updateTitle(this.currentTab);
+      this.updateMetadata(this.currentTab);
 
       // Watchers for persistent state storage
       this.$watch('theme', val => {
@@ -204,7 +228,7 @@ document.addEventListener('alpine:init', () => {
       this.$watch('currentTab', val => {
         localStorage.setItem('currentTab', val);
         this.loadView(val);
-        this.updateTitle(val);
+        this.updateMetadata(val);
       });
 
       window.addEventListener('popstate', (event) => {
@@ -220,6 +244,23 @@ document.addEventListener('alpine:init', () => {
     updateTitle(tabName) {
       const title = this.titles[tabName] || this.titles.home;
       document.title = title;
+    },
+
+    updateMetadata(tabName) {
+      const title = this.titles[tabName] || this.titles.home;
+      const description = this.descriptions[tabName] || this.descriptions.home;
+      const path = tabName === 'home' ? '/' : `/${tabName}`;
+      const canonical = new URL(path, window.location.origin).href;
+
+      document.title = title;
+      document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+      document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical);
+      document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+      document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+      document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonical);
+      document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', title);
+      document.querySelector('meta[property="twitter:description"]')?.setAttribute('content', description);
+      document.querySelector('meta[property="twitter:url"]')?.setAttribute('content', canonical);
     },
 
     /**
