@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{{CODE}} - {{TITLE}} | Faytor</title>
+  <link rel="icon" type="image/svg+xml" href="/img/logo-icon.svg">
+  <script>
+    (() => {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'light') document.documentElement.classList.remove('dark');
+    })();
+  </script>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    :root:not(.dark) { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; color: #e2e8f0; background: #0f172a; }
+    :root:not(.dark) body { color: #0f172a; background: #f8fafc; }
+    main { width: min(100%, 620px); text-align: center; }
+    .brand-row { display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 48px; }
+    .brand { display: block !important; width: 174px !important; height: 60px; min-height: 0; margin: 0; padding: 0; border-radius: 0; color: #fff; background: transparent; text-decoration: none; }
+    :root:not(.dark) .brand { color: #1e293b; }
+    .brand img { position: static; display: block; width: 174px; height: 60px; margin: 0; object-fit: contain; }
+    .brand .logo-dark { display: block; }
+    .brand .logo-light { display: none; }
+    :root:not(.dark) .brand .logo-dark { display: none; }
+    :root:not(.dark) .brand .logo-light { display: block; }
+    .code { display: block; width: 100%; margin: 0 auto; text-align: center; color: #93c5fd; font-size: clamp(6rem, 24vw, 10rem); line-height: .85; letter-spacing: -.08em; font-weight: 900; }
+    :root:not(.dark) .code { color: #2563eb; }
+    h1 { margin: 32px 0 12px; color: #f8fafc; font-size: clamp(1.5rem, 5vw, 2.25rem); }
+    :root:not(.dark) h1 { color: #0f172a; }
+    p { margin: 0 auto; max-width: 500px; color: #94a3b8; font-size: 1.05rem; line-height: 1.7; }
+    :root:not(.dark) p { color: #475569; }
+    .actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    a { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 22px; border-radius: 12px; color: #fff; background: linear-gradient(135deg, #2563eb, #7c3aed); text-decoration: none; font-weight: 700; }
+    button { min-height: 46px; padding: 0 22px; border: 1px solid #334155; border-radius: 12px; color: #cbd5e1; background: #1e293b; font: inherit; font-weight: 700; cursor: pointer; }
+    :root:not(.dark) button { border-color: #cbd5e1; color: #334155; background: #fff; }
+    a:focus-visible, button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand-row">
+      <a class="brand" href="/" aria-label="Voltar para a página inicial da Faytor">
+        <img class="logo-light" src="/img/logo.svg" alt="Faytor">
+        <img class="logo-dark" src="/img/logo-dark.svg" alt="Faytor">
+      </a>
+    </div>
+    <p class="code" aria-hidden="true">{{CODE}}</p>
+    <h1>{{TITLE}}</h1>
+    <p>{{MESSAGE}}</p>
+    <div class="actions">
+      <a href="/">Voltar para o início</a>
+      <button type="button" onclick="history.back()">Voltar à página anterior</button>
+    </div>
+  </main>
+</body>
+</html>

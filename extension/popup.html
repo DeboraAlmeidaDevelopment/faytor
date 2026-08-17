@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Faytor - CPF para testes</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup">
+      <p class="eyebrow">Faytor</p>
+      <h1>CPF para testes</h1>
+      <p class="description">
+        Gere um CPF fictício e preencha o campo de CPF da página atual.
+      </p>
+
+      <label class="option">
+        <input id="with-punctuation" type="checkbox" checked>
+        <span>Usar pontuação</span>
+      </label>
+
+      <button id="fill-cpf" type="button">Gerar e preencher CPF</button>
+      <output id="status" class="status" aria-live="polite"></output>
+
+      <p class="notice">
+        Uso exclusivo em testes e desenvolvimento. Não use dados fictícios em cadastros reais.
+      </p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

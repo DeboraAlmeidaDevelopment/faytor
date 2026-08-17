@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Faytor - Ferramentas online</title>
+  <desc id="desc">Ferramentas online gratuitas para geração, validação e utilidades.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="1040" cy="80" r="250" fill="#2563eb" opacity=".12"/>
+  <circle cx="100" cy="590" r="230" fill="#7c3aed" opacity=".12"/>
+  <rect x="140" y="180" width="150" height="150" rx="34" fill="url(#brand)"/>
+  <rect x="185" y="220" width="22" height="75" rx="11" fill="#fff"/>
+  <rect x="185" y="220" width="60" height="22" rx="11" fill="#fff"/>
+  <rect x="185" y="252" width="45" height="20" rx="10" fill="#fff" opacity=".8"/>
+  <circle cx="234" cy="287" r="17" fill="#93c5fd"/>
+  <text x="340" y="292" fill="#fff" font-family="Arial, sans-serif" font-size="104" font-weight="800">Faytor</text>
+  <text x="145" y="430" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="38">Ferramentas online gratuitas para o seu dia a dia</text>
+</svg>

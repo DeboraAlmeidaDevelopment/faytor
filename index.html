@@ -12,18 +12,36 @@
   <meta name="robots" content="index, follow">
   <meta name="google-adsense-account" content="ca-pub-3673785596412790">
   <link rel="canonical" href="https://faytor.com.br/">
+  <link rel="preload" as="image" href="https://faytor.com.br/img/social-card.svg" fetchpriority="high">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://faytor.com.br/">
   <meta property="og:title" content="Faytor - Ferramentas e Utilitários de Alta Performance">
   <meta property="og:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
+  <meta property="og:image" content="https://faytor.com.br/img/social-card.svg">
+  <meta property="og:image:alt" content="Faytor - Ferramentas online">
+  <meta property="og:image:type" content="image/svg+xml">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://faytor.com.br/">
   <meta property="twitter:title" content="Faytor - Ferramentas e Utilitários de Alta Performance">
   <meta property="twitter:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
+  <meta property="twitter:image" content="https://faytor.com.br/img/social-card.svg">
+  <meta property="twitter:image:alt" content="Faytor - Ferramentas online">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Faytor",
+    "url": "https://faytor.com.br/",
+    "logo": "https://faytor.com.br/img/logo-icon.svg"
+  }
+  </script>
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="img/logo-icon.svg">
@@ -57,11 +75,11 @@
 
     <!-- MOBILE TOP BAR -->
     <header class="lg:hidden flex items-center justify-between px-6 py-4 bg-white dark:bg-darkBg-card border-b border-slate-200 dark:border-darkBg-border sticky top-0 z-40">
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center">
         <!-- Brand Logo Icon -->
-        <div class="w-56 h-14 flex-shrink-0">
-          <img x-show="theme === 'light'" class="w-56 h-14" src="img/logo.svg" alt="Faytor">
-          <img x-show="theme === 'dark'" class="w-56 h-14" src="img/logo-dark.svg" alt="Faytor">
+        <div class="w-40 h-14 flex-shrink-0">
+          <img x-show="theme === 'light'" class="w-40 h-14" src="img/logo.svg" alt="Faytor">
+          <img x-show="theme === 'dark'" class="w-40 h-14" src="img/logo-dark.svg" alt="Faytor">
         </div>
       </div>
 
@@ -108,12 +126,10 @@
       aria-label="Navegação Principal Lateral"
     >
       <!-- Sidebar Header (Logo) -->
-      <div class="relative flex items-center px-4 py-3 border-b border-slate-200 dark:border-darkBg-border">
-        <div class="flex items-center pr-8">
-          <div class="w-40 h-10 flex-shrink-0">
-            <img x-show="theme === 'light'" class="w-40 h-10" src="img/logo.svg" alt="Faytor">
-            <img x-show="theme === 'dark'" class="w-40 h-10" src="img/logo-dark.svg" alt="Faytor">
-          </div>
+      <div class="relative flex items-center justify-start px-4 py-3 border-b border-slate-200 dark:border-darkBg-border">
+        <div class="w-[114px] h-10 flex-shrink-0">
+          <img x-show="theme === 'light'" class="w-[114px] h-10" src="img/logo.svg" alt="Faytor">
+          <img x-show="theme === 'dark'" class="w-[114px] h-10" src="img/logo-dark.svg" alt="Faytor">
         </div>
 
         <!-- Mobile close button inside sidebar -->
