@@ -250,10 +250,12 @@ document.addEventListener('alpine:init', () => {
       const title = this.titles[tabName] || this.titles.home;
       const description = this.descriptions[tabName] || this.descriptions.home;
       const path = tabName === 'home' ? '/' : `/${tabName}`;
-      const canonical = new URL(path, window.location.origin).href;
+      const canonical = new URL(path, 'https://faytor.com.br').href;
+      const noindexRoutes = ['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos'];
 
       document.title = title;
       document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+      document.querySelector('meta[name="robots"]')?.setAttribute('content', noindexRoutes.includes(tabName) ? 'noindex, follow' : 'index, follow');
       document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical);
       document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
       document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
@@ -261,6 +263,8 @@ document.addEventListener('alpine:init', () => {
       document.querySelector('meta[property="twitter:title"]')?.setAttribute('content', title);
       document.querySelector('meta[property="twitter:description"]')?.setAttribute('content', description);
       document.querySelector('meta[property="twitter:url"]')?.setAttribute('content', canonical);
+      document.querySelector('meta[property="og:image:alt"]')?.setAttribute('content', `${title} - Faytor`);
+      document.querySelector('meta[property="twitter:image:alt"]')?.setAttribute('content', `${title} - Faytor`);
     },
 
     /**

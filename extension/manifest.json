@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Faytor - CPF para testes",
+  "version": "0.1.0",
+  "description": "Gera e preenche um CPF fictício em um campo de formulário para testes.",
+  "action": {
+    "default_title": "Faytor - CPF para testes",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ]
+}
