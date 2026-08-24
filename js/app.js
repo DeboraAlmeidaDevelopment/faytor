@@ -119,6 +119,7 @@ document.addEventListener('alpine:init', () => {
 
     // Dynamic View Loading State
     viewContent: '',
+    serverViewContent: '',
     isLoading: false,
     corsFallback: false, // Set to true if local file access CORS policy blocks dynamic loading
 
@@ -198,7 +199,10 @@ document.addEventListener('alpine:init', () => {
 
     init() {
       this.showCookieBanner = !this.cookieConsent;
-      if (this.cookieConsent === 'accepted') this.loadAdvertising();
+
+      // O servidor entrega a view completa na primeira resposta. Mantemos esse
+      // conteúdo para evitar que a rota pareça vazia antes do JavaScript rodar.
+      this.serverViewContent = document.getElementById('server-view-content')?.innerHTML.trim() || '';
 
       // Retrieve deep-link tab name using URL pathname or legacy hash fallback
       const hashTab = window.location.hash.slice(1);
@@ -302,6 +306,8 @@ document.addEventListener('alpine:init', () => {
 
     loadAdvertising() {
       if (document.querySelector('script[data-faytor-advertising]')) return;
+      const nonContentRoutes = ['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos'];
+      if (nonContentRoutes.includes(this.currentTab) || this.isLoading || !this.viewContent.trim()) return;
       const script = document.createElement('script');
       script.async = true;
       script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3673785596412790';
@@ -333,6 +339,14 @@ document.addEventListener('alpine:init', () => {
     async loadView(tabName) {
       const url = this.views[tabName];
       if (!url) return;
+
+      if (tabName === this.currentTab && this.serverViewContent) {
+        this.viewContent = this.serverViewContent;
+        this.serverViewContent = '';
+        this.isLoading = false;
+        if (this.cookieConsent === 'accepted') this.loadAdvertising();
+        return;
+      }
 
       this.isLoading = true;
       this.corsFallback = false;
@@ -380,6 +394,7 @@ document.addEventListener('alpine:init', () => {
         }
       } finally {
         this.isLoading = false;
+        if (this.cookieConsent === 'accepted') this.loadAdvertising();
       }
     },
 

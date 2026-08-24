@@ -544,7 +544,9 @@
         </div>
 
         <!-- Render Target For Dynamic AJAX Views -->
-        <div x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none"></div>
+        <!-- O servidor preenche esta área com a view da rota. Isso garante que
+             o conteúdo principal exista no HTML inicial para usuários e robôs. -->
+        <div id="server-view-content" x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none"></div>
       </main>
 
       <!-- SYSTEM FOOTER -->
