@@ -63,6 +63,8 @@ const sendFile = (response, filePath) => {
 
 const sendPage = async (response, route) => {
   const file = await readFile(join(root, 'index.html'), 'utf8');
+  const viewFile = route === 'home' ? 'inicio.html' : `${route}.html`;
+  const view = await readFile(join(root, 'views', viewFile), 'utf8');
   const [title, description] = pageMetadata[route];
   const canonical = `${siteOrigin}${route === 'home' ? '/' : `/${route}`}`;
   const html = file
@@ -77,7 +79,11 @@ const sendPage = async (response, route) => {
     .replace(/(<meta property="og:description" content=")[^"]*(">)/, `$1${description}$2`)
     .replace(/(<meta property="twitter:description" content=")[^"]*(">)/, `$1${description}$2`);
   const image = `${siteOrigin}/img/social-card.svg`;
-  const withSocialImage = html
+  const withServerView = html.replace(
+    '<div id="server-view-content" x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none"></div>',
+    `<div id="server-view-content" x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none">${view}</div>`
+  );
+  const withSocialImage = withServerView
     .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${image}$2`)
     .replace(/(<meta property="twitter:image" content=")[^"]*(">)/, `$1${image}$2`);
   response.writeHead(200, { 'Content-Type': mimeTypes['.html'] });
