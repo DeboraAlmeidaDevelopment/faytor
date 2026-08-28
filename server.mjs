@@ -31,6 +31,7 @@ const pageMetadata = {
   'gerador-nomes': ['Gerador de Nomes Online - Nomes Fictícios Aleatórios | Faytor', 'Gere nomes fictícios aleatórios online para testes e desenvolvimento.'],
   'gerador-celular': ['Gerador de Celular Online - Números de Telefone Válidos | Faytor', 'Gere números de celular fictícios para testes e desenvolvimento.'],
   'gerador-email': ['Gerador de E-mail Temporário e Aleatório | Faytor', 'Gere endereços de e-mail fictícios e aleatórios para testes.'],
+  'gerador-senhas': ['Gerador de Senhas Online | Faytor', 'Gere senhas fortes e aleatórias online com opções personalizadas.'],
   'validador-cpf': ['Validador de CPF Online - Verificar CPF Válido | Faytor', 'Valide números de CPF online de forma rápida e gratuita.'],
   'validador-cnpj': ['Validador de CNPJ Online - Verificar CNPJ Válido | Faytor', 'Valide números de CNPJ online de forma rápida e gratuita.'],
   'validador-cns': ['Validador de CNS Online - Verificar Cartão de Saúde | Faytor', 'Valide números de CNS online de forma rápida e gratuita.'],
@@ -67,7 +68,10 @@ const sendPage = async (response, route) => {
   const view = await readFile(join(root, 'views', viewFile), 'utf8');
   const [title, description] = pageMetadata[route];
   const canonical = `${siteOrigin}${route === 'home' ? '/' : `/${route}`}`;
-  const html = file
+  // Em rotas com barra final, os assets relativos seriam buscados dentro da
+  // pasta da rota. A base mantém CSS, JS e views apontando para a raiz do site.
+  const fileWithBase = route === 'home' ? file : file.replace('<head>', '<head><base href="/">');
+  const html = fileWithBase
     .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
     .replace(/(<meta name="description" content=")[^"]*(">)/, `$1${description}$2`)
     .replace(/(<meta name="robots" content=")[^"]*(">)/, `$1${noindexRoutes.has(route) ? 'noindex, follow' : 'index, follow'}$2`)

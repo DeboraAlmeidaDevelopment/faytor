@@ -5,6 +5,7 @@ Sempre que criar código voce não deve inventar links ou features que não fora
 #Padrões
 * Para geradores, usar o mesmo padrão de campos, funcionalidades e botões do gerador de CPF. 
 * Para validadores, usar o mesmo padrão de campos, funcionalidades e botões do validador de CPF.
+* Campos booleanos devem usar o componente visual de switch padrão do sistema, com input checkbox invisível, trilho e indicador de posição.
 
 # SEO e monetização
 * Sempre considerar as diretrizes atuais do Google Search e as políticas do Google AdSense ao criar ou alterar conteúdo, páginas, navegação, metadados, SEO ou publicidade.

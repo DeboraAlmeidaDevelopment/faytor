@@ -43,7 +43,7 @@ jobs:
           cp robots.txt _site/
           cp ads.txt _site/
           cp -r css js views img _site/
-          for route in wordcounter jsonformatter base64 gerador-cpf gerador-cnpj gerador-cns gerador-rg gerador-pis gerador-nomes gerador-celular gerador-email validador-cpf validador-cnpj validador-cns validador-rg validador-pis politica-de-privacidade termos-de-uso contato sobre-nos; do
+          for route in wordcounter jsonformatter base64 gerador-cpf gerador-cnpj gerador-cns gerador-rg gerador-pis gerador-nomes gerador-celular gerador-email gerador-senhas validador-cpf validador-cnpj validador-cns validador-rg validador-pis politica-de-privacidade termos-de-uso contato sobre-nos; do
             mkdir -p "_site/$route"
             cp index.html "_site/$route/index.html"
             sed -i 's#<head>#<head><base href="../">#' "_site/$route/index.html"
