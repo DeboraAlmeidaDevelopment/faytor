@@ -137,6 +137,7 @@ document.addEventListener('alpine:init', () => {
       'gerador-nomes': 'views/gerador-nomes.html',
       'gerador-celular': 'views/gerador-celular.html',
       'gerador-email': 'views/gerador-email.html',
+      'gerador-senhas': 'views/gerador-senhas.html',
       'validador-cpf': 'views/validador-cpf.html',
       'validador-cnpj': 'views/validador-cnpj.html',
       'validador-cns': 'views/validador-cns.html',
@@ -162,6 +163,7 @@ document.addEventListener('alpine:init', () => {
       'gerador-nomes': 'Gerador de Nomes Online - Nomes Fictícios Aleatórios | Faytor',
       'gerador-celular': 'Gerador de Celular Online - Números de Telefone Válidos | Faytor',
       'gerador-email': 'Gerador de E-mail Temporário e Aleatório | Faytor',
+      'gerador-senhas': 'Gerador de Senhas Online | Faytor',
       'validador-cpf': 'Validador de CPF Online - Verificar CPF Válido | Faytor',
       'validador-cnpj': 'Validador de CNPJ Online - Verificar CNPJ Válido | Faytor',
       'validador-cns': 'Validador de CNS Online - Verificar Cartão de Saúde | Faytor',
@@ -186,6 +188,7 @@ document.addEventListener('alpine:init', () => {
       'gerador-nomes': 'Gere nomes fictícios aleatórios online para testes e desenvolvimento.',
       'gerador-celular': 'Gere números de celular fictícios para testes e desenvolvimento.',
       'gerador-email': 'Gere endereços de e-mail fictícios e aleatórios para testes.',
+      'gerador-senhas': 'Gere senhas fortes e aleatórias online com opções personalizadas.',
       'validador-cpf': 'Valide números de CPF online de forma rápida e gratuita.',
       'validador-cnpj': 'Valide números de CNPJ online de forma rápida e gratuita.',
       'validador-cns': 'Valide números de CNS online de forma rápida e gratuita.',
@@ -212,7 +215,7 @@ document.addEventListener('alpine:init', () => {
 
       // Clean browser address bar if using legacy hash
       if (hashTab && this.views[hashTab]) {
-        const newPath = hashTab === 'home' ? '/' : `/${hashTab}`;
+        const newPath = hashTab === 'home' ? '/' : `/${hashTab}/`;
         window.history.replaceState({ tab: hashTab }, '', newPath);
       }
 
@@ -322,7 +325,9 @@ document.addEventListener('alpine:init', () => {
     selectTab(tabName) {
       if (this.views[tabName]) {
         this.currentTab = tabName;
-        const newPath = tabName === 'home' ? '/' : `/${tabName}`;
+        // O deploy estático publica cada rota como um diretório com index.html.
+        // A barra final garante que o GitHub Pages resolva esse index no refresh.
+        const newPath = tabName === 'home' ? '/' : `/${tabName}/`;
         if (window.location.pathname !== newPath) {
           window.history.pushState({ tab: tabName }, '', newPath);
         }
@@ -337,13 +342,16 @@ document.addEventListener('alpine:init', () => {
      * Dynamically loads HTML views using fetch or displays local-run fallback instruction
      */
     async loadView(tabName) {
-      const url = this.views[tabName];
-      if (!url) return;
+      const viewPath = this.views[tabName];
+      if (!viewPath) return;
 
       if (tabName === this.currentTab && this.serverViewContent) {
         this.viewContent = this.serverViewContent;
         this.serverViewContent = '';
         this.isLoading = false;
+        if (tabName === 'gerador-senhas') {
+          this.$nextTick(() => window.setTimeout(() => this.initPasswordGenerator(), 0));
+        }
         if (this.cookieConsent === 'accepted') this.loadAdvertising();
         return;
       }
@@ -352,6 +360,14 @@ document.addEventListener('alpine:init', () => {
       this.corsFallback = false;
 
       try {
+        // A navegação usa pushState e muda a URL para /rota/. Um caminho
+        // relativo como "views/arquivo.html" passaria então a apontar para
+        // /rota/views/arquivo.html, causando 404 na primeira navegação.
+        // Mantemos o caminho relativo no file:// para preservar o fallback
+        // de uso local sem servidor.
+        const url = window.location.protocol === 'file:'
+          ? viewPath
+          : `/${viewPath}`;
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`Erro ao carregar a visualização: ${response.statusText}`);
@@ -378,6 +394,11 @@ document.addEventListener('alpine:init', () => {
         if (['gerador-cns', 'gerador-pis', 'gerador-rg'].includes(tabName)) {
           this.$nextTick(() => {
             window.setTimeout(() => this.initMaskedGenerator(tabName), 0);
+          });
+        }
+        if (tabName === 'gerador-senhas') {
+          this.$nextTick(() => {
+            window.setTimeout(() => this.initPasswordGenerator(), 0);
           });
         }
       } catch (err) {
@@ -521,6 +542,162 @@ document.addEventListener('alpine:init', () => {
       updateSwitch();
       checkbox.dataset.initialized = 'true';
       formatExisting();
+    },
+
+    initPasswordGenerator() {
+      const lengthInput = document.getElementById('password-length');
+      const output = document.getElementById('password-generated');
+      const generateButton = document.getElementById('password-generate');
+      const generateCopyButton = document.getElementById('password-generate-copy');
+      const fieldCopyButton = document.getElementById('password-copy-field');
+      const strength = document.getElementById('password-strength');
+      const strengthLabel = document.getElementById('password-strength-label');
+      const checkboxes = ['password-uppercase', 'password-lowercase', 'password-numbers', 'password-special'].map(id => document.getElementById(id));
+      if (!lengthInput || !output || !generateButton || !generateCopyButton || !fieldCopyButton || !strength || !strengthLabel || checkboxes.some(checkbox => !checkbox)) return;
+      if (lengthInput.dataset.initialized === 'true') return;
+
+      const storageKey = 'faytor.password.preferences';
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      const modeKey = 'faytor.password.mode';
+      const tabs = Array.from(document.querySelectorAll('[data-password-mode]'));
+      const panels = { random: document.getElementById('password-panel-random'), easy: document.getElementById('password-panel-easy'), pin: document.getElementById('password-panel-pin') };
+      const easyLength = document.getElementById('easy-length');
+      const easyCapitalize = document.getElementById('easy-capitalize');
+      const easyComplete = document.getElementById('easy-complete');
+      const pinLength = document.getElementById('pin-length');
+      let mode = ['random', 'easy', 'pin'].includes(localStorage.getItem(modeKey)) ? localStorage.getItem(modeKey) : 'random';
+      lengthInput.value = Math.min(128, Math.max(4, Number(saved.length) || 16));
+      checkboxes.forEach((checkbox, index) => { checkbox.checked = saved.types?.[index] !== false; });
+      const updateSwitches = () => checkboxes.forEach(checkbox => {
+        const thumb = document.getElementById(`${checkbox.id}-thumb`);
+        if (thumb) {
+          thumb.classList.toggle('translate-x-1', !checkbox.checked);
+          thumb.classList.toggle('translate-x-6', checkbox.checked);
+        }
+        const track = checkbox.parentElement;
+        if (track) {
+          track.classList.toggle('bg-primary', checkbox.checked);
+          track.classList.toggle('bg-slate-300', !checkbox.checked);
+          track.classList.toggle('dark:bg-slate-700', !checkbox.checked);
+        }
+      });
+      const updateEasySwitches = () => [easyCapitalize, easyComplete].forEach(checkbox => {
+        const thumb = document.getElementById(`${checkbox.id}-thumb`);
+        const track = checkbox.parentElement;
+        thumb?.classList.toggle('translate-x-1', !checkbox.checked);
+        thumb?.classList.toggle('translate-x-6', checkbox.checked);
+        track?.classList.toggle('bg-primary', checkbox.checked);
+        track?.classList.toggle('bg-slate-300', !checkbox.checked);
+        track?.classList.toggle('dark:bg-slate-700', !checkbox.checked);
+      });
+      updateSwitches();
+      const characterSets = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '0123456789', '!@#$%^&*()_+[]{}|;:,.<>?'];
+      const levelColors = ['bg-red-500', 'bg-amber-500', 'bg-lime-500', 'bg-emerald-500'];
+      const levelNames = ['Fraca', 'Média', 'Forte', 'Muito forte'];
+      const portugueseWords = 'abacate|alegria|amigo|amizade|amora|arco|areia|aviao|banana|bicicleta|borboleta|brisa|caderno|cachorro|caminho|caneca|carinho|castelo|chuva|cidade|coelho|coragem|coruja|cristal|doce|estrela|familia|felicidade|flor|floresta|formiga|futuro|garrafa|girassol|golfinho|harmonia|janela|jardim|laranja|leao|livro|lua|macarrao|manha|melancia|montanha|musica|nuvem|oceano|passeio|peixe|pipoca|planeta|ponte|praia|presente|queijo|raposa|rio|sabor|sapo|segredo|sorriso|tempo|tesouro|tomate|universo|viagem|vento|verao|verde|vitoria'.split('|');
+
+      const randomIndex = max => {
+        if (window.crypto?.getRandomValues) {
+          const values = new Uint32Array(1);
+          window.crypto.getRandomValues(values);
+          return values[0] % max;
+        }
+        return Math.floor(Math.random() * max);
+      };
+      const updateStrength = (length, selectedTypes) => {
+        const typeCount = selectedTypes.length;
+        const score = Math.min(4, (length >= 8 ? 1 : 0) + (length >= 12 ? 1 : 0) + (length >= 16 ? 1 : 0) + (typeCount >= 3 ? 1 : 0));
+        const level = Math.max(1, score);
+        strength.setAttribute('aria-valuenow', String(level));
+        strengthLabel.textContent = levelNames[level - 1];
+        strengthLabel.className = `font-bold ${['text-red-500', 'text-amber-500', 'text-lime-600', 'text-emerald-500'][level - 1]}`;
+        Array.from(strength.children).forEach((bar, index) => {
+          bar.className = `h-2 rounded-full ${index < level ? levelColors[level - 1] : 'bg-slate-200 dark:bg-slate-700'}`;
+        });
+      };
+      const generate = () => {
+        const length = Math.min(128, Math.max(4, Number.parseInt(lengthInput.value, 10) || 16));
+        lengthInput.value = length;
+        const selectedTypes = characterSets.filter((_, index) => checkboxes[index].checked);
+        if (!selectedTypes.length) {
+          output.value = '';
+          strengthLabel.textContent = 'Selecione uma opção';
+          strength.setAttribute('aria-valuenow', '0');
+          Array.from(strength.children).forEach(bar => { bar.className = 'h-2 rounded-full bg-slate-200 dark:bg-slate-700'; });
+          return;
+        }
+        const allCharacters = selectedTypes.join('');
+        output.value = Array.from({ length }, () => allCharacters[randomIndex(allCharacters.length)]).join('');
+        updateStrength(length, selectedTypes);
+        localStorage.setItem(storageKey, JSON.stringify({ length, types: checkboxes.map(checkbox => checkbox.checked) }));
+      };
+      const generateEasy = () => {
+        const count = Math.min(10, Math.max(2, Number.parseInt(easyLength.value, 10) || 4));
+        easyLength.value = count;
+        const words = Array.from({ length: count }, () => {
+          const word = portugueseWords[randomIndex(portugueseWords.length)];
+          if (easyComplete.checked) return easyCapitalize.checked ? word.charAt(0).toUpperCase() + word.slice(1) : word;
+          const shortWord = word.slice(0, Math.max(3, Math.ceil(word.length * 0.65)));
+          return easyCapitalize.checked ? shortWord.charAt(0).toUpperCase() + shortWord.slice(1) : shortWord;
+        });
+        output.value = words.join('-');
+        updateStrength(output.value.length, words.length >= 4 ? ['palavras', 'hífens', 'comprimento'] : ['palavras']);
+        localStorage.setItem(storageKey, JSON.stringify({ easyLength: count, capitalize: easyCapitalize.checked, complete: easyComplete.checked, length: lengthInput.value, types: checkboxes.map(checkbox => checkbox.checked) }));
+      };
+      const generatePin = () => {
+        const length = Math.min(32, Math.max(4, Number.parseInt(pinLength.value, 10) || 6));
+        pinLength.value = length;
+        output.value = Array.from({ length }, () => String(randomIndex(10))).join('');
+        updateStrength(length, ['números']);
+        localStorage.setItem(storageKey, JSON.stringify({ pinLength: length, easyLength: easyLength.value, capitalize: easyCapitalize.checked, complete: easyComplete.checked, length: lengthInput.value, types: checkboxes.map(checkbox => checkbox.checked) }));
+      };
+      const generateCurrent = () => mode === 'easy' ? generateEasy() : mode === 'pin' ? generatePin() : generate();
+      const selectMode = nextMode => {
+        mode = nextMode;
+        localStorage.setItem(modeKey, mode);
+          tabs.forEach(tab => {
+          const active = tab.dataset.passwordMode === mode;
+          tab.setAttribute('aria-selected', String(active));
+          tab.classList.toggle('bg-primary', active);
+          tab.classList.toggle('hover:bg-blue-700', active);
+          tab.classList.toggle('hover:bg-slate-100', !active);
+          tab.classList.toggle('dark:hover:bg-slate-800', !active);
+          tab.classList.toggle('text-white', active);
+          tab.classList.toggle('text-slate-600', !active);
+          tab.classList.toggle('dark:text-slate-300', !active);
+        });
+        Object.entries(panels).forEach(([name, panel]) => panel?.classList.toggle('hidden', name !== mode));
+        document.getElementById('password-strength-wrap')?.classList.toggle('hidden', mode !== 'random');
+        updateEasySwitches();
+        generateCurrent();
+      };
+      const copyPassword = async () => {
+        if (!output.value || !navigator.clipboard) return;
+        await navigator.clipboard.writeText(output.value);
+        fieldCopyButton.classList.remove('bg-primary', 'hover:bg-blue-700');
+        fieldCopyButton.classList.add('bg-emerald-500');
+        document.getElementById('password-copy-label').textContent = 'Copiado!';
+        window.setTimeout(() => {
+          fieldCopyButton.classList.remove('bg-emerald-500');
+          fieldCopyButton.classList.add('bg-primary', 'hover:bg-blue-700');
+          document.getElementById('password-copy-label').textContent = 'Copiar';
+        }, 2000);
+      };
+      generateButton.addEventListener('click', generateCurrent);
+      generateCopyButton.addEventListener('click', async () => { generateCurrent(); await copyPassword(); });
+      fieldCopyButton.addEventListener('click', copyPassword);
+      lengthInput.addEventListener('change', generateCurrent);
+      easyLength.addEventListener('change', generateCurrent);
+      pinLength.addEventListener('change', generateCurrent);
+      [easyCapitalize, easyComplete].forEach(checkbox => checkbox.addEventListener('change', () => { updateEasySwitches(); generateCurrent(); }));
+      checkboxes.forEach(checkbox => checkbox.addEventListener('change', () => { updateSwitches(); generateCurrent(); }));
+      tabs.forEach(tab => tab.addEventListener('click', () => selectMode(tab.dataset.passwordMode)));
+      lengthInput.dataset.initialized = 'true';
+      easyLength.value = Math.min(10, Math.max(2, Number(saved.easyLength) || 4));
+      easyCapitalize.checked = saved.capitalize !== false;
+      easyComplete.checked = saved.complete !== false;
+      pinLength.value = Math.min(32, Math.max(4, Number(saved.pinLength) || 6));
+      selectMode(mode);
     }
   }));
 });
