@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://faytor.com.br/sitemap.xml
+Sitemap: https://www.faytor.com.br/sitemap.xml

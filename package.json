@@ -1,8 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "dev": "node server.mjs",
+    "dev": "node --watch server.mjs",
     "build": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --minify",
+    "build:pages": "node scripts/build-pages.mjs _site && node scripts/build-error-pages.mjs _site",
     "build:errors": "node scripts/build-error-pages.mjs _site",
     "watch": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --watch"
   },

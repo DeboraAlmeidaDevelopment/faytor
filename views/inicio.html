@@ -12,18 +12,18 @@
         Faytor: A Fábrica de Utilitários de Alta Performance
       </h1>
       <p class="mt-4 text-blue-50 lg:text-lg leading-relaxed">
-        Uma suíte moderna de ferramentas online ultra-velozes e 100% privadas. Formate, gere, valide e analise seus dados instantaneamente diretamente do seu navegador, sem instalações e sem enviar suas informações a servidores externos.
+        Ferramentas para formatar textos, gerar dados de teste e conferir dígitos verificadores, sem instalar programas. As transformações de texto acontecem no navegador; a busca de endereços consulta o IBGE e o ViaCEP. Cada ferramenta apresenta orientações e limites para interpretar os resultados.
       </p>
       <div class="mt-8 flex flex-wrap gap-4">
-        <button
-          @click="selectTab('wordcounter')"
+        <a href="/wordcounter/"
+          @click.prevent="selectTab('wordcounter')"
           class="bg-white text-primary hover:bg-blue-50 focus:ring-4 focus:ring-white/50 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
           aria-label="Ir para ferramenta Contador de Palavras"
         >
           Ver Ferramentas
-        </button>
+        </a>
         <a
-          href="#"
+          href="/sobre-nos/"
           @click.prevent="selectTab('sobre-nos')"
           class="bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl transition-all border border-white/20 flex items-center justify-center"
           aria-label="Saiba mais sobre a Faytor Factory"
@@ -52,8 +52,8 @@
             Analise o tamanho dos seus textos, quantidade de palavras, caracteres, parágrafos e tempo estimado de leitura em tempo real.
           </p>
         </div>
-        <button
-          @click="selectTab('wordcounter')"
+        <a href="/wordcounter/"
+          @click.prevent="selectTab('wordcounter')"
           class="mt-6 text-xs font-semibold text-primary dark:text-blue-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Contador de Palavras"
         >
@@ -61,7 +61,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- JSON Formatter Card -->
@@ -77,8 +77,8 @@
             Valide, embeleze ou mineficize strings JSON. Identifica erros de sintaxe de forma amigável e limpa.
           </p>
         </div>
-        <button
-          @click="selectTab('jsonformatter')"
+        <a href="/jsonformatter/"
+          @click.prevent="selectTab('jsonformatter')"
           class="mt-6 text-xs font-semibold text-secondary dark:text-purple-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Formatador JSON"
         >
@@ -86,7 +86,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- Base64 Tool Card -->
@@ -102,8 +102,8 @@
             Converta rapidamente textos comuns para o padrão Base64 de codificação de dados ou faça o caminho inverso com decodificação rápida.
           </p>
         </div>
-        <button
-          @click="selectTab('base64')"
+        <a href="/base64/"
+          @click.prevent="selectTab('base64')"
           class="mt-6 text-xs font-semibold text-pink-600 dark:text-pink-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Codificador Base64"
         >
@@ -111,7 +111,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- CPF Generator Card -->
@@ -127,8 +127,8 @@
             Gere CPFs válidos com ou sem pontuação em apenas um clique para testes e desenvolvimento de sistemas.
           </p>
         </div>
-        <button
-          @click="selectTab('gerador-cpf')"
+        <a href="/gerador-cpf/"
+          @click.prevent="selectTab('gerador-cpf')"
           class="mt-6 text-xs font-semibold text-emerald-600 dark:text-emerald-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Gerador de CPF"
         >
@@ -136,7 +136,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- CNPJ Generator Card -->
@@ -152,8 +152,8 @@
             Gere CNPJs válidos formatados ou sem pontuação instantaneamente de acordo com o algoritmo oficial.
           </p>
         </div>
-        <button
-          @click="selectTab('gerador-cnpj')"
+        <a href="/gerador-cnpj/"
+          @click.prevent="selectTab('gerador-cnpj')"
           class="mt-6 text-xs font-semibold text-amber-600 dark:text-amber-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Gerador de CNPJ"
         >
@@ -161,7 +161,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- Names Generator Card -->
@@ -177,8 +177,8 @@
             Gere nomes brasileiros (masculinos, femininos ou aleatórios) altamente realistas com um único clique.
           </p>
         </div>
-        <button
-          @click="selectTab('gerador-nomes')"
+        <a href="/gerador-nomes/"
+          @click.prevent="selectTab('gerador-nomes')"
           class="mt-6 text-xs font-semibold text-indigo-600 dark:text-indigo-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Gerador de Nomes"
         >
@@ -186,7 +186,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- Cell phone Generator Card -->
@@ -202,8 +202,8 @@
             Gere números de telefones celulares válidos de qualquer estado brasileiro, formatados ou brutos.
           </p>
         </div>
-        <button
-          @click="selectTab('gerador-celular')"
+        <a href="/gerador-celular/"
+          @click.prevent="selectTab('gerador-celular')"
           class="mt-6 text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Gerador de Celular"
         >
@@ -211,7 +211,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- Email Generator Card -->
@@ -227,8 +227,8 @@
             Gere endereços de e-mail fictícios extremamente realistas com domínios populares como Gmail, Hotmail, Yahoo e Outlook.
           </p>
         </div>
-        <button
-          @click="selectTab('gerador-email')"
+        <a href="/gerador-email/"
+          @click.prevent="selectTab('gerador-email')"
           class="mt-6 text-xs font-semibold text-violet-600 dark:text-violet-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Gerador de E-mail"
         >
@@ -236,7 +236,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
     </div>
@@ -260,8 +260,8 @@
             Valide a integridade matemática de números de CPF em tempo real, verificando os dígitos de controle de forma segura.
           </p>
         </div>
-        <button
-          @click="selectTab('validador-cpf')"
+        <a href="/validador-cpf/"
+          @click.prevent="selectTab('validador-cpf')"
           class="mt-6 text-xs font-semibold text-primary dark:text-blue-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Validador de CPF"
         >
@@ -269,7 +269,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- CNPJ Validator Card -->
@@ -285,8 +285,8 @@
             Verifique o algoritmo de controle de CNPJs de empresas de forma local e privada, descobrindo inconsistências em tempo real.
           </p>
         </div>
-        <button
-          @click="selectTab('validador-cnpj')"
+        <a href="/validador-cnpj/"
+          @click.prevent="selectTab('validador-cnpj')"
           class="mt-6 text-xs font-semibold text-secondary dark:text-purple-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Validador de CNPJ"
         >
@@ -294,7 +294,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
       <!-- CNS Validator Card -->
@@ -310,8 +310,8 @@
             Confira a validade do Cartão Nacional de Saúde (CNS) do SUS baseado nas regras oficiais do Ministério da Saúde.
           </p>
         </div>
-        <button
-          @click="selectTab('validador-cns')"
+        <a href="/validador-cns/"
+          @click.prevent="selectTab('validador-cns')"
           class="mt-6 text-xs font-semibold text-pink-600 dark:text-pink-400 group-hover:underline flex items-center self-start"
           aria-label="Abrir Validador de CNS"
         >
@@ -319,7 +319,7 @@
           <svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </a>
       </article>
 
     </div>

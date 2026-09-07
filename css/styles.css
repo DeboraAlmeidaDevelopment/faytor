@@ -5,6 +5,56 @@
   display: none !important;
 }
 
+/* Loading overlay shared by view loading and external data requests. */
+.faytor-request-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999 !important;
+  cursor: wait;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.faytor-request-card {
+  box-sizing: border-box;
+  width: 28rem;
+  max-width: calc(100vw - 2rem);
+  padding: 3rem 4rem !important;
+  overflow: hidden;
+  text-wrap: balance;
+  border: 1px solid rgb(37 99 235 / 0.28);
+  background: linear-gradient(135deg, rgb(239 246 255 / 0.94), rgb(245 243 255 / 0.92));
+  backdrop-filter: blur(16px);
+}
+
+.dark .faytor-request-card {
+  border-color: rgb(147 197 253 / 0.2);
+  background: linear-gradient(135deg, rgb(15 23 42 / 0.94), rgb(30 27 75 / 0.92));
+}
+
+.faytor-request-mark {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 2px solid rgb(147 197 253 / 0.42);
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  box-shadow: 0 0 24px rgb(37 99 235 / 0.3);
+}
+
+.faytor-request-mark img {
+  width: 100%;
+  height: 100%;
+  padding: 0.65rem;
+  filter: drop-shadow(0 0 10px rgb(147 197 253 / 0.75));
+  animation: faytor-request-spin 2.4s linear infinite;
+}
+
+@keyframes faytor-request-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Base style resets and transitions */
 .transition-all {
   transition-property: all;

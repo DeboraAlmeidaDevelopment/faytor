@@ -77,5 +77,11 @@
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
       A contagem ajuda a revisar redações, adaptar textos para formulários com limite de caracteres, conferir descrições para redes sociais e estimar o tamanho de artigos. A estimativa de leitura usa uma média de 200 palavras por minuto e serve apenas como referência.
     </p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Quais regras o contador utiliza?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A contagem separa o texto por espaços, tabulações e quebras de linha. Assim, <code>Olá, mundo!</code> conta como duas palavras e <code>guarda-chuva</code> conta como uma. Pontuação isolada entre espaços também ocupa uma posição nessa contagem. Isso pode produzir diferenças em relação a editores que fazem análise linguística do texto.</p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Caracteres, quebras de linha e emojis</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O total de caracteres usa o comprimento da string em JavaScript, em unidades UTF-16. Alguns emojis ocupam duas ou mais unidades. O total sem espaços retira também tabulações e quebras de linha. O indicador de parágrafos divide o texto a cada grupo de quebras de linha: duas linhas consecutivas com conteúdo contam como dois parágrafos, mesmo sem uma linha vazia entre elas.</p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Como interpretar o tempo de leitura</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A estimativa divide o total de palavras por 200 e arredonda para cima em minutos. Um texto com 201 palavras indica dois minutos; um texto vazio indica zero. Essa é uma referência para planejamento: vocabulário técnico, pausas e familiaridade com o assunto alteram o tempo real. Para limites de envio, confira também a regra do formulário ou da plataforma de destino.</p>
   </article>
 </section>

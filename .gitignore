@@ -47,3 +47,5 @@ pip-wheel-metadata/
 
 # Arquivos gerados localmente
 *.local
+
+_site/

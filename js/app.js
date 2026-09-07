@@ -2,6 +2,28 @@
  * Faytor SPA - Modular Application State Management & View Routing
  */
 
+// Monitora todas as requisições da aplicação sem exigir alterações em cada fetch.
+if (!window.__faytorFetchWrapped) {
+  const nativeFetch = window.fetch.bind(window);
+  window.faytorPendingRequests = 0;
+  window.fetch = async (...args) => {
+    window.faytorPendingRequests += 1;
+    window.dispatchEvent(new Event('faytor:request-change'));
+    try {
+      return await nativeFetch(...args);
+    } finally {
+      window.faytorPendingRequests = Math.max(0, window.faytorPendingRequests - 1);
+      window.dispatchEvent(new Event('faytor:request-change'));
+    }
+  };
+  window.__faytorFetchWrapped = true;
+}
+
+window.addressStates = [['AC', 'Acre'], ['AL', 'Alagoas'], ['AP', 'Amapá'], ['AM', 'Amazonas'], ['BA', 'Bahia'], ['CE', 'Ceará'], ['DF', 'Distrito Federal'], ['ES', 'Espírito Santo'], ['GO', 'Goiás'], ['MA', 'Maranhão'], ['MT', 'Mato Grosso'], ['MS', 'Mato Grosso do Sul'], ['MG', 'Minas Gerais'], ['PA', 'Pará'], ['PB', 'Paraíba'], ['PR', 'Paraná'], ['PE', 'Pernambuco'], ['PI', 'Piauí'], ['RJ', 'Rio de Janeiro'], ['RN', 'Rio Grande do Norte'], ['RS', 'Rio Grande do Sul'], ['RO', 'Rondônia'], ['RR', 'Roraima'], ['SC', 'Santa Catarina'], ['SP', 'São Paulo'], ['SE', 'Sergipe'], ['TO', 'Tocantins']];
+// As cidades e os endereços são consultados em tempo real; esta tela não usa CEP fictício.
+window.addressCities = {};
+window.addressCityCache = {};
+
 window.handleMaskedGeneratorChange = event => {
   const settings = {
     'cnpj-with-punctuation': { output: 'cnpj-generated', thumb: 'cnpj-switch-thumb', storage: 'faytor.cnpj.preferences', clean: value => value.replace(/\D/g, ''), format: value => value.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') },
@@ -121,6 +143,7 @@ document.addEventListener('alpine:init', () => {
     viewContent: '',
     serverViewContent: '',
     isLoading: false,
+    isNetworkLoading: false,
     corsFallback: false, // Set to true if local file access CORS policy blocks dynamic loading
 
     // Dictionary of pre-defined view paths
@@ -130,6 +153,7 @@ document.addEventListener('alpine:init', () => {
       jsonformatter: 'views/jsonformatter.html',
       base64: 'views/base64.html',
       'gerador-cpf': 'views/gerador-cpf.html',
+      'gerador-endereco': 'views/gerador-endereco.html',
       'gerador-cnpj': 'views/gerador-cnpj.html',
       'gerador-cns': 'views/gerador-cns.html',
       'gerador-rg': 'views/gerador-rg.html',
@@ -156,13 +180,14 @@ document.addEventListener('alpine:init', () => {
       jsonformatter: 'Formatador JSON - Formatar, Validar e Visualizar JSON | Faytor',
       base64: 'Codificador e Decodificador Base64 Online | Faytor',
       'gerador-cpf': 'Gerador de CPF Online - Gerar CPF Válido para Testes | Faytor',
+      'gerador-endereco': 'Gerador de CEP e Endereço Online para Testes | Faytor',
       'gerador-cnpj': 'Gerador de CNPJ Online - Gerar CNPJ Válido para Testes | Faytor',
       'gerador-cns': 'Gerador de CNS Online - Cartão Nacional de Saúde | Faytor',
       'gerador-rg': 'Gerador de RG Online - Gerar Registro Geral para Testes | Faytor',
       'gerador-pis': 'Gerador de PIS/PASEP Online - Gerar PIS Válido | Faytor',
       'gerador-nomes': 'Gerador de Nomes Online - Nomes Fictícios Aleatórios | Faytor',
       'gerador-celular': 'Gerador de Celular Online - Números de Telefone Válidos | Faytor',
-      'gerador-email': 'Gerador de E-mail Temporário e Aleatório | Faytor',
+      'gerador-email': 'Gerador de E-mail Fictício para Testes | Faytor',
       'gerador-senhas': 'Gerador de Senhas Online | Faytor',
       'validador-cpf': 'Validador de CPF Online - Verificar CPF Válido | Faytor',
       'validador-cnpj': 'Validador de CNPJ Online - Verificar CNPJ Válido | Faytor',
@@ -181,6 +206,7 @@ document.addEventListener('alpine:init', () => {
       jsonformatter: 'Formate, valide e visualize JSON online de forma rápida e gratuita.',
       base64: 'Codifique e decodifique textos em Base64 online gratuitamente.',
       'gerador-cpf': 'Gere números de CPF válidos para testes e desenvolvimento.',
+      'gerador-endereco': 'Gere endereços brasileiros reais consultados no ViaCEP para testes e desenvolvimento.',
       'gerador-cnpj': 'Gere números de CNPJ válidos para testes e desenvolvimento.',
       'gerador-cns': 'Gere números de CNS válidos para testes e desenvolvimento.',
       'gerador-rg': 'Gere números de RG fictícios para testes e desenvolvimento.',
@@ -202,6 +228,10 @@ document.addEventListener('alpine:init', () => {
 
     init() {
       this.showCookieBanner = !this.cookieConsent;
+      this.isNetworkLoading = window.faytorPendingRequests > 0;
+      window.addEventListener('faytor:request-change', () => {
+        this.isNetworkLoading = window.faytorPendingRequests > 0;
+      });
 
       // O servidor entrega a view completa na primeira resposta. Mantemos esse
       // conteúdo para evitar que a rota pareça vazia antes do JavaScript rodar.
@@ -210,8 +240,9 @@ document.addEventListener('alpine:init', () => {
       // Retrieve deep-link tab name using URL pathname or legacy hash fallback
       const hashTab = window.location.hash.slice(1);
       const pathTab = window.location.pathname.replace(/^\/+|\/+$/g, '');
-      const initialTab = this.views[pathTab] ? pathTab : (this.views[hashTab] ? hashTab : 'home');
+      const initialTab = this.views[pathTab] ? pathTab : (this.views[hashTab] ? hashTab : (pathTab ? 'not-found' : 'home'));
       this.currentTab = initialTab;
+      if (initialTab !== (this.views[pathTab] ? pathTab : 'home')) this.serverViewContent = '';
 
       // Clean browser address bar if using legacy hash
       if (hashTab && this.views[hashTab]) {
@@ -240,7 +271,7 @@ document.addEventListener('alpine:init', () => {
 
       window.addEventListener('popstate', (event) => {
         const pathTab = window.location.pathname.replace(/^\/+|\/+$/g, '');
-        const tabName = this.views[pathTab] ? pathTab : 'home';
+        const tabName = this.views[pathTab] ? pathTab : (pathTab ? 'not-found' : 'home');
         if (tabName !== this.currentTab) {
           this.currentTab = tabName;
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -249,20 +280,20 @@ document.addEventListener('alpine:init', () => {
     },
 
     updateTitle(tabName) {
-      const title = this.titles[tabName] || this.titles.home;
+      const title = this.titles[tabName] || 'Página não encontrada | Faytor';
       document.title = title;
     },
 
     updateMetadata(tabName) {
       const title = this.titles[tabName] || this.titles.home;
-      const description = this.descriptions[tabName] || this.descriptions.home;
-      const path = tabName === 'home' ? '/' : `/${tabName}`;
-      const canonical = new URL(path, 'https://faytor.com.br').href;
+      const description = this.descriptions[tabName] || 'A página solicitada não foi encontrada.';
+      const path = !this.views[tabName] ? window.location.pathname : (tabName === 'home' ? '/' : `/${tabName}/`);
+      const canonical = new URL(path, 'https://www.faytor.com.br').href;
       const noindexRoutes = ['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos'];
 
       document.title = title;
       document.querySelector('meta[name="description"]')?.setAttribute('content', description);
-      document.querySelector('meta[name="robots"]')?.setAttribute('content', noindexRoutes.includes(tabName) ? 'noindex, follow' : 'index, follow');
+      document.querySelector('meta[name="robots"]')?.setAttribute('content', (!this.views[tabName] || noindexRoutes.includes(tabName)) ? 'noindex, follow' : 'index, follow');
       document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonical);
       document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
       document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
@@ -308,15 +339,11 @@ document.addEventListener('alpine:init', () => {
     },
 
     loadAdvertising() {
-      if (document.querySelector('script[data-faytor-advertising]')) return;
-      const nonContentRoutes = ['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos'];
-      if (nonContentRoutes.includes(this.currentTab) || this.isLoading || !this.viewContent.trim()) return;
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3673785596412790';
-      script.crossOrigin = 'anonymous';
-      script.dataset.faytorAdvertising = 'true';
-      document.head.appendChild(script);
+      // Veiculação suspensa durante a revisão editorial. A meta de verificação
+      // e ads.txt permanecem disponíveis para o AdSense. Reativar exige definir
+      // inventário editorial e tratar navegação SPA, erros e overlays; carregar
+      // Auto Ads uma vez mantém o script ativo também nas telas seguintes.
+      return;
     },
 
     /**
@@ -333,7 +360,7 @@ document.addEventListener('alpine:init', () => {
         }
         this.mobileMenuOpen = false;
 
-        // Return to the page top so the top AdSense banner stays visible.
+        // Retorna ao início do conteúdo selecionado.
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     },
@@ -343,16 +370,11 @@ document.addEventListener('alpine:init', () => {
      */
     async loadView(tabName) {
       const viewPath = this.views[tabName];
-      if (!viewPath) return;
-
-      if (tabName === this.currentTab && this.serverViewContent) {
-        this.viewContent = this.serverViewContent;
+      if (!viewPath) {
         this.serverViewContent = '';
+        this.viewContent = '<section><h1>Página não encontrada</h1><p>Confira o endereço ou escolha uma ferramenta no menu.</p></section>';
         this.isLoading = false;
-        if (tabName === 'gerador-senhas') {
-          this.$nextTick(() => window.setTimeout(() => this.initPasswordGenerator(), 0));
-        }
-        if (this.cookieConsent === 'accepted') this.loadAdvertising();
+        this.corsFallback = false;
         return;
       }
 
@@ -368,11 +390,13 @@ document.addEventListener('alpine:init', () => {
         const url = window.location.protocol === 'file:'
           ? viewPath
           : `/${viewPath}`;
-        const response = await fetch(url);
-        if (!response.ok) {
+        const serverContent = this.serverViewContent;
+        this.serverViewContent = '';
+        const response = serverContent ? null : await fetch(url);
+        if (response && !response.ok) {
           throw new Error(`Erro ao carregar a visualização: ${response.statusText}`);
         }
-        this.viewContent = await response.text();
+        this.viewContent = serverContent || await response.text();
         if (tabName === 'gerador-cpf') {
           this.$nextTick(() => {
             window.setTimeout(() => this.initCpfGenerator(), 0);
@@ -401,6 +425,9 @@ document.addEventListener('alpine:init', () => {
             window.setTimeout(() => this.initPasswordGenerator(), 0);
           });
         }
+        if (tabName === 'gerador-endereco') {
+          this.$nextTick(() => window.setTimeout(() => this.initAddressGenerator(), 0));
+        }
       } catch (err) {
         console.warn('Dynamic fetch blocked or failed. Checking for CORS constraint.', err);
 
@@ -422,6 +449,139 @@ document.addEventListener('alpine:init', () => {
     /**
      * Initializes the CPF generator after its view is inserted with x-html.
      */
+    initAddressGenerator() {
+      const stateSelect = document.getElementById('address-state');
+      const citySelect = document.getElementById('address-city');
+      const checkbox = document.getElementById('address-with-punctuation');
+      const thumb = document.getElementById('address-switch-thumb');
+      const ids = ['address-cep', 'address-street', 'address-number', 'address-neighborhood', 'address-city-output', 'address-state-output'];
+      const fields = ids.map(id => document.getElementById(id));
+      const generateButton = document.getElementById('address-generate');
+      const generateCopyButton = document.getElementById('address-generate-copy');
+      const copyAllButton = document.getElementById('address-copy-all');
+      const copyButtons = [...document.querySelectorAll('[data-copy-target]')];
+      if (!stateSelect || !citySelect || !checkbox || !thumb || fields.some(field => !field) || !generateButton || !generateCopyButton || !copyAllButton || copyButtons.length !== fields.length || checkbox.dataset.initialized === 'true') return;
+
+      const states = window.addressStates;
+      const cities = window.addressCityCache;
+      const saved = JSON.parse(localStorage.getItem('faytor.address.preferences') || '{}');
+      states.forEach(([code, name]) => stateSelect.add(new Option(`${name} (${code})`, code)));
+      stateSelect.value = saved.state && (saved.state === 'random' || window.addressStates.some(([code]) => code === saved.state)) ? saved.state : 'random';
+      checkbox.checked = saved.withPunctuation !== false;
+      const streetQueries = ['Rua', 'Avenida', 'Alameda', 'Travessa', 'Estrada', 'Praça', 'Rodovia', 'Rua A', 'Rua B', 'Avenida A', 'Avenida B', 'Jardim', 'Centro'];
+      const random = max => Math.floor(Math.random() * max);
+      const pick = list => list[random(list.length)];
+      const shuffled = list => [...list].sort(() => Math.random() - 0.5);
+      const updateSwitch = () => {
+        thumb.classList.toggle('translate-x-1', !checkbox.checked);
+        thumb.classList.toggle('translate-x-6', checkbox.checked);
+      };
+      const loadCities = async stateCode => {
+        if (cities[stateCode]) return cities[stateCode];
+        const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateCode}/municipios`);
+        if (!response.ok) throw new Error('Não foi possível carregar as cidades do estado.');
+        const data = await response.json();
+        const names = data.map(city => city.nome).filter(Boolean);
+        if (names.length < 15) throw new Error('O estado não retornou cidades suficientes.');
+        cities[stateCode] = names;
+        return names;
+      };
+      const updateCities = async () => {
+        citySelect.innerHTML = '';
+        if (stateSelect.value === 'random') {
+          citySelect.add(new Option('Aleatória', 'random'));
+          citySelect.disabled = true;
+          return;
+        }
+        citySelect.disabled = true;
+        citySelect.add(new Option('Carregando cidades...', 'loading'));
+        const stateCities = await loadCities(stateSelect.value);
+        citySelect.innerHTML = '';
+        citySelect.disabled = false;
+        citySelect.add(new Option('Aleatória', 'random'));
+        stateCities.forEach(name => citySelect.add(new Option(name, name)));
+        citySelect.value = saved.state === stateSelect.value && saved.city && [...citySelect.options].some(option => option.value === saved.city)
+          ? saved.city
+          : 'random';
+      };
+      const formatCep = raw => checkbox.checked ? raw.replace(/^(\d{5})(\d{3})$/, '$1-$2') : raw;
+      const getState = () => stateSelect.value === 'random' ? pick(states) : states.find(([code]) => code === stateSelect.value);
+      const generate = async () => {
+        const [stateCode, stateName] = getState();
+        const stateCities = await loadCities(stateCode);
+        const fixedCity = citySelect.value !== 'random' && stateSelect.value === stateCode;
+        const selectedCities = fixedCity
+          ? citySelect.value
+          : shuffled(stateCities).slice(0, Math.min(stateCities.length, 10));
+        let result = [];
+        let cityName = fixedCity ? selectedCities : '';
+        const citiesToTry = fixedCity ? [selectedCities] : selectedCities;
+        for (const candidateCity of citiesToTry) {
+          cityName = candidateCity;
+          for (const query of shuffled(streetQueries)) {
+            const url = `https://viacep.com.br/ws/${encodeURIComponent(stateCode)}/${encodeURIComponent(cityName)}/${encodeURIComponent(query)}/json/`;
+            try {
+              const response = await fetch(url);
+              if (response.ok) {
+                const data = await response.json();
+                result = Array.isArray(data) ? data.filter(item => !item.erro && item.cep && item.logradouro) : [];
+              }
+            } catch (error) {
+              console.warn('Falha temporária ao consultar o ViaCEP:', error);
+            }
+            if (result.length) break;
+          }
+          if (result.length) break;
+        }
+        if (!result.length) throw new Error('O ViaCEP não encontrou um endereço para esta cidade.');
+        const address = pick(result);
+        fields[0].value = formatCep(address.cep.replace(/\D/g, ''));
+        fields[1].value = address.logradouro;
+        fields[2].value = String(1 + random(9999));
+        fields[3].value = address.bairro || '';
+        fields[4].value = address.localidade || cityName;
+        fields[5].value = `${stateName} (${address.uf || stateCode})`;
+        localStorage.setItem('faytor.address.preferences', JSON.stringify({ state: stateSelect.value, city: citySelect.value, withPunctuation: checkbox.checked }));
+      };
+      const showGenerationError = error => {
+        console.warn('Não foi possível consultar um endereço real:', error);
+        fields.forEach(field => { field.value = ''; });
+        fields[1].value = 'Nenhum logradouro real encontrado para essa seleção';
+      };
+      const addressText = () => `CEP: ${fields[0].value}\nEndereço: ${fields[1].value}\nNúmero: ${fields[2].value}\nBairro: ${fields[3].value}\nCidade: ${fields[4].value}\nEstado: ${fields[5].value}`;
+      const setCopiedState = (button, copied) => {
+        const label = button.querySelector('span');
+        const icon = button.querySelector('svg');
+        button.classList.toggle('bg-primary', !copied);
+        button.classList.toggle('hover:bg-blue-700', !copied);
+        button.classList.toggle('border-primary', !copied);
+        button.classList.toggle('bg-emerald-500', copied);
+        button.classList.toggle('border-emerald-500', copied);
+        if (label) label.textContent = copied ? 'Copiado!' : 'Copiar';
+        if (icon) icon.innerHTML = copied
+          ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 13 4 4L19 7" />'
+          : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" />';
+      };
+      const copyField = async button => {
+        const field = document.getElementById(button.dataset.copyTarget);
+        if (!field?.value || !navigator.clipboard) return;
+        await navigator.clipboard.writeText(field.value);
+        setCopiedState(button, true);
+        window.setTimeout(() => setCopiedState(button, false), 2000);
+      };
+      const runGenerate = () => generate().catch(showGenerationError);
+      stateSelect.addEventListener('change', async () => { try { await updateCities(); await generate(); } catch (error) { showGenerationError(error); } });
+      citySelect.addEventListener('change', runGenerate);
+      checkbox.addEventListener('change', () => { updateSwitch(); fields[0].value = formatCep(fields[0].value.replace(/\D/g, '')); runGenerate(); });
+      generateButton.addEventListener('click', runGenerate);
+      generateCopyButton.addEventListener('click', async () => { try { await generate(); await navigator.clipboard?.writeText(addressText()); } catch (error) { showGenerationError(error); } });
+      copyAllButton.addEventListener('click', async () => { await navigator.clipboard?.writeText(addressText()); });
+      copyButtons.forEach(button => button.addEventListener('click', () => copyField(button)));
+      checkbox.dataset.initialized = 'true';
+      updateSwitch();
+      updateCities().then(() => generate()).catch(showGenerationError);
+    },
+
     initCpfGenerator() {
       const checkbox = document.getElementById('cpf-with-punctuation');
       const stateSelect = document.getElementById('cpf-state');

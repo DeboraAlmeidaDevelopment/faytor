@@ -6,20 +6,20 @@
 
   <!-- SEO - Primary Meta Tags -->
   <title>Faytor - Ferramentas e Utilitários de Alta Performance</title>
-  <meta name="description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
+  <meta name="description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Gere dados para testes, confira dígitos verificadores e transforme textos no navegador.">
   <meta name="keywords" content="Faytor, ferramentas online, contador de palavras, formatador json, codificador base64, dev tools, utilitarios, web app, spa">
   <meta name="author" content="Faytor">
   <meta name="robots" content="index, follow">
   <meta name="google-adsense-account" content="ca-pub-3673785596412790">
-  <link rel="canonical" href="https://faytor.com.br/">
-  <link rel="preload" as="image" href="https://faytor.com.br/img/social-card.svg" fetchpriority="high">
+  <link rel="canonical" href="https://www.faytor.com.br/">
+  <link rel="preload" as="image" href="https://www.faytor.com.br/img/social-card.svg" fetchpriority="high">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://faytor.com.br/">
+  <meta property="og:url" content="https://www.faytor.com.br/">
   <meta property="og:title" content="Faytor - Ferramentas e Utilitários de Alta Performance">
-  <meta property="og:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
-  <meta property="og:image" content="https://faytor.com.br/img/social-card.svg">
+  <meta property="og:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Gere dados para testes, confira dígitos verificadores e transforme textos no navegador.">
+  <meta property="og:image" content="https://www.faytor.com.br/img/social-card.svg">
   <meta property="og:image:alt" content="Faytor - Ferramentas online">
   <meta property="og:image:type" content="image/svg+xml">
   <meta property="og:image:width" content="1200">
@@ -27,10 +27,10 @@
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://faytor.com.br/">
+  <meta property="twitter:url" content="https://www.faytor.com.br/">
   <meta property="twitter:title" content="Faytor - Ferramentas e Utilitários de Alta Performance">
-  <meta property="twitter:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Rápido, acessível e otimizado para SEO e Google AdSense.">
-  <meta property="twitter:image" content="https://faytor.com.br/img/social-card.svg">
+  <meta property="twitter:description" content="Faytor é uma suíte moderna de ferramentas online, incluindo contador de palavras, formatador JSON e codificador Base64. Gere dados para testes, confira dígitos verificadores e transforme textos no navegador.">
+  <meta property="twitter:image" content="https://www.faytor.com.br/img/social-card.svg">
   <meta property="twitter:image:alt" content="Faytor - Ferramentas online">
 
   <script type="application/ld+json">
@@ -38,8 +38,8 @@
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Faytor",
-    "url": "https://faytor.com.br/",
-    "logo": "https://faytor.com.br/img/logo-icon.svg"
+    "url": "https://www.faytor.com.br/",
+    "logo": "https://www.faytor.com.br/img/logo-icon.svg"
   }
   </script>
 
@@ -62,13 +62,34 @@
 <body
   class="h-screen overflow-hidden bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 antialiased"
   x-data="appState"
-  x-cloak
 >
 
   <!-- Accessibility Skip Link (Para navegação de teclado rápida) -->
   <a href="#main-content-area" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2.5 focus:bg-primary focus:text-white focus:rounded-xl focus:font-semibold focus:shadow-xl">
     Pular para o conteúdo principal
   </a>
+
+  <!-- Overlay global: bloqueia a interface durante qualquer requisição fetch. -->
+  <div
+    x-cloak
+    x-show="isNetworkLoading"
+    x-transition.opacity
+    class="faytor-request-overlay fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-6 backdrop-blur-sm"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+    aria-label="Carregando dados"
+    @click.stop
+    @keydown.escape.prevent.stop
+  >
+    <div class="faytor-request-card flex flex-col items-center gap-4 rounded-3xl px-12 py-10 text-center shadow-2xl">
+      <div class="faytor-request-mark" aria-hidden="true"><img src="img/logo-f.svg" alt=""></div>
+      <div>
+        <p class="font-bold text-slate-900 dark:text-white">Carregando dados</p>
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Aguarde um instante...</p>
+      </div>
+    </div>
+  </div>
 
   <!-- LAYOUT CONTAINER -->
   <div class="h-full overflow-hidden flex flex-col lg:flex-row">
@@ -145,11 +166,11 @@
       </div>
 
       <!-- Sidebar Navigation Links -->
-      <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" aria-label="Abas de Ferramentas">
+      <nav class="flex flex-col flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" aria-label="Abas de Ferramentas">
 
         <!-- Tab: Início -->
-        <button
-          @click="selectTab('home')"
+        <a href="/"
+          @click.prevent="selectTab('home')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'home'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
@@ -161,301 +182,315 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
           Início
-        </button>
+        </a>
 
-        <div class="pt-4 pb-2" role="presentation">
+        <div class="pt-4 pb-2" role="presentation" style="order: 10">
           <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">Ferramentas</p>
         </div>
 
         <!-- Tab: Word Counter -->
-        <button
-          @click="selectTab('wordcounter')"
+        <a href="/wordcounter/"
+          @click.prevent="selectTab('wordcounter')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'wordcounter'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-wordcounter"
+          id="tab-wordcounter" style="order: 12"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           Contador de Palavras
-        </button>
+        </a>
 
         <!-- Tab: JSON Formatter -->
-        <button
-          @click="selectTab('jsonformatter')"
+        <a href="/jsonformatter/"
+          @click.prevent="selectTab('jsonformatter')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'jsonformatter'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-jsonformatter"
+          id="tab-jsonformatter" style="order: 13"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
           Formatador JSON
-        </button>
+        </a>
 
         <!-- Tab: Base64 Tool -->
-        <button
-          @click="selectTab('base64')"
+        <a href="/base64/"
+          @click.prevent="selectTab('base64')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'base64'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-base64"
+          id="tab-base64" style="order: 11"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
           </svg>
           Codificador Base64
-        </button>
+        </a>
 
-        <div class="pt-4 pb-2" role="presentation">
+        <div class="pt-4 pb-2" role="presentation" style="order: 20">
           <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">Geradores</p>
         </div>
 
         <!-- Tab: Gerador CPF -->
-        <button
-          @click="selectTab('gerador-cpf')"
+        <a href="/gerador-cpf/"
+          @click.prevent="selectTab('gerador-cpf')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-cpf'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-cpf"
+          id="tab-gerador-cpf" style="order: 24"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           Gerador de CPF
-        </button>
+        </a>
+
+        <!-- Tab: Gerador de Endereço -->
+        <a href="/gerador-endereco/"
+          @click.prevent="selectTab('gerador-endereco')"
+          class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
+          :class="currentTab === 'gerador-endereco'
+            ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
+          aria-controls="main-content-area"
+          id="tab-gerador-endereco" style="order: 26"
+        >
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10.5 12 3l9 7.5M5 9v11h14V9M9 20v-6h6v6" /></svg>
+          Gerador de Endereço
+        </a>
 
         <!-- Tab: Gerador CNPJ -->
-        <button
-          @click="selectTab('gerador-cnpj')"
+        <a href="/gerador-cnpj/"
+          @click.prevent="selectTab('gerador-cnpj')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-cnpj'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-cnpj"
+          id="tab-gerador-cnpj" style="order: 22"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
           Gerador de CNPJ
-        </button>
+        </a>
 
         <!-- Tab: Gerador CNS -->
-        <button
-          @click="selectTab('gerador-cns')"
+        <a href="/gerador-cns/"
+          @click.prevent="selectTab('gerador-cns')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-cns'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-cns"
+          id="tab-gerador-cns" style="order: 23"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
           Gerador de CNS
-        </button>
+        </a>
 
         <!-- Tab: Gerador RG -->
-        <button
-          @click="selectTab('gerador-rg')"
+        <a href="/gerador-rg/"
+          @click.prevent="selectTab('gerador-rg')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-rg'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-rg"
+          id="tab-gerador-rg" style="order: 29"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-6 0v1a1 1 0 001 1h4a1 1 0 001-1v-1z" />
           </svg>
           Gerador de RG
-        </button>
+        </a>
 
         <!-- Tab: Gerador PIS/PASEP -->
-        <button
-          @click="selectTab('gerador-pis')"
+        <a href="/gerador-pis/"
+          @click.prevent="selectTab('gerador-pis')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-pis'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-pis"
+          id="tab-gerador-pis" style="order: 28"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Gerador de PIS/PASEP
-        </button>
+        </a>
 
         <!-- Tab: Gerador de Nomes -->
-        <button
-          @click="selectTab('gerador-nomes')"
+        <a href="/gerador-nomes/"
+          @click.prevent="selectTab('gerador-nomes')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-nomes'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-nomes"
+          id="tab-gerador-nomes" style="order: 27"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           Gerador de Nomes
-        </button>
+        </a>
 
         <!-- Tab: Gerador de Celular -->
-        <button
-          @click="selectTab('gerador-celular')"
+        <a href="/gerador-celular/"
+          @click.prevent="selectTab('gerador-celular')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-celular'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-celular"
+          id="tab-gerador-celular" style="order: 21"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
           </svg>
           Gerador de Celular
-        </button>
+        </a>
 
         <!-- Tab: Gerador de E-mail -->
-        <button
-          @click="selectTab('gerador-email')"
+        <a href="/gerador-email/"
+          @click.prevent="selectTab('gerador-email')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-email'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-email"
+          id="tab-gerador-email" style="order: 25"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           Gerador de E-mail
-        </button>
+        </a>
 
         <!-- Tab: Gerador de Senhas -->
-        <button
-          @click="selectTab('gerador-senhas')"
+        <a href="/gerador-senhas/"
+          @click.prevent="selectTab('gerador-senhas')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'gerador-senhas'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-gerador-senhas"
+          id="tab-gerador-senhas" style="order: 30"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10V8a5 5 0 0110 0v2m-1 0H8a2 2 0 00-2 2v6a2 2 0 002 2h8a2 2 0 002-2v-6a2 2 0 00-2-2z" />
           </svg>
           Gerador de Senhas
-        </button>
+        </a>
 
-        <div class="pt-4 pb-2" role="presentation">
+        <div class="pt-4 pb-2" role="presentation" style="order: 40">
           <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">Validadores</p>
         </div>
 
         <!-- Tab: Validador CPF -->
-        <button
-          @click="selectTab('validador-cpf')"
+        <a href="/validador-cpf/"
+          @click.prevent="selectTab('validador-cpf')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'validador-cpf'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-validador-cpf"
+          id="tab-validador-cpf" style="order: 43"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Validador de CPF
-        </button>
+        </a>
 
         <!-- Tab: Validador CNPJ -->
-        <button
-          @click="selectTab('validador-cnpj')"
+        <a href="/validador-cnpj/"
+          @click.prevent="selectTab('validador-cnpj')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'validador-cnpj'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-validador-cnpj"
+          id="tab-validador-cnpj" style="order: 41"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           Validador de CNPJ
-        </button>
+        </a>
 
         <!-- Tab: Validador CNS -->
-        <button
-          @click="selectTab('validador-cns')"
+        <a href="/validador-cns/"
+          @click.prevent="selectTab('validador-cns')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'validador-cns'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-validador-cns"
+          id="tab-validador-cns" style="order: 42"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 15H4M10 9H4m10 6h6m-6-6h6m-12 12h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           Validador de CNS
-        </button>
+        </a>
 
         <!-- Tab: Validador RG -->
-        <button
-          @click="selectTab('validador-rg')"
+        <a href="/validador-rg/"
+          @click.prevent="selectTab('validador-rg')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'validador-rg'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-validador-rg"
+          id="tab-validador-rg" style="order: 45"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
           </svg>
           Validador de RG
-        </button>
+        </a>
 
         <!-- Tab: Validador PIS/PASEP -->
-        <button
-          @click="selectTab('validador-pis')"
+        <a href="/validador-pis/"
+          @click.prevent="selectTab('validador-pis')"
           class="flex items-center w-full px-4 py-3 rounded-xl text-sm font-medium transition-all"
           :class="currentTab === 'validador-pis'
             ? 'bg-primary/10 text-primary dark:text-blue-400 border-l-4 border-primary'
             : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'"
           aria-controls="main-content-area"
-          id="tab-validador-pis"
+          id="tab-validador-pis" style="order: 44"
         >
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Validador de PIS/PASEP
-        </button>
+        </a>
 
         <!-- Dynamic Indicator of Future tools (A11y friendly) -->
-        <div class="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 italic flex items-center select-none" role="status">
+        <div class="px-4 py-3 text-xs text-slate-400 dark:text-slate-500 italic flex items-center select-none" role="status" style="order: 50">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Mais ferramentas em breve...
         </div>
 
-        <div class="pt-4 pb-2 border-t border-slate-200 dark:border-darkBg-border mt-4" role="presentation">
+        <div class="pt-4 pb-2 border-t border-slate-200 dark:border-darkBg-border mt-4" role="presentation" style="order: 60">
           <p class="px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">Apoio</p>
         </div>
 
@@ -487,6 +522,7 @@
 
     <!-- BACKDROP (Mobile Sidebar Overlay) -->
     <div
+      x-cloak
       x-show="mobileMenuOpen"
       @click="mobileMenuOpen = false"
       class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
@@ -509,14 +545,11 @@
         tabindex="-1"
         aria-live="polite"
       >
-        <!-- Loading State Indicator -->
-        <div x-show="isLoading" class="flex flex-col items-center justify-center py-16 space-y-4" aria-busy="true">
-          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Carregando ferramenta...</p>
-        </div>
+        <!-- O carregamento usa o overlay global de fetch. -->
 
         <!-- CORS Fallback Local-run Friendly Instruction -->
         <div
+          x-cloak
           x-show="corsFallback && !isLoading"
           class="max-w-3xl mx-auto bg-gradient-to-br from-slate-100 to-slate-200 dark:from-darkBg-card dark:to-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-darkBg-border shadow-xl space-y-6"
         >
@@ -586,11 +619,11 @@
             </nav>
           </div>
           <nav class="mobile-footer-legal flex items-center justify-center md:justify-end gap-4" aria-label="Links de Ajuda e Legal">
-            <a href="#" @click.prevent="selectTab('politica-de-privacidade')" class="hover:text-primary transition-colors focus-visible:underline">Política de Privacidade</a>
+            <a href="/politica-de-privacidade/" @click.prevent="selectTab('politica-de-privacidade')" class="hover:text-primary transition-colors focus-visible:underline">Política de Privacidade</a>
             <span aria-hidden="true">•</span>
-            <a href="#" @click.prevent="selectTab('termos-de-uso')" class="hover:text-primary transition-colors focus-visible:underline">Termos de Uso</a>
+            <a href="/termos-de-uso/" @click.prevent="selectTab('termos-de-uso')" class="hover:text-primary transition-colors focus-visible:underline">Termos de Uso</a>
             <span aria-hidden="true">•</span>
-            <a href="#" @click.prevent="selectTab('contato')" class="hover:text-primary transition-colors focus-visible:underline">Contato</a>
+            <a href="/contato/" @click.prevent="selectTab('contato')" class="hover:text-primary transition-colors focus-visible:underline">Contato</a>
           </nav>
         </div>
       </footer>
@@ -600,6 +633,7 @@
 
   <!-- AVISO DE CONSENTIMENTO DE COOKIES -->
   <section
+    x-cloak
     x-show="showCookieBanner"
     x-transition:enter="transition ease-out duration-300"
     x-transition:enter-start="opacity-0 translate-y-4"
@@ -618,7 +652,7 @@
           <h2 class="font-bold text-slate-900 dark:text-white">Cookies e privacidade</h2>
           <p id="cookie-consent-description" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             Usamos cookies e tecnologias semelhantes para exibir anúncios e manter o site sustentável. Você pode aceitar ou recusar cookies de publicidade. Saiba mais na
-            <a href="#" @click.prevent="selectTab('politica-de-privacidade')" class="text-primary hover:underline font-semibold">Política de Privacidade</a>.
+            <a href="/politica-de-privacidade/" @click.prevent="selectTab('politica-de-privacidade')" class="text-primary hover:underline font-semibold">Política de Privacidade</a>.
           </p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 sm:flex-shrink-0">

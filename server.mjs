@@ -1,12 +1,12 @@
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
-import { extname, join, normalize, sep } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('.', import.meta.url)).replace(/[\\/]$/, '');
 const port = Number(process.env.PORT) || 8080;
-const siteOrigin = 'https://faytor.com.br';
+const siteOrigin = 'https://www.faytor.com.br';
 const noindexRoutes = new Set(['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos']);
 const errorMessages = {
   400: ['Solicitação inválida', 'Não foi possível entender essa solicitação. Verifique o endereço e tente novamente.'],
@@ -24,13 +24,14 @@ const pageMetadata = {
   jsonformatter: ['Formatador JSON - Formatar, Validar e Visualizar JSON | Faytor', 'Formate, valide e visualize JSON online de forma rápida e gratuita.'],
   base64: ['Codificador e Decodificador Base64 Online | Faytor', 'Codifique e decodifique textos em Base64 online gratuitamente.'],
   'gerador-cpf': ['Gerador de CPF Online - Gerar CPF Válido para Testes | Faytor', 'Gere números de CPF válidos para testes e desenvolvimento.'],
+  'gerador-endereco': ['Gerador de CEP e Endereço Online para Testes | Faytor', 'Gere endereços brasileiros reais consultados no ViaCEP para testes e desenvolvimento.'],
   'gerador-cnpj': ['Gerador de CNPJ Online - Gerar CNPJ Válido para Testes | Faytor', 'Gere números de CNPJ válidos para testes e desenvolvimento.'],
   'gerador-cns': ['Gerador de CNS Online - Cartão Nacional de Saúde | Faytor', 'Gere números de CNS válidos para testes e desenvolvimento.'],
   'gerador-rg': ['Gerador de RG Online - Gerar Registro Geral para Testes | Faytor', 'Gere números de RG fictícios para testes e desenvolvimento.'],
   'gerador-pis': ['Gerador de PIS/PASEP Online - Gerar PIS Válido | Faytor', 'Gere números de PIS/PASEP válidos para testes e desenvolvimento.'],
   'gerador-nomes': ['Gerador de Nomes Online - Nomes Fictícios Aleatórios | Faytor', 'Gere nomes fictícios aleatórios online para testes e desenvolvimento.'],
   'gerador-celular': ['Gerador de Celular Online - Números de Telefone Válidos | Faytor', 'Gere números de celular fictícios para testes e desenvolvimento.'],
-  'gerador-email': ['Gerador de E-mail Temporário e Aleatório | Faytor', 'Gere endereços de e-mail fictícios e aleatórios para testes.'],
+  'gerador-email': ['Gerador de E-mail Fictício para Testes | Faytor', 'Gere endereços de e-mail fictícios e aleatórios para testes.'],
   'gerador-senhas': ['Gerador de Senhas Online | Faytor', 'Gere senhas fortes e aleatórias online com opções personalizadas.'],
   'validador-cpf': ['Validador de CPF Online - Verificar CPF Válido | Faytor', 'Valide números de CPF online de forma rápida e gratuita.'],
   'validador-cnpj': ['Validador de CNPJ Online - Verificar CNPJ Válido | Faytor', 'Valide números de CNPJ online de forma rápida e gratuita.'],
@@ -62,12 +63,15 @@ const sendFile = (response, filePath) => {
   createReadStream(filePath).pipe(response);
 };
 
-const sendPage = async (response, route) => {
+export const renderPage = async (route) => {
   const file = await readFile(join(root, 'index.html'), 'utf8');
   const viewFile = route === 'home' ? 'inicio.html' : `${route}.html`;
   const view = await readFile(join(root, 'views', viewFile), 'utf8');
-  const [title, description] = pageMetadata[route];
-  const canonical = `${siteOrigin}${route === 'home' ? '/' : `/${route}`}`;
+  const [title, description] = pageMetadata[route] || [
+    'Faytor - Ferramentas Online',
+    'Ferramenta online gratuita do Faytor.'
+  ];
+  const canonical = `${siteOrigin}${route === 'home' ? '/' : `/${route}/`}`;
   // Em rotas com barra final, os assets relativos seriam buscados dentro da
   // pasta da rota. A base mantém CSS, JS e views apontando para a raiz do site.
   const fileWithBase = route === 'home' ? file : file.replace('<head>', '<head><base href="/">');
@@ -90,8 +94,13 @@ const sendPage = async (response, route) => {
   const withSocialImage = withServerView
     .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${image}$2`)
     .replace(/(<meta property="twitter:image" content=")[^"]*(">)/, `$1${image}$2`);
+  return withSocialImage;
+};
+
+const sendPage = async (response, route) => {
+  const html = await renderPage(route);
   response.writeHead(200, { 'Content-Type': mimeTypes['.html'] });
-  response.end(withSocialImage);
+  response.end(html);
 };
 
 const sendError = async (response, statusCode, responseStatus = statusCode) => {
@@ -108,7 +117,7 @@ const sendError = async (response, statusCode, responseStatus = statusCode) => {
   response.end(html);
 };
 
-createServer(async (request, response) => {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) createServer(async (request, response) => {
   try {
     const requestPath = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const route = requestPath.replace(/^\/+|\/+$/g, '') || 'home';
@@ -119,7 +128,12 @@ createServer(async (request, response) => {
       return;
     }
 
-    if (pageMetadata[route] && !extname(requestPath)) {
+    const routeViewName = route === 'home' ? 'inicio' : route;
+    const routeView = join(root, 'views', `${routeViewName}.html`);
+    const hasRouteView = !extname(requestPath) && route !== 'error'
+      && Boolean(await stat(routeView).catch(() => null));
+
+    if (hasRouteView) {
       await sendPage(response, route);
       return;
     }
