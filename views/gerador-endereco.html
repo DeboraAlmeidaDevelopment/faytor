@@ -2,7 +2,7 @@
   <div>
     <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Geradores</span>
     <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de Endereço</h1>
-    <p class="text-slate-500 dark:text-slate-400 mt-2">Gere um endereço brasileiro real consultado no ViaCEP com CEP, logradouro, número, bairro, cidade e estado para testes e desenvolvimento.</p>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">Consulte CEP e logradouro pelo ViaCEP e gere um número de imóvel para testar formulários de endereço.</p>
   </div>
 
   <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
@@ -39,5 +39,9 @@
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O <strong>gerador de endereço</strong>, também conhecido como <strong>gerador de CEP</strong>, consulta cidades do IBGE e logradouros reais no ViaCEP. Um resultado é escolhido aleatoriamente entre as opções encontradas; o número é gerado para testes, pois o ViaCEP não informa a numeração dos imóveis.</p>
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Os endereços são reais?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O CEP, logradouro, bairro, cidade e estado são retornados pela consulta ao ViaCEP. O número não é validado como um imóvel específico e não deve ser usado como endereço de entrega.</p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como testar um formulário de endereço?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Selecione um estado e, se quiser restringir a busca, uma cidade. Gere um resultado para conferir se seu formulário aceita CEP, logradouro, bairro, cidade e UF nos campos corretos. O botão <strong>Gerar e Copiar</strong> produz outro resultado e copia os dados; os botões ao lado de cada campo copiam apenas aquela informação.</p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Por que a geração pode falhar?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A ferramenta depende das respostas do IBGE para listar municípios e do ViaCEP para localizar CEPs com logradouro na cidade escolhida. Uma falha de conexão ou a ausência de opções gera uma mensagem de erro. Nesse caso, tente novamente ou escolha outra cidade; a ferramenta não substitui a consulta por uma rua ou um CEP inventado.</p>
   </article>
 </section>
