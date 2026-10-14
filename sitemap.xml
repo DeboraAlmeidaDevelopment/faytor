@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.faytor.com.br/</loc></url>
+  <url><loc>https://www.faytor.com.br/gerador-json/</loc></url>
   <url><loc>https://www.faytor.com.br/wordcounter/</loc></url>
   <url><loc>https://www.faytor.com.br/jsonformatter/</loc></url>
   <url><loc>https://www.faytor.com.br/base64/</loc></url>
@@ -14,9 +15,17 @@
   <url><loc>https://www.faytor.com.br/gerador-celular/</loc></url>
   <url><loc>https://www.faytor.com.br/gerador-email/</loc></url>
   <url><loc>https://www.faytor.com.br/gerador-senhas/</loc></url>
+  <url><loc>https://www.faytor.com.br/gerador-hash/</loc></url>
+  <url><loc>https://www.faytor.com.br/gerador-lorem-ipsum/</loc></url>
+  <url><loc>https://www.faytor.com.br/gerador-numeros/</loc></url>
+  <url><loc>https://www.faytor.com.br/gerador-palavras/</loc></url>
   <url><loc>https://www.faytor.com.br/validador-cpf/</loc></url>
   <url><loc>https://www.faytor.com.br/validador-cnpj/</loc></url>
   <url><loc>https://www.faytor.com.br/validador-cns/</loc></url>
   <url><loc>https://www.faytor.com.br/validador-rg/</loc></url>
   <url><loc>https://www.faytor.com.br/validador-pis/</loc></url>
+  <url><loc>https://www.faytor.com.br/sobre-nos/</loc></url>
+  <url><loc>https://www.faytor.com.br/contato/</loc></url>
+  <url><loc>https://www.faytor.com.br/politica-de-privacidade/</loc></url>
+  <url><loc>https://www.faytor.com.br/termos-de-uso/</loc></url>
 </urlset>

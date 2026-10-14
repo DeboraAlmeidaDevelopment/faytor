@@ -26,10 +26,24 @@
         <div class="flex flex-col gap-1"><span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Estado</span><div class="flex overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"><input id="address-state-output" readonly class="min-w-0 flex-1 bg-transparent border-0 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none" aria-label="Estado gerado"><button type="button" data-copy-target="address-state-output" class="w-full sm:w-28 flex-shrink-0 text-white font-semibold px-3 py-3.5 rounded-none border-t sm:border-t-0 sm:border-l text-sm transition-all flex items-center justify-center space-x-1 bg-primary hover:bg-blue-700 border-primary" aria-label="Copiar estado gerado"><span class="text-xs font-bold">Copiar</span><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg></button></div></div>
       </div>
 
-      <div class="flex flex-col sm:flex-row gap-2">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap gap-2">
         <button type="button" id="address-generate" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar novo endereço"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg><span>Gerar</span></button>
         <button type="button" id="address-generate-copy" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar endereço e copiar para a área de transferência"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg><span>Gerar e Copiar</span></button>
         <button type="button" id="address-copy-all" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Copiar todos os dados do endereço"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg><span>Copiar todos</span></button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select id="address-export-format" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato para copiar e baixar o endereço">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" id="address-download" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo com o endereço gerado">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <span>Baixar arquivo</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -43,5 +57,11 @@
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Selecione um estado e, se quiser restringir a busca, uma cidade. Gere um resultado para conferir se seu formulário aceita CEP, logradouro, bairro, cidade e UF nos campos corretos. O botão <strong>Gerar e Copiar</strong> produz outro resultado e copia os dados; os botões ao lado de cada campo copiam apenas aquela informação.</p>
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Por que a geração pode falhar?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A ferramenta depende das respostas do IBGE para listar municípios e do ViaCEP para localizar CEPs com logradouro na cidade escolhida. Uma falha de conexão ou a ausência de opções gera uma mensagem de erro. Nesse caso, tente novamente ou escolha outra cidade; a ferramenta não substitui a consulta por uma rua ou um CEP inventado.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Copiar e baixar em TXT, CSV ou JSON</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Escolha o formato ao lado do botão <strong>Baixar arquivo</strong>. O mesmo formato vale para <strong>Copiar todos</strong> e <strong>Gerar e Copiar</strong>. O TXT traz um campo por linha, com rótulos. O CSV usa ponto e vírgula como separador, que abre corretamente no Excel em português, com as colunas <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cep;logradouro;numero;bairro;cidade;estado;uf</code>. O JSON traz um objeto com esses mesmos campos, útil para simular a resposta de uma API ou montar fixtures de teste.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Por que não há geração em lote de endereços?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Cada endereço depende de consultas ao IBGE e ao ViaCEP feitas no momento da geração. Gerar centenas de endereços de uma vez exigiria centenas de consultas a um serviço público e gratuito, o que deixaria a ferramenta lenta e poderia levar o serviço a recusar novas consultas. Por isso, a geração continua sendo de um endereço por vez.</p>
   </article>
 </section>

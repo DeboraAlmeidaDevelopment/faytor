@@ -4,7 +4,7 @@ import { renderPage } from '../server.mjs';
 
 const outputRoot = resolve(process.argv[2] || '_site');
 await mkdir(outputRoot, { recursive: true });
-for (const asset of ['css', 'js', 'views', 'img', 'sitemap.xml', 'robots.txt', 'ads.txt']) {
+for (const asset of ['css', 'js', 'views', 'img', 'sitemap.xml', 'robots.txt', 'ads.txt', 'favicon.ico', 'site.webmanifest']) {
   await cp(resolve(asset), join(outputRoot, asset), { recursive: true });
 }
 

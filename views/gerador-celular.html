@@ -5,51 +5,18 @@
     withPunctuation: localStorage.getItem('faytor.celular.withPunctuation') !== 'false',
     state: localStorage.getItem('faytor.celular.state') || 'random',
     copied: false,
-    dddMap: {
-      AC: [68], AL: [82], AP: [96], AM: [92, 97], BA: [71, 73, 74, 75, 77], CE: [85, 88], DF: [61], ES: [27, 28],
-      GO: [62, 64], MA: [98, 99], MT: [65, 66], MS: [67], MG: [31, 32, 33, 34, 35, 37, 38], PA: [91, 93, 94],
-      PB: [83], PR: [41, 42, 43, 44, 45, 46], PE: [81, 87], PI: [86, 89], RJ: [21, 22, 24], RN: [84],
-      RS: [51, 53, 54, 55], RO: [69], RR: [95], SC: [47, 48, 49], SP: [11, 12, 13, 14, 15, 16, 17, 18, 19],
-      SE: [79], TO: [63]
-    },
     generate() {
       this.copied = false;
-      let activeState = this.state;
-      if (activeState === 'random') {
-        const keys = Object.keys(this.dddMap);
-        activeState = keys[Math.floor(Math.random() * keys.length)];
-      }
-
-      const ddds = this.dddMap[activeState] || [11];
-      const selectedDdd = ddds[Math.floor(Math.random() * ddds.length)];
-
-      // Mobile numbers in Brazil: 9 + 8 random digits (usually starts with 9, e.g. 9XXXX-XXXX)
-      let numDigits = '9';
-      for (let i = 0; i < 8; i++) {
-        numDigits += Math.floor(Math.random() * 10);
-      }
-
-      this.formatNumber(selectedDdd, numDigits);
-    },
-    formatNumber(ddd, num) {
-      if (this.withPunctuation) {
-        // Format: (DD) 9XXXX-XXXX
-        this.generatedCelular = `(${ddd}) ${num.slice(0, 5)}-${num.slice(5)}`;
-      } else {
-        // Format: DD9XXXXXXXX
-        this.generatedCelular = `${ddd}${num}`;
-      }
+      this.generatedCelular = window.faytorGenerators.celular({ state: this.state, punctuation: this.withPunctuation });
     },
     togglePunctuation() {
       this.withPunctuation = !this.withPunctuation;
       localStorage.setItem('faytor.celular.withPunctuation', this.withPunctuation);
 
-      // Re-format existing number if possible
+      // Reformata o número atual quando possível.
       const rawDigits = this.generatedCelular.replace(/\D/g, '');
       if (rawDigits.length === 11) {
-        const ddd = rawDigits.slice(0, 2);
-        const num = rawDigits.slice(2);
-        this.formatNumber(ddd, num);
+        this.generatedCelular = window.faytorGenerators.formatCelular(rawDigits, this.withPunctuation);
       } else {
         this.generate();
       }
@@ -67,7 +34,7 @@
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
-  x-init="generate()"
+  x-init="queueMicrotask(() => generate())"
   class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de Celular"
 >

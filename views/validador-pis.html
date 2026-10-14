@@ -4,54 +4,15 @@
   errorMessage: '',
   formattedVal: '',
   rawVal: '',
+  steps: [],
 
   validate() {
-    this.errorMessage = '';
-    this.isValid = null;
-    this.formattedVal = '';
-    this.rawVal = '';
-
-    const clean = this.docInput.replace(/\D/g, '');
-    if (!clean) {
-      this.isValid = null;
-      return;
-    }
-
-    this.rawVal = clean;
-
-    if (clean.length !== 11) {
-      this.isValid = false;
-      this.errorMessage = 'O PIS/PASEP deve possuir exatamente 11 dígitos numéricos.';
-      return;
-    }
-
-    if (/^(\d)\1{10}$/.test(clean)) {
-      this.isValid = false;
-      this.errorMessage = 'PIS/PASEP com todos os dígitos iguais são inválidos.';
-      return;
-    }
-
-    // Weights: 3, 2, 9, 8, 7, 6, 5, 4, 3, 2
-    const weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    let sum = 0;
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(clean[i]) * weights[i];
-    }
-
-    const remainder = sum % 11;
-    let expected = 11 - remainder;
-    if (expected === 10 || expected === 11) {
-      expected = 0;
-    }
-
-    if (parseInt(clean[10]) !== expected) {
-      this.isValid = false;
-      this.errorMessage = 'Dígito verificador do PIS inválido.';
-      return;
-    }
-
-    this.isValid = true;
-    this.formattedVal = clean.replace(/(\d{3})(\d{5})(\d{2})(\d{1})/, '$1.$2.$3-$4');
+    const result = window.faytorDocuments.pis.validate(this.docInput);
+    this.isValid = result ? result.valid : null;
+    this.errorMessage = result ? result.error : '';
+    this.rawVal = result ? result.raw : '';
+    this.formattedVal = result && result.valid ? result.formatted : '';
+    this.steps = result ? result.steps : [];
   },
 
   clearAll() {
@@ -60,6 +21,7 @@
     this.errorMessage = '';
     this.formattedVal = '';
     this.rawVal = '';
+    this.steps = [];
   }
 }" x-init="$watch('docInput', () => validate())">
 
@@ -122,7 +84,7 @@
     <!-- FEEDBACK BLOCK -->
     <div id="validation-status" aria-live="polite">
       <!-- Empty State -->
-      <div x-show="isValid === null" class="flex items-center space-x-3 text-slate-400 dark:text-slate-500 text-sm py-2">
+      <div x-show="isValid === null" class="flex items-center space-x-3 text-slate-500 dark:text-slate-400 text-sm py-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -166,26 +128,156 @@
     </div>
   </div>
 
-  <!-- SEO SEO/COPYWRITING SECTION -->
-  <div class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-6">
-    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
-      O que é o PIS e o PASEP?
-    </h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      O <strong>PIS (Programa de Integração Social)</strong> é voltado a empregados de empresas privadas e administrado pela Caixa Econômica Federal. Já o <strong>PASEP (Programa de Formação do Patrimônio do Servidor Público)</strong> é destinado a servidores públicos, militares e empregados de estatais, sob administração do Banco do Brasil. Ambos partilham da mesma estrutura de identificação numérica unificada de 11 dígitos, chamada de NIS (Número de Identificação Social).
-    </p>
+  <!-- Passo a passo do cálculo -->
+  <section x-show="steps.length" x-cloak class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-4" aria-labelledby="calculation-title">
+    <div>
+      <h2 id="calculation-title" class="text-lg font-bold text-slate-900 dark:text-white">Como chegamos a este resultado</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O cálculo é refeito com o número digitado. Confira cada etapa para localizar a posição que diverge.</p>
+    </div>
+    <ol class="space-y-3">
+      <template x-for="(step, index) in steps" :key="index">
+        <li class="rounded-2xl border p-4" :class="step.ok === false ? 'border-rose-500/30 bg-rose-500/5' : (step.ok ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60')">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-sm font-bold text-slate-800 dark:text-slate-100" x-text="`${index + 1}. ${step.title}`"></span>
+            <span x-show="step.ok !== undefined" class="text-xs font-bold" :class="step.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="step.ok ? 'Confere' : 'Não confere'"></span>
+          </div>
+          <p class="mt-2 break-words font-mono text-xs leading-relaxed text-slate-600 dark:text-slate-300" x-text="step.detail"></p>
+        </li>
+      </template>
+    </ol>
+  </section>
 
-    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
-      Algoritmo de cálculo do PIS/PASEP
-    </h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      A validação do dígito de controle do PIS/PASEP é feita através de somas de pesos fixos aplicados aos 10 primeiros caracteres. Os pesos respectivos são: <strong>3, 2, 9, 8, 7, 6, 5, 4, 3, 2</strong>.
-    </p>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Após somar o produto de cada elemento, calcula-se o resto da divisão dessa soma por 11. O dígito verificador deve ser exatamente a diferença de 11 menos o resto encontrado. Se o resto for menor que 2 (ou seja, 0 ou 1), o dígito verificador final é convencionado para ser zero.
-    </p>
-    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">O que a validação não verifica?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O resultado confere apenas comprimento e dígito verificador. Um PIS/PASEP matematicamente válido pode não estar cadastrado ou não pertencer à pessoa informada. Para conferir vínculo, titularidade ou benefício, use o canal oficial responsável pelo cadastro.</p>
-  </div>
+  <!-- Validação em lote -->
+  <section x-data="documentBatchValidator('pis')" class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-5" aria-labelledby="pis-batch-title">
+    <div>
+      <h2 id="pis-batch-title" class="text-lg font-bold text-slate-900 dark:text-white">Validar PIS/PASEP em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Cole até 1.000 números, um por linha. A validação acontece no navegador, e o resultado pode ser copiado ou baixado em CSV.</p>
+    </div>
 
+    <div class="relative flex flex-col overflow-hidden rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 sm:flex-row">
+      <div class="relative flex-1 min-w-0">
+        <textarea
+          id="pis-batch-input"
+          x-model="input"
+          rows="6"
+          placeholder="Um PIS/PASEP por linha"
+          class="block w-full resize-none border-0 bg-transparent p-4 pr-12 font-mono text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-0"
+          aria-label="Lista de PIS/PASEP para validação em lote"
+        ></textarea>
+        <button x-show="input.length > 0" type="button" @click="clear()" class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Limpar lista">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <button type="button" @click="pasteToInput('pis-batch-input')" class="w-full sm:w-28 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 border-t sm:border-t-0 sm:border-l border-primary text-sm transition-all flex items-center justify-center space-x-2" aria-label="Colar lista da área de transferência">
+        <span class="text-xs font-bold">Colar</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-5-2h4a1 1 0 011 1v1H9V4a1 1 0 011-1zM7 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1M9 12h6m-6 4h4" /></svg>
+      </button>
+    </div>
+
+    <div x-show="results.length" x-cloak class="space-y-4" aria-live="polite">
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span class="rounded-full bg-emerald-500/10 px-3 py-1 font-bold text-emerald-600 dark:text-emerald-400" x-text="`${validCount} válido${validCount === 1 ? '' : 's'}`"></span>
+        <span class="rounded-full bg-rose-500/10 px-3 py-1 font-bold text-rose-600 dark:text-rose-400" x-text="`${invalidCount} inválido${invalidCount === 1 ? '' : 's'}`"></span>
+        <span x-show="truncated" class="text-xs text-slate-500 dark:text-slate-400">Somente as primeiras 1.000 linhas foram analisadas.</span>
+      </div>
+
+      <div class="max-h-96 overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full border-collapse text-left text-sm">
+          <thead class="sticky top-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+            <tr>
+              <th scope="col" class="px-3 py-2 font-semibold">#</th>
+              <th scope="col" class="px-3 py-2 font-semibold">Documento</th>
+              <th scope="col" class="px-3 py-2 font-semibold">Resultado</th>
+              <th scope="col" class="px-3 py-2 font-semibold">Motivo</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-600 dark:text-slate-300">
+            <template x-for="(result, index) in results" :key="index">
+              <tr class="border-t border-slate-200 dark:border-slate-800">
+                <td class="px-3 py-2 text-slate-400" x-text="index + 1"></td>
+                <td class="px-3 py-2 font-mono whitespace-nowrap" x-text="result.input"></td>
+                <td class="px-3 py-2 font-bold whitespace-nowrap" :class="result.valid ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="result.valid ? 'Válido' : 'Inválido'"></td>
+                <td class="px-3 py-2 min-w-[12rem]" x-text="result.error || '—'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button
+            type="button"
+            @click="copy()"
+            class="rounded-xl border px-6 text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar resultado da validação em CSV"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+        <button type="button" @click="download()" class="border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2" aria-label="Baixar resultado da validação em CSV">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar CSV</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
+  <article class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que o validador confere</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Depois de remover pontos, traços e espaços, o validador verifica:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Tamanho:</strong> exatamente 11 dígitos.</li>
+      <li><strong>Sequência repetida:</strong> números com todos os dígitos iguais são recusados.</li>
+      <li><strong>Dígito verificador:</strong> soma dos 10 primeiros dígitos com os pesos 3, 2, 9, 8, 7, 6, 5, 4, 3 e 2. O dígito esperado é 11 menos o resto da divisão por 11, e os resultados 10 e 11 viram 0.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A regra vale para PIS, PASEP, NIT e NIS, que compartilham o mesmo formato.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exemplo de número inválido</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Digite <strong>120.33928.73-4</strong>. A soma ponderada é 175, o resto é 10 e o dígito esperado é 11 − 10 = 1, mas o informado é 4. O validador responde "Dígito verificador do PIS inválido", e o quadro <strong>Como chegamos a este resultado</strong> mostra cada multiplicação.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Por que a validação do CPF não serve para o PIS</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Os dois documentos têm 11 dígitos, mas a semelhança para aí. O CPF tem dois dígitos verificadores, e o PIS tem só um, calculado com outra sequência de pesos. Na maioria dos casos, um PIS válido não passa na validação de CPF, e vice-versa. Formulários que aceitam "CPF ou PIS" no mesmo campo precisam testar as duas regras e informar qual documento foi reconhecido.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como validar PIS/PASEP em JavaScript</h2>
+
+    <pre class="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100"><code>function validarPIS(valor) {
+  const pis = String(valor).replace(/\D/g, '');
+  if (pis.length !== 11 || /^(\d)\1{10}$/.test(pis)) return false;
+  const pesos = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const soma = pesos.reduce((total, peso, i) =&gt; total + Number(pis[i]) * peso, 0);
+  const digito = 11 - (soma % 11);
+  return Number(pis[10]) === (digito &gt;= 10 ? 0 : digito);
+}
+
+validarPIS('120.33928.73-1'); // true</code></pre>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como validar PIS/PASEP em Python</h2>
+
+    <pre class="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100"><code>import re
+
+PESOS = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+def validar_pis(valor: str) -&gt; bool:
+    pis = re.sub(r"\D", "", valor)
+    if len(pis) != 11 or pis == pis[0] * 11:
+        return False
+    digito = 11 - sum(int(n) * p for n, p in zip(pis, PESOS)) % 11
+    return int(pis[10]) == (0 if digito &gt;= 10 else digito)</code></pre>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Conferindo listas de funcionários</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Para revisar uma planilha de cadastro, copie a coluna de PIS e cole na seção <strong>Validar PIS/PASEP em lote</strong>, que aceita até 1.000 linhas. O CSV exportado traz o número, o resultado e o motivo, o que facilita localizar os registros com erro de digitação. Para criar números de teste, use o <a href="/gerador-pis/" @click.prevent="selectTab('gerador-pis')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de PIS/PASEP</a>.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">O que a validação não verifica</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O resultado confirma apenas o tamanho e o dígito verificador. Ele não consulta Caixa, Banco do Brasil ou INSS, e não informa se o número está cadastrado, a quem pertence ou se há benefício a receber.</p>
+  </article>
 </div>

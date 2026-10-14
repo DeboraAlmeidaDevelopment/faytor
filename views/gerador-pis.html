@@ -6,33 +6,8 @@
     copied: false,
     generate() {
       this.copied = false;
-      // PIS/PASEP is composed of 11 digits:
-      // XXX.XXXXX.XX.Y
-      let digits = [];
-      for (let i = 0; i < 10; i++) {
-        digits.push(Math.floor(Math.random() * 10));
-      }
-
-      // Calculate verification digit using standard PIS algorithm:
-      // Weight array for first 10 digits: 3, 2, 9, 8, 7, 6, 5, 4, 3, 2
-      let weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      let sum = 0;
-      for (let i = 0; i < 10; i++) {
-        sum += digits[i] * weights[i];
-      }
-
-      let rest = sum % 11;
-      let dv = 11 - rest;
-      if (dv === 10 || dv === 11) {
-        dv = 0;
-      }
-
-      let raw = digits.join('') + dv;
-      if (document.getElementById('pis-with-punctuation').checked) {
-        this.generatedPis = raw.replace(/^(\d{3})(\d{5})(\d{2})(\d{1})$/, '$1.$2.$3-$4');
-      } else {
-        this.generatedPis = raw;
-      }
+      const raw = window.faytorDocuments.pis.generate();
+      this.generatedPis = document.getElementById('pis-with-punctuation').checked ? window.faytorDocuments.pis.format(raw) : raw;
     },
     copy() {
       const value = this.generatedPis;
@@ -42,7 +17,7 @@
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
-  x-init="generate()"
+  x-init="queueMicrotask(() => generate())"
   class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de PIS/PASEP"
 >
@@ -128,22 +103,96 @@
     </div>
   </div>
 
-  <!-- SEO / Informative Content -->
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'pis', column: 'pis_pasep' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="pis-batch-title">
+    <div>
+      <h2 id="pis-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar PIS/PASEP em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 números sem repetição para popular bancos e testes automatizados. O lote usa a pontuação escolhida acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de números do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="PIS/PASEP gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de PIS/PASEP"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de PIS/PASEP">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de PIS/PASEP e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de PIS/PASEP">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} números gerados.`"></p>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é o PIS/PASEP?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      O PIS (Programa de Integração Social) e o PASEP (Programa de Formação do Patrimônio do Servidor Público) são contribuições sociais devidas pelas empresas e órgãos públicos, com o objetivo de financiar o pagamento do seguro-desemprego, abono salarial e participação na receita dos órgãos e entidades para os trabalhadores públicos e privados.
-    </p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">PIS, PASEP, NIT e NIS: o mesmo formato</h2>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como o algoritmo do PIS valida o número?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      O número do PIS é composto por 11 dígitos, sendo o último o dígito verificador. O algoritmo utiliza multiplicadores específicos para calcular a integridade.
-      Os pesos multiplicadores aplicados aos 10 primeiros dígitos, da esquerda para a direita, são: 3, 2, 9, 8, 7, 6, 5, 4, 3, e 2. Multiplicam-se os dígitos correspondentes por esses pesos, somam-se os resultados, e o total é dividido por 11. O resto obtido é subtraído de 11 para encontrar o dígito verificador. Se o dígito resultante for 10 ou 11, o dígito verificador real é considerado como 0.
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O PIS (trabalhadores da iniciativa privada) e o PASEP (servidores públicos) são cadastros diferentes, mas usam o mesmo formato de número, assim como o NIT, usado pelo INSS, e o NIS, usado em programas sociais. São 11 dígitos exibidos como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">000.00000.00-0</code>, em que o último é o dígito verificador. Por isso, um único gerador e um único validador atendem a todos esses campos.</p>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve o gerador de PIS/PASEP?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Use o resultado para testar campos de 11 dígitos, máscara e cálculo do dígito verificador em sistemas de RH. A ferramenta não consulta cadastros oficiais, não verifica vínculo trabalhista nem direito a benefícios. Um número gerado pode coincidir com um registro existente; use dados autorizados em integrações reais.
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Esses números ainda aparecem em sistemas de RH, folha de pagamento e integrações previdenciárias, que precisam aceitar, mascarar e validar o campo corretamente.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exemplo: calculando o dígito verificador</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O PIS usa uma sequência própria de pesos, que não começa em 10 como no CPF: <strong>3, 2, 9, 8, 7, 6, 5, 4, 3, 2</strong>. Partindo da base <strong>1203392873</strong>:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1×3 + 2×2 + 0×9 + 3×8 + 3×7 + 9×6 + 2×5 + 8×4 + 7×3 + 3×2 = 175</code>.</li>
+      <li>O resto de 175 ÷ 11 é 10, e o dígito é 11 − 10 = 1.</li>
+      <li>Resultado: <strong>120.33928.73-1</strong>.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Quando 11 menos o resto dá 10 ou 11, o dígito vira 0. Com a base 1234567890, a soma é 231, o resto é 0, e 11 − 0 = 11, então o número fica <strong>123.45678.90-0</strong>.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar PIS/PASEP em lote</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar PIS/PASEP em lote</strong> cria até 1.000 números distintos em TXT, CSV (cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">pis_pasep</code>) ou JSON, com ou sem pontuação, conforme a opção escolhida acima. Um uso comum é preencher funcionários fictícios em ambientes de homologação de folha de pagamento, testando importações, relatórios e geração de arquivos de integração sem expor dados de trabalhadores reais.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Armazenamento e máscara</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Guarde o número como texto de 11 caracteres, só com dígitos. A máscara do PIS (3-5-2-1) é diferente da do CPF (3-3-3-2), e reutilizar a máscara do CPF é um erro frequente em formulários que pedem os dois documentos. Exporte um lote com pontuação para conferir se o campo exibe os pontos nas posições certas.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Limites</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O gerador calcula apenas o dígito verificador e não consulta Caixa, Banco do Brasil ou INSS. O número gerado não indica vínculo empregatício nem direito a abono ou benefício, e pode coincidir com um cadastro real. Use-o apenas em testes. Para conferir um número existente, use o <a href="/validador-pis/" @click.prevent="selectTab('validador-pis')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Validador de PIS/PASEP</a>.</p>
   </article>
 </section>

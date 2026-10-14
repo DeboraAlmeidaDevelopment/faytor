@@ -1,0 +1,265 @@
+<!-- ==================== SUB-VIEW: GERADOR DE NÚMEROS ==================== -->
+<section
+  x-data="{
+    generated: '',
+    copied: false,
+    error: '',
+    options: Object.assign(Object.fromEntries(window.faytorGenerators.numberOptions.map(option => [option.key, option.default])), (() => { try { return JSON.parse(localStorage.getItem('faytor.numeros.opcoes')) || {}; } catch { return {}; } })()),
+    formats: [['integer', 'Inteiro'], ['decimal', 'Decimal'], ['money', 'Dinheiro']],
+    currencies: [['BRL', 'Real (R$ 1.234,56)'], ['USD', 'Dólar ($1,234.56)']],
+    limits: [['digits', 'Quantidade de dígitos'], ['range', 'Intervalo (mín. e máx.)']],
+    styles: [['br', 'Brasileiro (1.234,56)'], ['us', 'Americano (1,234.56)']],
+    generate() {
+      this.copied = false;
+      try {
+        this.generated = this.buildNumber();
+        this.error = '';
+      } catch (error) {
+        this.generated = '';
+        this.error = `Não foi possível gerar: ${error.message}.`;
+      }
+    },
+    buildNumber() {
+      return window.faytorGenerators.numero(this.options);
+    },
+    save() {
+      try { localStorage.setItem('faytor.numeros.opcoes', JSON.stringify(this.options)); } catch {}
+      this.generate();
+    },
+    copy() {
+      const value = this.generated;
+      if (!value || !navigator.clipboard) return;
+      navigator.clipboard.writeText(value);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="$watch('options', () => save(), { deep: true }); queueMicrotask(() => generate())"
+  class="w-full max-w-4xl mx-auto space-y-6"
+  aria-label="Gerador de números aleatórios"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Números</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de Números Aleatórios</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">Gere números inteiros, decimais ou valores em dinheiro (R$ e US$), por quantidade de dígitos ou dentro de um intervalo, com separadores no padrão brasileiro ou americano.</p>
+  </div>
+
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-end justify-start gap-4 sm:gap-6">
+        <label class="flex w-full flex-col gap-1 sm:w-40">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Formato</span>
+          <div class="relative">
+            <select x-model="options.format" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Selecionar formato do número">
+              <template x-for="option in formats" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === options.format"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-56" x-show="options.format === 'money'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Moeda</span>
+          <div class="relative">
+            <select x-model="options.currency" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Selecionar moeda">
+              <template x-for="option in currencies" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === options.currency"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+        <label class="flex flex-col items-start gap-2 cursor-pointer select-none" x-show="options.format === 'money'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Símbolo da moeda</span>
+          <input type="checkbox" x-model="options.symbol" class="peer sr-only" aria-label="Mostrar símbolo da moeda">
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:bg-slate-700 dark:peer-focus-visible:ring-offset-darkBg-card dark:peer-checked:bg-primary" aria-hidden="true">
+            <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="options.symbol ? 'translate-x-6' : 'translate-x-1'"></span>
+          </span>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-56">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Limitar por</span>
+          <div class="relative">
+            <select x-model="options.limit" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Selecionar como limitar o número">
+              <template x-for="option in limits" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === options.limit"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-32" x-show="options.limit !== 'range'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Dígitos</span>
+          <input type="number" inputmode="numeric" step="1" min="1" max="15" x-model.number="options.digits" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de dígitos da parte inteira">
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-36" x-show="options.limit === 'range'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Mínimo</span>
+          <input type="number" inputmode="decimal" step="any" x-model.number="options.min" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Valor mínimo">
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-36" x-show="options.limit === 'range'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Máximo</span>
+          <input type="number" inputmode="decimal" step="any" :min="options.min" x-model.number="options.max" :aria-invalid="(Number(options.max) < Number(options.min)).toString()" aria-describedby="numero-intervalo-erro" class="w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" :class="Number(options.max) < Number(options.min) ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'" aria-label="Valor máximo">
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-32" x-show="options.format === 'decimal'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Casas decimais</span>
+          <input type="number" inputmode="numeric" step="1" min="1" max="10" x-model.number="options.decimals" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de casas decimais">
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-56" x-show="options.format !== 'money'">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Separadores</span>
+          <div class="relative">
+            <select x-model="options.style" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Selecionar padrão de separadores">
+              <template x-for="option in styles" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === options.style"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+        <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Separar milhares</span>
+          <input type="checkbox" x-model="options.thousands" class="peer sr-only" aria-label="Separar milhares">
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:bg-slate-700 dark:peer-focus-visible:ring-offset-darkBg-card dark:peer-checked:bg-primary" aria-hidden="true">
+            <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="options.thousands ? 'translate-x-6' : 'translate-x-1'"></span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
+        <div class="flex flex-col sm:flex-row flex-1 min-w-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+          <input
+            type="text"
+            id="numero-generated"
+            x-model="generated"
+            readonly
+            class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-sm min-[400px]:text-base min-[500px]:text-lg sm:text-2xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none"
+            aria-label="Número gerado"
+          >
+          <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar número"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar número">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <span>Gerar</span>
+          </button>
+          <button type="button" @click="generate(); copy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar número e copiar para a área de transferência">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <span>Gerar e Copiar</span>
+          </button>
+        </div>
+      </div>
+      <p id="numero-intervalo-erro" x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+    </div>
+  </div>
+
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'numero', column: 'numero', method: 'buildNumber', file: 'numeros' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="numero-batch-title">
+    <div>
+      <h2 id="numero-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar números em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 números sem repetição para popular bancos e testes automatizados. O lote usa as opções escolhidas acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de números do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="números gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de números"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de números">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de números e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de números">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} números gerados.`"></p>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Como usar o gerador de números aleatórios</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Escolha o <strong>formato</strong> do número e como ele deve ser limitado. As demais opções aparecem conforme o formato escolhido, para que a tela mostre só o que faz sentido:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Inteiro:</strong> números sem casas decimais, como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">48213</code>.</li>
+      <li><strong>Decimal:</strong> números com de 1 a 10 casas decimais, como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">482,137</code>.</li>
+      <li><strong>Dinheiro:</strong> valores com 2 casas decimais em Real (<code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">R$ 4.821,37</code>) ou Dólar (<code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">$4,821.37</code>), com ou sem o símbolo da moeda.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Quantidade de dígitos ou intervalo</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Em <strong>Quantidade de dígitos</strong>, você define quantos algarismos a parte inteira deve ter, de 1 a 15. Com 4 dígitos, o resultado fica entre 1000 e 9999: o primeiro dígito nunca é zero, para que o número tenha exatamente o tamanho pedido. Essa opção é útil para testar limites de campos, como um código de 6 dígitos ou um valor que não pode passar de 15 algarismos.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Em <strong>Intervalo</strong>, você informa o mínimo e o máximo, e o número é sorteado entre eles, incluindo os dois extremos. O intervalo aceita negativos e valores decimais: com mínimo 0,10, máximo 0,30 e 2 casas decimais, os resultados possíveis vão de 0,10 a 0,30. Se o intervalo não contiver nenhum valor com a quantidade de casas escolhida, como de 0,111 a 0,119 com 2 casas, a ferramenta avisa em vez de gerar um número fora do intervalo.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Vírgula ou ponto: padrões de separadores</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O Brasil usa vírgula para separar os decimais e ponto para agrupar os milhares. Os Estados Unidos fazem o contrário. Em vez de dois campos que poderiam se contradizer, a ferramenta oferece uma única escolha de padrão:</p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left text-sm text-slate-600 dark:text-slate-300">
+        <thead><tr><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Padrão</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Inteiro com milhares</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Decimal com milhares</th></tr></thead>
+        <tbody>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Brasileiro</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1.234.567</code></td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1.234.567,89</code></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Americano</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1,234,567</code></td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1,234,567.89</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A opção <strong>Separar milhares</strong> liga ou desliga o agrupamento. Sem ela, os números saem como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1234567,89</code>, formato comum em planilhas e campos que não aceitam pontuação. Em dinheiro, o padrão segue a moeda: Real usa o brasileiro e Dólar, o americano.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve</h2>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Testes de formulário:</strong> confirme se campos de valor aceitam vírgula, ponto, separador de milhares e o símbolo da moeda.</li>
+      <li><strong>Massa de dados:</strong> gere preços, quantidades e saldos em lote para popular tabelas de teste. Exporte em CSV ou JSON.</li>
+      <li><strong>Sorteios simples:</strong> sorteie um número em um intervalo, como de 1 a 100.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Os valores também estão disponíveis como variável no <a href="/gerador-json/" @click.prevent="selectTab('gerador-json')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de JSON</a>, com as mesmas opções, para montar payloads com preços e quantidades.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Limites</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O sorteio usa o gerador de números pseudoaleatórios do navegador. Ele atende testes e sorteios informais, mas não deve ser usado em criptografia ou em sorteios com valor legal. Para guardar valores em dinheiro em sistemas reais, prefira tipos decimais ou inteiros em centavos, já que números de ponto flutuante podem introduzir pequenos erros de arredondamento.</p>
+  </article>
+</section>

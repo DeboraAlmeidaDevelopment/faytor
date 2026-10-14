@@ -6,49 +6,8 @@
     copied: false,
     generate() {
       this.copied = false;
-      // We will generate a CNS starting with '1' or '2' (standard active CNS)
-      // Standard active CNS uses digits 1 or 2 as first number. Let's pick 1 or 2.
-      let startDigit = Math.random() < 0.5 ? '1' : '2';
-      let digits = [parseInt(startDigit)];
-      for (let i = 0; i < 10; i++) {
-        digits.push(Math.floor(Math.random() * 10));
-      }
-
-      // We have 11 digits now. Let's calculate the check digit (dv) so that
-      // the total 15 digit CNS validates correctly.
-      // Weighted sum for the first 11 digits: weights from 15 down to 5.
-      let sum = 0;
-      for (let i = 0; i < 11; i++) {
-        sum += digits[i] * (15 - i);
-      }
-
-      let rest = sum % 11;
-      let dv = 11 - rest;
-
-      if (dv === 11) {
-        dv = 0;
-      }
-
-      let resultDigits = [...digits];
-
-      if (dv === 10) {
-        // According to the official algorithm, if dv is 10, a correction of +2 is applied to the sum
-        // and the suffix becomes 001 plus the recalculated dv.
-        let newSum = sum + 2;
-        let newRest = newSum % 11;
-        let newDv = 11 - newRest;
-        resultDigits.push(0, 0, 1, newDv);
-      } else {
-        resultDigits.push(0, 0, 0, dv);
-      }
-
-      let raw = resultDigits.join('');
-      if (document.getElementById('cns-with-punctuation').checked) {
-        // Standard CNS mask format: XXX XXXX XXXX XXXX
-        this.generatedCns = raw.replace(/^(\d{3})(\d{4})(\d{4})(\d{4})$/, '$1 $2 $3 $4');
-      } else {
-        this.generatedCns = raw;
-      }
+      const raw = window.faytorDocuments.cns.generate();
+      this.generatedCns = document.getElementById('cns-with-punctuation').checked ? window.faytorDocuments.cns.format(raw) : raw;
     },
     copy() {
       const value = this.generatedCns;
@@ -58,7 +17,7 @@
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
-  x-init="generate()"
+  x-init="queueMicrotask(() => generate())"
   class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de CNS"
 >
@@ -146,22 +105,110 @@
     </div>
   </div>
 
-  <!-- SEO / Informative Content -->
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'cns' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="cns-batch-title">
+    <div>
+      <h2 id="cns-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar CNS em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 números sem repetição para popular bancos e testes automatizados. O lote usa a pontuação escolhida acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de números do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="CNS gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de CNS"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de CNS">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de CNS e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de CNS">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} números gerados.`"></p>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é o CNS (Cartão Nacional de Saúde)?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      O Cartão Nacional de Saúde (CNS) é o instrumento de identificação de todos os cidadãos brasileiros que utilizam os serviços públicos de saúde do SUS (Sistema Único de Saúde). Este número possui formato de 15 algarismos que registram o histórico clínico de consultas, exames realizados, vacinação e medicamentos retirados no programa Farmácia Popular.
-    </p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é o CNS</h2>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como o algoritmo do CNS valida o número?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      O cálculo matemático por trás do <strong>gerador de CNS</strong> depende se o número se inicia com 1 ou 2 (cartões definitivos) ou de 7 a 9 (cartões temporários ou provisórios).
-      Para os cartões que começam com 1 ou 2, utiliza-se a soma dos produtos dos 11 primeiros dígitos multiplicados pelos pesos de 15 a 5. O resto obtido da divisão por 11 determina o dígito final. Caso o resto resulte em um dígito 10 (inválido por si só como único algarismo), é aplicada uma correção de mais 2 na soma inicial para que o dígito re-calculado seja válido, gerando uma formatação com sufixo "001" mais o dígito final.
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O Cartão Nacional de Saúde (CNS), conhecido como cartão do SUS, identifica o usuário nos sistemas de saúde pública e aparece em agendamentos, prontuários, registros de vacinação e sistemas de faturamento. O número tem 15 dígitos e é exibido em quatro blocos: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">000 0000 0000 0000</code>.</p>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve o gerador de CNS?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Use o resultado para verificar se um formulário aceita 15 algarismos e confere o dígito pelo algoritmo esperado. A geração não consulta a base do SUS; portanto, não confirma emissão, vínculo com paciente ou inexistência de coincidência com um CNS já cadastrado. Evite usar o número em prontuários reais.
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O primeiro dígito indica o tipo de cartão:</p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left text-sm text-slate-600 dark:text-slate-300">
+        <thead><tr><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Primeiro dígito</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Tipo</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Como o número é formado</th></tr></thead>
+        <tbody>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">1 ou 2</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Definitivo</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">11 dígitos de base, sufixo 000 ou 001 e 1 dígito verificador</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">7, 8 ou 9</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Provisório</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">15 dígitos cuja soma ponderada precisa ser múltipla de 11</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Este gerador cria números <strong>definitivos</strong>, iniciados em 1 ou 2, que são o caso mais comum em cadastros.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exemplo: como o gerador calcula o dígito</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Partindo da base <strong>17023456789</strong>:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li>Multiplique os 11 dígitos pelos pesos 15, 14, 13 … 5: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1×15 + 7×14 + 0×13 + 2×12 + 3×11 + 4×10 + 5×9 + 6×8 + 7×7 + 8×6 + 9×5 = 445</code>.</li>
+      <li>O resto de 445 ÷ 11 é 5, e o dígito é 11 − 5 = 6. Se o resultado fosse 11, o dígito seria 0.</li>
+      <li>O número recebe o sufixo <strong>000</strong> e o dígito: <strong>170 2345 6789 0006</strong>.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">O ajuste com sufixo 001</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Quando 11 menos o resto resulta em 10, que não cabe em um único dígito, o cálculo é refeito somando 2 ao total, e o sufixo passa a ser <strong>001</strong>. Com a base <strong>17023456786</strong>, a soma é 430 e o resto é 1, o que daria 10. Somando 2, o total vai a 432, o resto passa a 3, e o dígito final é 11 − 3 = 8. O número fica <strong>170 2345 6786 0018</strong>.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O gerador produz os dois casos. Se o seu sistema recusa números terminados em 001 mais um dígito, provavelmente implementou só a primeira parte da regra.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar CNS em lote</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar CNS em lote</strong> cria até 1.000 números distintos, com ou sem espaços, em TXT, CSV (cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cns</code>) ou JSON. Exporte sem espaços quando a coluna de destino guardar apenas os 15 dígitos, e com espaços quando quiser testar se o formulário remove a formatação antes de validar.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Cuidados ao armazenar e testar</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Guarde o CNS como texto de 15 caracteres. Mesmo sem zeros à esquerda nos cartões definitivos, 15 dígitos ultrapassam com folga o limite de um inteiro de 32 bits, e planilhas costumam exibir esses números em notação científica, alterando os últimos dígitos.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Dados de saúde são <strong>dados pessoais sensíveis</strong> pela LGPD, e por isso a recomendação de não copiar registros reais para ambientes de teste vale com ainda mais força aqui. Mesmo assim, um número gerado pode coincidir com o cartão de alguém, pois a ferramenta não consulta a base do SUS. Não use os números em prontuários, receitas ou sistemas em produção. Para conferir um cartão, use o <a href="/validador-cns/" @click.prevent="selectTab('validador-cns')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Validador de CNS</a>.</p>
   </article>
 </section>

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('.', import.meta.url)).replace(/[\\/]$/, '');
 const port = Number(process.env.PORT) || 8080;
 const siteOrigin = 'https://www.faytor.com.br';
-const noindexRoutes = new Set(['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos']);
+const noindexRoutes = new Set();
 const errorMessages = {
   400: ['Solicitação inválida', 'Não foi possível entender essa solicitação. Verifique o endereço e tente novamente.'],
   403: ['Acesso não permitido', 'Você não tem permissão para acessar este recurso.'],
@@ -25,6 +25,11 @@ const pageMetadata = {
   base64: ['Codificador e Decodificador Base64 Online | Faytor', 'Codifique e decodifique textos em Base64 online gratuitamente.'],
   'gerador-cpf': ['Gerador de CPF Online - Gerar CPF Válido para Testes | Faytor', 'Gere números de CPF válidos para testes e desenvolvimento.'],
   'gerador-endereco': ['Gerador de CEP e Endereço Online para Testes | Faytor', 'Gere endereços brasileiros reais consultados no ViaCEP para testes e desenvolvimento.'],
+  'gerador-hash': ['Gerador de Hash MD5, SHA-1, SHA-256 e SHA-512 Online | Faytor', 'Gere hash MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 ou CRC32 de um texto ou valor aleatório, com HMAC, Base64 e comparação de hashes.'],
+  'gerador-json': ['Gerador de JSON com Dados de Teste e Mock de API | Faytor', 'Gere JSON com CPF, CNPJ, nomes, e-mails e celulares válidos a partir do seu modelo. Crie payloads, mocks de API e massa de dados em lote (JSON e JSONL).'],
+  'gerador-lorem-ipsum': ['Gerador de Lorem Ipsum Online | Faytor', 'Gere texto Lorem Ipsum por palavras, parágrafos ou caracteres para preencher layouts, protótipos e testes de interface. Copie com um clique.'],
+  'gerador-numeros': ['Gerador de Números Aleatórios Online | Faytor', 'Gere números aleatórios inteiros, decimais ou em dinheiro (R$ e US$), por quantidade de dígitos ou intervalo, com separadores brasileiro ou americano.'],
+  'gerador-palavras': ['Gerador de Palavras Aleatórias Online | Faytor', 'Sorteie palavras aleatórias por categoria: cores, animais, frutas, comidas, nomes, países, meios de transporte, profissões e esportes. Gere em lote.'],
   'gerador-cnpj': ['Gerador de CNPJ Online - Gerar CNPJ Válido para Testes | Faytor', 'Gere números de CNPJ válidos para testes e desenvolvimento.'],
   'gerador-cns': ['Gerador de CNS Online - Cartão Nacional de Saúde | Faytor', 'Gere números de CNS válidos para testes e desenvolvimento.'],
   'gerador-rg': ['Gerador de RG Online - Gerar Registro Geral para Testes | Faytor', 'Gere números de RG fictícios para testes e desenvolvimento.'],
@@ -41,7 +46,7 @@ const pageMetadata = {
   'politica-de-privacidade': ['Política de Privacidade | Faytor', 'Leia a política de privacidade do Faytor.'],
   'termos-de-uso': ['Termos de Uso | Faytor', 'Leia os termos de uso do Faytor.'],
   contato: ['Contato - Fale Conosco | Faytor', 'Entre em contato com a equipe do Faytor.'],
-  'sobre-nos': ['Sobre Nós - Conheça o Faytor | Faytor', 'Conheça o Faytor e suas ferramentas online gratuitas.']
+  'sobre-nos': ['Sobre Nós - Conheça o Faytor | Faytor', 'Conheça quem mantém o Faytor, como as ferramentas são feitas e como o conteúdo é conferido.']
 };
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -53,7 +58,10 @@ const mimeTypes = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
-  '.txt': 'text/plain; charset=utf-8'
+  '.ico': 'image/x-icon',
+  '.webmanifest': 'application/manifest+json',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8'
 };
 
 const sendFile = (response, filePath) => {
@@ -86,13 +94,14 @@ export const renderPage = async (route) => {
     .replace(/(<meta property="twitter:title" content=")[^"]*(">)/, `$1${title}$2`)
     .replace(/(<meta property="og:description" content=")[^"]*(">)/, `$1${description}$2`)
     .replace(/(<meta property="twitter:description" content=")[^"]*(">)/, `$1${description}$2`);
-  const image = `${siteOrigin}/img/social-card.svg`;
+  const image = `${siteOrigin}/img/social-card.png`;
   const withServerView = html.replace(
     '<div id="server-view-content" x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none"></div>',
     `<div id="server-view-content" x-show="!isLoading && !corsFallback" x-html="viewContent" class="focus:outline-none">${view}</div>`
   );
   const withSocialImage = withServerView
     .replace(/(<meta property="og:image" content=")[^"]*(">)/, `$1${image}$2`)
+    .replace(/(<meta property="og:image:secure_url" content=")[^"]*(">)/, `$1${image}$2`)
     .replace(/(<meta property="twitter:image" content=")[^"]*(">)/, `$1${image}$2`);
   return withSocialImage;
 };

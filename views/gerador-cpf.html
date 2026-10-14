@@ -126,23 +126,123 @@
     </div>
   </div>
 
-  <!-- SEO / Informative Content -->
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'cpf' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="cpf-batch-title">
+    <div>
+      <h2 id="cpf-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar CPF em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 números sem repetição para popular bancos e testes automatizados. O lote usa a pontuação e o estado de origem escolhidos acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de números do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="CPF gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de CPF"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de CPF">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de CPF e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de CPF">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} números gerados.`"></p>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Como funciona o Gerador de CPF?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Nossa ferramenta gratuita de <strong>gerador de CPF</strong> permite que desenvolvedores, testadores de software e analistas de qualidade criem instantaneamente números de Cadastro de Pessoas Físicas válidos. O CPF gerado segue estritamente o algoritmo matemático oficial de validação estipulado pela Receita Federal, composto por 9 números bases mais 2 dígitos verificadores calculados via módulo 11.
-    </p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Como o gerador monta um CPF</h2>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">O CPF gerado pertence a alguém?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      O gerador calcula dígitos verificadores, mas não consulta a Receita Federal. Por isso, não confirma se existe um cadastro para o número e não pode garantir que ele não coincida com o CPF de alguém. Use o resultado para testar máscaras e regras matemáticas em ambientes de desenvolvimento; em sistemas reais, utilize dados de teste autorizados.
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Um CPF tem 11 dígitos: 9 formam a base e os 2 últimos são dígitos verificadores, calculados a partir da base. O gerador sorteia os 8 primeiros dígitos, define o 9º de acordo com o campo <strong>Estado de origem</strong> e só então calcula os verificadores. Por isso todo número gerado passa em qualquer validação matemática de CPF.</p>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como validar CPF manualmente?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      A validação de um CPF baseia-se nos dois últimos dígitos (os dígitos verificadores).
-      Para o primeiro dígito, multiplicam-se os primeiros 9 algarismos por pesos de 10 a 2. Soma-se o resultado, multiplica-se por 10 e divide-se por 11: o resto desta divisão é o primeiro dígito verificador (se o resto for 10, o dígito é 0).
-      O segundo dígito utiliza uma lógica análoga com pesos de 11 a 2 englobando o primeiro dígito verificador.
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O 9º dígito indica a região fiscal onde a inscrição foi feita. Ao escolher um estado, o gerador usa o dígito correspondente na tabela abaixo; em <strong>Aleatório</strong>, qualquer região pode aparecer.</p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left text-sm text-slate-600 dark:text-slate-300">
+        <thead><tr><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">9º dígito</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Estados da região fiscal</th></tr></thead>
+        <tbody>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">0</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">RS</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">1</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">DF, GO, MS, MT e TO</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">2</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">AC, AM, AP, PA, RO e RR</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">3</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">CE, MA e PI</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">4</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">AL, PB, PE e RN</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">5</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">BA e SE</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">6</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">MG</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">7</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">ES e RJ</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">8</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">SP</td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">9</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">PR e SC</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Isso é útil para testar regras que dependem da origem do documento, como relatórios agrupados por região ou validações cruzadas com o estado informado no cadastro.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exemplo completo: da base aos dígitos verificadores</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Partindo da base <strong>123.456.789</strong>:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>1º dígito:</strong> multiplique cada algarismo pelos pesos 10, 9, 8, 7, 6, 5, 4, 3 e 2: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1×10 + 2×9 + 3×8 + 4×7 + 5×6 + 6×5 + 7×4 + 8×3 + 9×2 = 210</code>. O resto de 210 ÷ 11 é 1. Quando o resto é 0 ou 1, o dígito é 0.</li>
+      <li><strong>2º dígito:</strong> repita com os pesos 11 a 2, agora incluindo o primeiro verificador: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1×11 + 2×10 + 3×9 + 4×8 + 5×7 + 6×6 + 7×5 + 8×4 + 9×3 + 0×2 = 255</code>. O resto de 255 ÷ 11 é 2, então o dígito é 11 − 2 = 9.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Resultado: <strong>123.456.789-09</strong>. O <a href="/validador-cpf/" @click.prevent="selectTab('validador-cpf')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Validador de CPF</a> mostra esse mesmo cálculo, etapa por etapa, para qualquer número digitado.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar CPF em lote para bancos de teste</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar CPF em lote</strong> cria até 1.000 números sem repetição, respeitando a pontuação e o estado escolhidos no gerador individual. Há três formatos de saída:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>TXT:</strong> um CPF por linha, prática para colar em planilhas ou em ferramentas de teste de carga.</li>
+      <li><strong>CSV:</strong> inclui o cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cpf</code> e pode ser importado direto no banco. No PostgreSQL, por exemplo: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">COPY clientes_teste (cpf) FROM '/caminho/cpf-teste-100.csv' WITH (FORMAT csv, HEADER true);</code></li>
+      <li><strong>JSON:</strong> um array de strings, pronto para fixtures de testes automatizados.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Gere sem pontuação quando o destino for uma coluna que guarda apenas dígitos; assim o arquivo não precisa de tratamento antes da importação.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Com ou sem pontuação: como armazenar o CPF</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Guarde o CPF como texto de 11 caracteres (por exemplo, <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">CHAR(11)</code>) contendo só os dígitos, e aplique a máscara apenas na exibição. Evite tipos numéricos: um CPF iniciado em 0 perde o zero à esquerda ao ser gravado como inteiro e passa a ter 10 dígitos, quebrando validações e buscas. Os números deste gerador são úteis justamente para testar esses casos, já que a base é sorteada e zeros à esquerda aparecem com frequência.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Dados de teste e LGPD</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Copiar dados reais de clientes para ambientes de desenvolvimento expõe informações pessoais protegidas pela LGPD. Números gerados reduzem esse risco, mas têm um limite importante: o gerador não consulta a Receita Federal e não garante que o número não pertença a alguém. Use-os apenas em ambientes de teste e nunca para preencher cadastros em serviços reais, o que pode configurar fraude.</p>
   </article>
 </section>

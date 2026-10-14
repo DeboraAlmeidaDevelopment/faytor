@@ -15,12 +15,11 @@
         Ferramentas para formatar textos, gerar dados de teste e conferir dígitos verificadores, sem instalar programas. As transformações de texto acontecem no navegador; a busca de endereços consulta o IBGE e o ViaCEP. Cada ferramenta apresenta orientações e limites para interpretar os resultados.
       </p>
       <div class="mt-8 flex flex-wrap gap-4">
-        <a href="/wordcounter/"
-          @click.prevent="selectTab('wordcounter')"
+        <a href="/gerador-json/"
+          @click.prevent="selectTab('gerador-json')"
           class="bg-white text-primary hover:bg-blue-50 focus:ring-4 focus:ring-white/50 font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl active:scale-95"
-          aria-label="Ir para ferramenta Contador de Palavras"
         >
-          Ver Ferramentas
+          Gerar JSON com dados de teste
         </a>
         <a
           href="/sobre-nos/"
@@ -33,6 +32,34 @@
       </div>
     </div>
   </div>
+
+  <!-- Destaque: Gerador de JSON, a ferramenta principal do Faytor -->
+  <section class="rounded-3xl border border-emerald-500/30 bg-white dark:bg-darkBg-card p-6 lg:p-8 shadow-sm" aria-labelledby="home-json-title">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+      <div>
+        <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Ferramenta principal</span>
+        <h2 id="home-json-title" class="text-2xl font-extrabold text-slate-900 dark:text-white mt-2">Gerador de JSON com dados de teste</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mt-3">
+          Cole o modelo da sua API, marque os campos com variáveis como <code class="font-mono">{{cpf}}</code> e gere payloads, mocks e massas de dados com CPF, CNPJ, nomes, e-mails, celulares e senhas válidos. Gere um JSON por vez ou até 1.000 de uma vez, em JSON, JSON Lines ou TXT.
+        </p>
+        <a href="/gerador-json/"
+          @click.prevent="selectTab('gerador-json')"
+          class="inline-flex items-center mt-5 bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-all shadow-md active:scale-95"
+        >
+          Abrir o Gerador de JSON
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+        </a>
+      </div>
+      <pre class="overflow-x-auto rounded-2xl bg-slate-900 p-5 text-xs sm:text-sm leading-6 text-slate-100"><code>{
+  "nome": <mark class="json-variable">{{nome}}</mark>,
+  "cpf": <mark class="json-variable">{{cpf}}</mark>,
+  "email": <mark class="json-variable">{{email}}</mark>,
+  "empresa": {
+    "cnpj": <mark class="json-variable">{{cnpj}}</mark>
+  }
+}</code></pre>
+    </div>
+  </section>
 
   <!-- Feature Cards Grid -->
   <div>

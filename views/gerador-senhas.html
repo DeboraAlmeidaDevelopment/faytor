@@ -18,6 +18,65 @@
     <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-stretch"><div class="flex min-w-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"><input type="text" id="password-generated" readonly class="min-w-0 flex-1 bg-transparent border-0 px-5 py-3.5 text-center font-mono text-sm min-[400px]:text-base sm:text-xl font-bold tracking-wider text-slate-800 dark:text-slate-200 focus:outline-none" aria-label="Senha gerada"><button type="button" id="password-copy-field" class="w-full sm:w-28 flex-shrink-0 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1" aria-label="Copiar senha gerada"><span id="password-copy-label" class="text-xs font-bold">Copiar</span><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg></button></div><div class="flex gap-2"><button id="password-generate" type="button" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar nova senha"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg><span>Gerar</span></button><button id="password-generate-copy" type="button" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar nova senha e copiar para a área de transferência"><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg><span>Gerar e Copiar</span></button></div></div>
     <div id="password-strength-wrap" class="mt-5" aria-live="polite"><div class="mb-2 flex items-center justify-between text-sm"><span class="font-semibold text-slate-700 dark:text-slate-300">Força da senha</span><span id="password-strength-label" class="font-bold text-slate-500 dark:text-slate-400">—</span></div><div id="password-strength" class="grid grid-cols-4 gap-1.5" role="progressbar" aria-label="Força da senha" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><span class="h-2 rounded-full bg-slate-200 dark:bg-slate-700"></span><span class="h-2 rounded-full bg-slate-200 dark:bg-slate-700"></span><span class="h-2 rounded-full bg-slate-200 dark:bg-slate-700"></span><span class="h-2 rounded-full bg-slate-200 dark:bg-slate-700"></span></div></div>
   </div>
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'senha', file: 'senhas' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="senha-batch-title">
+    <div>
+      <h2 id="senha-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar senhas em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 senhas sem repetição, no modo e com as opções escolhidos acima, para popular usuários de teste ou testar regras de senha.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de senhas do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="senhas gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de senhas"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de senhas">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de senhas e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de senhas">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} senhas geradas.`"></p>
+    </div>
+  </section>
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Qual modo escolher?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">No modo <strong>Aleatório</strong>, escolha de 4 a 128 caracteres e os grupos permitidos: maiúsculas, minúsculas, números e símbolos. Mantenha ao menos um grupo ativo. No modo <strong>Fácil de lembrar</strong>, escolha de 2 a 10 palavras, com opções de capitalização e palavras completas. O modo <strong>PIN</strong> gera apenas algarismos, com comprimento de 4 a 32.</p>
@@ -25,5 +84,11 @@
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Para testar uma regra de cadastro que exige letras, números e símbolos, ative esses grupos e confira se o resultado tem o comprimento escolhido. Use <strong>Gerar e Copiar</strong> para criar outra combinação e levá-la à área de transferência. O indicador de força é apenas uma estimativa visual; ele não verifica se a senha já apareceu em vazamentos nem conhece as regras do serviço onde será usada.</p>
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Cuidados ao usar senhas e PINs</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Prefira combinações longas e diferentes para cada conta. Um PIN curto tem menos combinações possíveis que uma senha longa e deve ser usado apenas onde esse formato é exigido. Ao copiar qualquer resultado, considere que outros programas com acesso à área de transferência podem lê-lo.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar senhas em lote</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar senhas em lote</strong> cria até 1.000 senhas sem repetição, usando o modo e as opções selecionados acima. Ela serve para popular usuários de teste ou para verificar se uma regra de cadastro aceita senhas com símbolos, palavras ou apenas números. A exportação pode ser em TXT, em CSV com o cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">senha</code> (com aspas nas senhas que contêm vírgula, ponto e vírgula ou aspas) ou em JSON.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Cuidados com arquivos de senhas</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O arquivo baixado guarda as senhas em texto puro. Use lotes apenas em ambientes de teste e apague o arquivo depois de importá-lo. Para contas reais, gere uma senha por vez e guarde-a em um gerenciador de senhas. No modo PIN com poucos dígitos, o número de combinações é pequeno (um PIN de 4 dígitos tem 10.000 possibilidades), e lotes grandes acabam repetindo padrões parecidos.</p>
   </article>
 </section>
