@@ -3,53 +3,22 @@
   x-data="{
     generatedName: '',
     sex: localStorage.getItem('faytor.nomes.sexo') || 'aleatorio',
+    firstNames: localStorage.getItem('faytor.nomes.prenomes') || '1',
+    lastNames: localStorage.getItem('faytor.nomes.sobrenomes') || 'aleatorio',
+    firstNameOptions: window.faytorGenerators.optionLists.firstNameOptions,
+    surnameOptions: window.faytorGenerators.optionLists.surnameOptions,
     copied: false,
-    maleNames: [
-      'Gabriel', 'Lucas', 'Pedro', 'Mateus', 'Guilherme', 'Rafael', 'Felipe', 'Thiago',
-      'Bruno', 'Rodrigo', 'André', 'Gustavo', 'Leonardo', 'Daniel', 'Marcos', 'Marcelo',
-      'Fernando', 'Douglas', 'Eduardo', 'Henrique', 'Arthur', 'Bernardo', 'Heitor',
-      'Davi', 'Samuel', 'Lorenzo', 'Enzo', 'Alexandre', 'Ricardo', 'Caio', 'Murilo',
-      'Vinícius', 'Vitor', 'Igor', 'Otávio', 'Luiz', 'João', 'Francisco', 'Antônio', 'Carlos'
-    ],
-    femaleNames: [
-      'Maria', 'Ana', 'Julia', 'Yasmin', 'Beatriz', 'Mariana', 'Leticia', 'Camila',
-      'Amanda', 'Larissa', 'Bruna', 'Isabella', 'Luana', 'Carolina', 'Gabriela', 'Vitória',
-      'Heloisa', 'Alice', 'Sophia', 'Laura', 'Valentina', 'Manuela', 'Helena', 'Giovanna',
-      'Clara', 'Eduarda', 'Nicole', 'Luiza', 'Fernanda', 'Rebeca', 'Lívia', 'Sarah',
-      'Lorena', 'Rafaela', 'Melissa', 'Cecília', 'Esther', 'Emanuelly', 'Isadora'
-    ],
-    surnames: [
-      'Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves', 'Pereira',
-      'Lima', 'Gomes', 'Costa', 'Ribeiro', 'Martins', 'Carvalho', 'Almeida', 'Lopes',
-      'Soares', 'Rocha', 'Dias', 'Nascimento', 'Moreira', 'Nunes', 'Mendes', 'Vieira',
-      'Teixeira', 'Cardoso', 'Araújo', 'Melo', 'Cavalcanti', 'Pinto', 'Cabral', 'Campos',
-      'Figueiredo', 'Andrade', 'Fonseca', 'Barros', 'Miranda', 'Freitas', 'Castro'
-    ],
     generate() {
       this.copied = false;
-      let firstList = [];
-      if (this.sex === 'masculino') {
-        firstList = this.maleNames;
-      } else if (this.sex === 'feminino') {
-        firstList = this.femaleNames;
-      } else {
-        firstList = Math.random() < 0.5 ? this.maleNames : this.femaleNames;
-      }
-
-      const firstName = firstList[Math.floor(Math.random() * firstList.length)];
-
-      // Select 1 or 2 unique surnames
-      let s1 = this.surnames[Math.floor(Math.random() * this.surnames.length)];
-      let s2 = this.surnames[Math.floor(Math.random() * this.surnames.length)];
-      while (s1 === s2) {
-        s2 = this.surnames[Math.floor(Math.random() * this.surnames.length)];
-      }
-
-      if (Math.random() < 0.6) {
-        this.generatedName = `${firstName} ${s1} ${s2}`;
-      } else {
-        this.generatedName = `${firstName} ${s1}`;
-      }
+      this.generatedName = this.buildName();
+    },
+    buildName() {
+      return window.faytorGenerators.nome(this.sex, this.firstNames, this.lastNames);
+    },
+    saveOption(key, storageKey, val) {
+      this[key] = val;
+      localStorage.setItem(storageKey, val);
+      this.generate();
     },
     saveSex(val) {
       this.sex = val;
@@ -64,7 +33,7 @@
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
-  x-init="generate()"
+  x-init="queueMicrotask(() => generate())"
   class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de Nomes"
 >
@@ -79,7 +48,7 @@
   <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
     <div class="flex flex-col space-y-4">
       <!-- Options -->
-      <div class="flex flex-col sm:flex-row items-start justify-start gap-8">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap items-start justify-start gap-4 sm:gap-6">
         <label class="flex w-full flex-col gap-1 sm:w-64">
           <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Gênero / Sexo</span>
           <div class="relative">
@@ -92,6 +61,36 @@
               <option value="aleatorio">Aleatório (Ambos)</option>
               <option value="feminino">Feminino</option>
               <option value="masculino">Masculino</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-48">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Prenomes</span>
+          <div class="relative">
+            <select
+              @change="saveOption('firstNames', 'faytor.nomes.prenomes', $event.target.value)"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none"
+              aria-label="Selecionar quantidade de prenomes"
+            >
+              <template x-for="option in firstNameOptions" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === firstNames"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-48">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Sobrenomes</span>
+          <div class="relative">
+            <select
+              @change="saveOption('lastNames', 'faytor.nomes.sobrenomes', $event.target.value)"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none"
+              aria-label="Selecionar quantidade de sobrenomes"
+            >
+              <template x-for="option in surnameOptions" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === lastNames"></option></template>
             </select>
             <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
@@ -157,6 +156,66 @@
     </div>
   </div>
 
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'nome', method: 'buildName', file: 'nomes' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="nomes-batch-title">
+    <div>
+      <h2 id="nomes-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar nomes em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 nomes sem repetição para popular cadastros, planilhas e testes automatizados. O lote usa o gênero e as quantidades de prenomes e sobrenomes escolhidos acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de nomes do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="nomes gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de nomes"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de nomes">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de nomes e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de nomes">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} nomes gerados.`"></p>
+    </div>
+  </section>
+
   <!-- SEO / Informative Content -->
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Por que utilizar um gerador de nomes brasileiros?</h2>
@@ -166,12 +225,20 @@
 
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como funciona a geração de nomes com gênero/sexo?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      A nossa ferramenta permite filtrar a criação por gênero/sexo: masculino ou feminino, além da opção padrão de nomes totalmente aleatórios. Ao selecionar uma opção, o sistema cruza um dicionário robusto de prenomes tipicamente masculinos ou femininos com um dicionário de sobrenomes portugueses tradicionais e amplamente difundidos no Brasil (como Silva, Santos, Oliveira, Souza e muitos outros). A combinação aleatória de um prenome e até dois sobrenomes garante milhares de variações possíveis de nomes realistas.
+      A nossa ferramenta permite filtrar a criação por gênero/sexo: masculino ou feminino, além da opção padrão de nomes totalmente aleatórios. Ao selecionar uma opção, o sistema cruza um dicionário robusto de prenomes tipicamente masculinos ou femininos com um dicionário de sobrenomes portugueses tradicionais e amplamente difundidos no Brasil (como Silva, Santos, Oliveira, Souza e muitos outros). A combinação aleatória de prenomes e sobrenomes garante milhares de variações possíveis de nomes realistas.
+    </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Quantos prenomes e sobrenomes usar?</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+      Escolha de 1 a 3 prenomes, como em <strong>Ana Clara</strong> ou <strong>João Pedro Henrique</strong>, e de 1 a 4 sobrenomes. A opção <strong>Aleatório</strong> dos sobrenomes sorteia um ou dois, a combinação mais comum nos cadastros brasileiros. Dentro de um mesmo nome, prenomes e sobrenomes não se repetem. Nomes longos são úteis para testar limites de tamanho de campo, quebras de linha em telas e relatórios, e a abreviação de nomes em documentos e etiquetas.
     </p>
 
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">O que um nome gerado representa?</h2>
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
       A combinação é formada no navegador a partir das listas da ferramenta. Ela serve para preencher interfaces e bases de teste, mas pode coincidir com o nome de uma pessoa real. O filtro de nomes masculinos ou femininos seleciona listas de prenomes; ele não determina a identidade de gênero de ninguém.
     </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar nomes em lote</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar nomes em lote</strong> cria até 1.000 nomes diferentes de uma vez, respeitando o gênero escolhido. O resultado pode ser exportado em TXT (um nome por linha), em CSV com o cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">nome</code> ou em JSON, pronto para fixtures de testes automatizados. Para montar uma massa de cadastro completa, combine o arquivo com lotes do <a href="/gerador-cpf/" @click.prevent="selectTab('gerador-cpf')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de CPF</a> e do <a href="/gerador-email/" @click.prevent="selectTab('gerador-email')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de E-mail</a>.</p>
   </article>
 </section>

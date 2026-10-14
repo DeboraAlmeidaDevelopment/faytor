@@ -4,63 +4,15 @@
   errorMessage: '',
   formattedVal: '',
   rawVal: '',
+  steps: [],
 
   validate() {
-    this.errorMessage = '';
-    this.isValid = null;
-    this.formattedVal = '';
-    this.rawVal = '';
-
-    const clean = this.docInput.replace(/\D/g, '');
-    if (!clean) {
-      this.isValid = null;
-      return;
-    }
-
-    this.rawVal = clean;
-
-    if (clean.length !== 11) {
-      this.isValid = false;
-      this.errorMessage = 'Um CPF deve possuir exatamente 11 dígitos numéricos.';
-      return;
-    }
-
-    if (/^(\d)\1{10}$/.test(clean)) {
-      this.isValid = false;
-      this.errorMessage = 'CPFs com todos os dígitos iguais são inválidos.';
-      return;
-    }
-
-    // Validate 1st digit
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      sum += parseInt(clean[i]) * (10 - i);
-    }
-    let remainder = sum % 11;
-    let d1 = remainder < 2 ? 0 : 11 - remainder;
-
-    if (parseInt(clean[9]) !== d1) {
-      this.isValid = false;
-      this.errorMessage = 'Primeiro dígito verificador inválido.';
-      return;
-    }
-
-    // Validate 2nd digit
-    sum = 0;
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(clean[i]) * (11 - i);
-    }
-    remainder = sum % 11;
-    let d2 = remainder < 2 ? 0 : 11 - remainder;
-
-    if (parseInt(clean[10]) !== d2) {
-      this.isValid = false;
-      this.errorMessage = 'Segundo dígito verificador inválido.';
-      return;
-    }
-
-    this.isValid = true;
-    this.formattedVal = clean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    const result = window.faytorDocuments.cpf.validate(this.docInput);
+    this.isValid = result ? result.valid : null;
+    this.errorMessage = result ? result.error : '';
+    this.rawVal = result ? result.raw : '';
+    this.formattedVal = result && result.valid ? result.formatted : '';
+    this.steps = result ? result.steps : [];
   },
 
   clearAll() {
@@ -69,6 +21,7 @@
     this.errorMessage = '';
     this.formattedVal = '';
     this.rawVal = '';
+    this.steps = [];
   }
 }" x-init="$watch('docInput', () => validate())">
 
@@ -131,7 +84,7 @@
     <!-- FEEDBACK BLOCK -->
     <div id="validation-status" aria-live="polite">
       <!-- Empty State -->
-      <div x-show="isValid === null" class="flex items-center space-x-3 text-slate-400 dark:text-slate-500 text-sm py-2">
+      <div x-show="isValid === null" class="flex items-center space-x-3 text-slate-500 dark:text-slate-400 text-sm py-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -175,33 +128,167 @@
     </div>
   </div>
 
-  <!-- SEO SEO/COPYWRITING SECTION -->
-  <div class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-6">
-    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
-      Como funciona o validador de CPF?
-    </h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Nossa ferramenta de <strong>validador de CPF</strong> funciona de forma estritamente local em seu navegador. O número inserido não é enviado para nenhum servidor externo durante o cálculo. O algoritmo calcula de forma matemática os dois dígitos verificadores finais através da validação padrão por módulo 11.
-    </p>
+  <!-- Passo a passo do cálculo -->
+  <section x-show="steps.length" x-cloak class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-4" aria-labelledby="calculation-title">
+    <div>
+      <h2 id="calculation-title" class="text-lg font-bold text-slate-900 dark:text-white">Como chegamos a este resultado</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">O cálculo é refeito com o número digitado. Confira cada etapa para localizar a posição que diverge.</p>
+    </div>
+    <ol class="space-y-3">
+      <template x-for="(step, index) in steps" :key="index">
+        <li class="rounded-2xl border p-4" :class="step.ok === false ? 'border-rose-500/30 bg-rose-500/5' : (step.ok ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60')">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-sm font-bold text-slate-800 dark:text-slate-100" x-text="`${index + 1}. ${step.title}`"></span>
+            <span x-show="step.ok !== undefined" class="text-xs font-bold" :class="step.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="step.ok ? 'Confere' : 'Não confere'"></span>
+          </div>
+          <p class="mt-2 break-words font-mono text-xs leading-relaxed text-slate-600 dark:text-slate-300" x-text="step.detail"></p>
+        </li>
+      </template>
+    </ol>
+  </section>
 
-    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
-      Como saber se um CPF é verdadeiro?
-    </h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Para <strong>validar CPF online</strong> de forma matemática, o algoritmo analisa os 9 primeiros dígitos e calcula se os dois números finais (dígitos verificadores) correspondem ao resultado das somas ponderadas regulamentadas pela Receita Federal. Lembre-se: um CPF que passe na validação matemática pode não existir de fato na base de dados do governo, servindo o cálculo matemático para garantir a integridade de formulários e sistemas.
-    </p>
+  <!-- Validação em lote -->
+  <section x-data="documentBatchValidator('cpf')" class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-5" aria-labelledby="cpf-batch-title">
+    <div>
+      <h2 id="cpf-batch-title" class="text-lg font-bold text-slate-900 dark:text-white">Validar CPF em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Cole até 1.000 números, um por linha. A validação acontece no navegador, e o resultado pode ser copiado ou baixado em CSV.</p>
+    </div>
 
-    <h2 class="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white">
-      Principais motivos de invalidez do CPF
-    </h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Existem três fatores principais que tornam um CPF inválido:
-    </p>
-    <ul class="text-sm text-slate-600 dark:text-slate-300 list-disc list-inside space-y-2 pl-2">
-      <li><strong>Quantidade de dígitos incorreta:</strong> Deve possuir exatamente 11 dígitos numéricos.</li>
-      <li><strong>Números repetidos sequenciais:</strong> CPFs como 111.111.111-11, 222.222.222-22, etc., são matematicamente inválidos.</li>
-      <li><strong>Erro nos dígitos verificadores:</strong> Os dois últimos números após o hífen não correspondem ao cálculo dos restos da divisão por 11.</li>
+    <div class="relative flex flex-col overflow-hidden rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 sm:flex-row">
+      <div class="relative flex-1 min-w-0">
+        <textarea
+          id="cpf-batch-input"
+          x-model="input"
+          rows="6"
+          placeholder="Um CPF por linha"
+          class="block w-full resize-none border-0 bg-transparent p-4 pr-12 font-mono text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-0"
+          aria-label="Lista de CPF para validação em lote"
+        ></textarea>
+        <button x-show="input.length > 0" type="button" @click="clear()" class="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" aria-label="Limpar lista">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <button type="button" @click="pasteToInput('cpf-batch-input')" class="w-full sm:w-28 bg-primary hover:bg-blue-700 text-white font-semibold px-3 py-3.5 border-t sm:border-t-0 sm:border-l border-primary text-sm transition-all flex items-center justify-center space-x-2" aria-label="Colar lista da área de transferência">
+        <span class="text-xs font-bold">Colar</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-5-2h4a1 1 0 011 1v1H9V4a1 1 0 011-1zM7 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1M9 12h6m-6 4h4" /></svg>
+      </button>
+    </div>
+
+    <div x-show="results.length" x-cloak class="space-y-4" aria-live="polite">
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span class="rounded-full bg-emerald-500/10 px-3 py-1 font-bold text-emerald-600 dark:text-emerald-400" x-text="`${validCount} válido${validCount === 1 ? '' : 's'}`"></span>
+        <span class="rounded-full bg-rose-500/10 px-3 py-1 font-bold text-rose-600 dark:text-rose-400" x-text="`${invalidCount} inválido${invalidCount === 1 ? '' : 's'}`"></span>
+        <span x-show="truncated" class="text-xs text-slate-500 dark:text-slate-400">Somente as primeiras 1.000 linhas foram analisadas.</span>
+      </div>
+
+      <div class="max-h-96 overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full border-collapse text-left text-sm">
+          <thead class="sticky top-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+            <tr>
+              <th scope="col" class="px-3 py-2 font-semibold">#</th>
+              <th scope="col" class="px-3 py-2 font-semibold">Documento</th>
+              <th scope="col" class="px-3 py-2 font-semibold">Resultado</th>
+              <th scope="col" class="px-3 py-2 font-semibold">Motivo</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-600 dark:text-slate-300">
+            <template x-for="(result, index) in results" :key="index">
+              <tr class="border-t border-slate-200 dark:border-slate-800">
+                <td class="px-3 py-2 text-slate-400" x-text="index + 1"></td>
+                <td class="px-3 py-2 font-mono whitespace-nowrap" x-text="result.input"></td>
+                <td class="px-3 py-2 font-bold whitespace-nowrap" :class="result.valid ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" x-text="result.valid ? 'Válido' : 'Inválido'"></td>
+                <td class="px-3 py-2 min-w-[12rem]" x-text="result.error || '—'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button
+            type="button"
+            @click="copy()"
+            class="rounded-xl border px-6 text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar resultado da validação em CSV"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+        <button type="button" @click="download()" class="border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2" aria-label="Baixar resultado da validação em CSV">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar CSV</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
+  <article class="bg-white dark:bg-darkBg-card rounded-3xl p-6 lg:p-8 border border-slate-200 dark:border-darkBg-border shadow-md space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que o validador confere, na ordem</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O validador remove pontos, traços e espaços e aplica quatro verificações. A primeira que falhar define a mensagem exibida:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Quantidade de dígitos:</strong> precisam ser exatamente 11. Um CPF com 10 dígitos costuma indicar um zero à esquerda perdido ao ser salvo como número.</li>
+      <li><strong>Sequência repetida:</strong> números como 111.111.111-11 até passam no cálculo, mas são recusados porque não correspondem a inscrições reais.</li>
+      <li><strong>1º dígito verificador:</strong> soma dos 9 primeiros dígitos com pesos de 10 a 2.</li>
+      <li><strong>2º dígito verificador:</strong> soma dos 10 primeiros dígitos com pesos de 11 a 2.</li>
     </ul>
-  </div>
 
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Quando a quantidade de dígitos está certa, o quadro <strong>Como chegamos a este resultado</strong> mostra as somas, os restos e o dígito esperado em cada etapa. Assim dá para ver exatamente qual posição diverge.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exemplo de CPF inválido explicado</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Digite <strong>123.456.789-00</strong>. O primeiro verificador confere: a soma ponderada é 210, o resto é 1 e o dígito esperado é 0. No segundo, a soma <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">1×11 + 2×10 + 3×9 + 4×8 + 5×7 + 6×6 + 7×5 + 8×4 + 9×3 + 0×2</code> dá 255, o resto é 2 e o dígito esperado é 9, mas o informado é 0. O resultado é "Segundo dígito verificador inválido", e o número correto seria 123.456.789-09.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Esse tipo de divergência costuma vir de erro de digitação. Os pesos diferentes para cada posição fazem o cálculo detectar a grande maioria das trocas de um único algarismo e das inversões entre dígitos vizinhos.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como validar CPF em JavaScript</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A função abaixo aplica as mesmas regras desta página e pode ser usada no front-end ou em Node.js:</p>
+
+    <pre class="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100"><code>function validarCPF(valor) {
+  const cpf = String(valor).replace(/\D/g, '');
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+  const digito = (base, pesoInicial) =&gt; {
+    const soma = [...base].reduce((total, n, i) =&gt; total + Number(n) * (pesoInicial - i), 0);
+    const resto = soma % 11;
+    return resto &lt; 2 ? 0 : 11 - resto;
+  };
+  const d1 = digito(cpf.slice(0, 9), 10);
+  const d2 = digito(cpf.slice(0, 10), 11);
+  return cpf.endsWith(`${d1}${d2}`);
+}
+
+validarCPF('123.456.789-09'); // true
+validarCPF('123.456.789-00'); // false</code></pre>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como validar CPF em Python</h2>
+
+    <pre class="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100"><code>import re
+
+def validar_cpf(valor: str) -&gt; bool:
+    cpf = re.sub(r"\D", "", valor)
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+
+    def digito(base: str, peso_inicial: int) -&gt; int:
+        soma = sum(int(n) * (peso_inicial - i) for i, n in enumerate(base))
+        resto = soma % 11
+        return 0 if resto &lt; 2 else 11 - resto
+
+    return cpf[-2:] == f"{digito(cpf[:9], 10)}{digito(cpf[:10], 11)}"</code></pre>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Valide sempre no servidor, mesmo quando o formulário já valida no navegador: a validação no front-end melhora a experiência, mas pode ser contornada.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Validar uma lista de CPFs</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Para conferir uma base inteira, cole os números na seção <strong>Validar CPF em lote</strong>, um por linha. A tabela indica o motivo de cada recusa, e o resultado pode ser copiado ou baixado em CSV, com separador ponto e vírgula, para abrir em planilhas. Para criar números válidos de teste, use o <a href="/gerador-cpf/" @click.prevent="selectTab('gerador-cpf')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de CPF</a>.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Válido não significa regular</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A validação é matemática: confirma que os dígitos verificadores são coerentes com a base. Ela não consulta a Receita Federal e não informa se o CPF existe, se está regular ou a quem pertence. Para isso, é necessária a consulta oficial à situação cadastral.</p>
+  </article>
 </div>

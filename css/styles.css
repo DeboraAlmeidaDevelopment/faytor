@@ -141,7 +141,7 @@ html {
   }
 
   .mobile-footer-primary nav a {
-    padding: 0.125rem;
+    padding: 0.25rem;
   }
 
   .mobile-footer-primary nav svg {
@@ -170,4 +170,69 @@ html {
   .mobile-footer-primary {
     display: contents;
   }
+}
+
+/* O checkbox invisível dos switches (sr-only) é absoluto. Sem um ancestral posicionado,
+   ele se posiciona em relação ao body: em switches mais abaixo na página, o foco do clique
+   rola o body e revela um espaço vazio abaixo do rodapé. */
+label:has(> input.sr-only),
+span:has(> input.sr-only) {
+  position: relative;
+}
+
+/* Links do rodapé com área de toque mínima de 24 × 24 px (WCAG 2.5.8). */
+footer[role="contentinfo"] nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+/* Gerador de JSON: o textarea fica transparente sobre um fundo com o mesmo texto,
+   onde as variáveis {{nome}} recebem destaque verde, como uma adição no GitHub.
+   Fundo e textarea precisam compartilhar fonte, espaçamento e quebra de linha. */
+.json-editor-layer {
+  margin: 0;
+  padding: 1rem;
+  border: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  letter-spacing: normal;
+  tab-size: 2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.json-editor-input {
+  color: transparent;
+  caret-color: #0f172a;
+  background: transparent;
+  resize: none;
+}
+
+.dark .json-editor-input {
+  caret-color: #f8fafc;
+}
+
+.json-editor-input::selection {
+  color: transparent;
+  background: rgb(37 99 235 / 0.3);
+}
+
+.json-variable {
+  border-radius: 0.2rem;
+  color: #116329;
+  background: #dafbe1;
+  box-shadow: 0 0 0 1px rgb(17 99 41 / 0.25);
+}
+
+.dark .json-variable {
+  color: #7ee787;
+  background: rgb(46 160 67 / 0.22);
+  box-shadow: 0 0 0 1px rgb(126 231 135 / 0.3);
 }

@@ -5,29 +5,12 @@
     withPunctuation: true,
     format: 'numeric',
     copied: false,
-    charValue(char) {
-      return char >= '0' && char <= '9' ? Number(char) : char.charCodeAt(0) - 48;
-    },
-    calculateDv(value) {
-      const calculate = (source, weights) => {
-        const sum = source.split('').reduce((total, char, index) => total + this.charValue(char) * weights[index], 0);
-        const remainder = sum % 11;
-        return remainder < 2 ? 0 : 11 - remainder;
-      };
-      const dv1 = calculate(value, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
-      const dv2 = calculate(`${value}${dv1}`, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
-      return `${value}${dv1}${dv2}`;
-    },
     formatValue(raw) {
       return this.withPunctuation ? raw.replace(/^([A-Z0-9]{2})([A-Z0-9]{3})([A-Z0-9]{3})([A-Z0-9]{4})(\d{2})$/, '$1.$2.$3/$4-$5') : raw;
     },
     generate() {
       this.copied = false;
-      const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const root = this.format === 'numeric'
-        ? `${Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('')}0001`
-        : Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-      this.generatedCnpj = this.formatValue(this.calculateDv(root));
+      this.generatedCnpj = this.formatValue(window.faytorDocuments.cnpj.generate({ format: window.cnpjGenerator.format }));
     },
     changeFormat() {
       this.generate();
@@ -48,7 +31,7 @@
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
-  x-init="generate()"
+  x-init="queueMicrotask(() => generate())"
   class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de CNPJ"
 >
@@ -150,22 +133,107 @@
     </div>
   </div>
 
-  <!-- SEO / Informative Content -->
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'cnpj' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="cnpj-batch-title">
+    <div>
+      <h2 id="cnpj-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar CNPJ em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 números sem repetição para popular bancos e testes automatizados. O lote usa o formato e a pontuação escolhidos acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de números do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="CNPJ gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de CNPJ"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de CNPJ">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de CNPJ e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de CNPJ">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} números gerados.`"></p>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é e como funciona o Gerador de CNPJ?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Nossa plataforma disponibiliza um completo <strong>gerador de CNPJ</strong> estruturado com base no algoritmo oficial do Ministério da Fazenda. O número do CNPJ é composto por 14 algarismos divididos em três blocos: os primeiros oito representam o número básico, os quatro seguintes designam a filial (sendo o mais comum o sufixo "0001" representando a matriz) e os dois últimos compõem os dígitos verificadores calculados sob o módulo 11.
-    </p>
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Estrutura do CNPJ: raiz, ordem e dígitos</h2>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como é calculado o número de CNPJ?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      A verificação de integridade de um CNPJ utiliza pesos progressivos. No primeiro dígito verificador, o cálculo multiplica os 12 primeiros algarismos pelos multiplicadores ordenados: 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, e 2.
-      Já o segundo dígito inclui em sua base o primeiro dígito verificador recém-descoberto e aplica pesos na ordem de 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3 e 2. O resto de ambas as divisões por 11 determina o dígito final (se o resto for menor que 2, o dígito correspondente é configurado como 0).
-    </p>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O CNPJ tem 14 posições, divididas em três blocos:</p>
 
-    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Para que serve o gerador de CNPJ?</h2>
-    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-      Use o resultado para testar máscara, tamanho e dígitos verificadores em formulários de desenvolvimento. O gerador não consulta o cadastro da Receita Federal e não informa se a empresa existe ou está ativa. Como a geração é aleatória, não há garantia de que um número não coincida com o de uma empresa real; para integrações oficiais, use dados de teste autorizados.
-    </p>
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Raiz (8 posições):</strong> identifica a empresa e é a mesma para todos os seus estabelecimentos.</li>
+      <li><strong>Ordem (4 posições):</strong> identifica o estabelecimento. A matriz costuma ser 0001, e as filiais recebem 0002, 0003 e assim por diante.</li>
+      <li><strong>Dígitos verificadores (2 posições):</strong> calculados a partir das 12 posições anteriores e sempre numéricos.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">No formato <strong>Numérico</strong>, o gerador sorteia a raiz e usa a ordem 0001, simulando a matriz de uma empresa. No formato <strong>Alfanumérico</strong>, as 12 primeiras posições podem combinar letras maiúsculas e números.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">O CNPJ alfanumérico</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A Receita Federal instituiu o CNPJ alfanumérico pela Instrução Normativa RFB nº 2.229/2024, com adoção prevista para novas inscrições a partir de julho de 2026. Os números já existentes continuam válidos, então os sistemas precisam aceitar os dois formatos ao mesmo tempo. Gerar números alfanuméricos ajuda a encontrar campos que ainda aceitam só dígitos, máscaras que descartam letras e colunas numéricas no banco de dados.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Para calcular os dígitos verificadores, cada caractere é convertido no seu código ASCII menos 48. Os números mantêm o próprio valor (0 = 0, 9 = 9), e as letras vão de A = 17 a Z = 42.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exemplo de cálculo com letras</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O exemplo <strong>12.ABC.345/01DE</strong> usa os valores 1, 2, 17, 18, 19, 3, 4, 5, 0, 1, 20 e 21:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>1º dígito:</strong> com os pesos 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3 e 2, a soma é 459. O resto de 459 ÷ 11 é 8, e 11 − 8 = 3.</li>
+      <li><strong>2º dígito:</strong> acrescentando o 3 e usando os pesos 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3 e 2, a soma é 424. O resto é 6, e 11 − 6 = 5.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Resultado: <strong>12.ABC.345/01DE-35</strong>. Em ambos os dígitos, se o resto for 0 ou 1, o verificador é 0. No formato numérico a conta é a mesma: o exemplo 11.222.333/0001 resulta em 11.222.333/0001-81.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar CNPJ em lote</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar CNPJ em lote</strong> cria até 1.000 números distintos no formato e na pontuação selecionados acima, com exportação em TXT, CSV (cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cnpj</code>) ou JSON. Uma estratégia útil é gerar dois lotes, um numérico e outro alfanumérico, e importar ambos na mesma tabela de teste para verificar buscas, ordenação, índices e relatórios com os dois formatos misturados.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como armazenar o CNPJ</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Com o formato alfanumérico, guardar o CNPJ em coluna numérica deixou de ser possível. Use texto de 14 caracteres (por exemplo, <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">CHAR(14)</code>), sem pontuação e em letras maiúsculas, e aplique a máscara <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">00.000.000/0000-00</code> apenas na exibição. Normalizar para maiúsculas na entrada evita que "ab" e "AB" sejam tratados como CNPJs diferentes.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Limites do gerador</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Os números são válidos matematicamente, mas não correspondem a empresas cadastradas: o gerador não consulta a Receita Federal e não informa razão social, situação ou atividade. Como a raiz é aleatória, um número pode coincidir com o de uma empresa real, então use os resultados apenas em ambientes de desenvolvimento e teste. Para conferir um CNPJ existente, use o <a href="/validador-cnpj/" @click.prevent="selectTab('validador-cnpj')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Validador de CNPJ</a>.</p>
   </article>
 </section>

@@ -1,0 +1,386 @@
+<!-- ==================== SUB-VIEW: GERADOR DE JSON ==================== -->
+<section x-data="jsonGenerator" class="w-full max-w-5xl mx-auto space-y-6" aria-labelledby="json-title">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Gerador de JSON com dados de teste",
+    "url": "https://www.faytor.com.br/gerador-json/",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Navegador web",
+    "inLanguage": "pt-BR",
+    "isAccessibleForFree": true,
+    "description": "Monte um modelo JSON com variáveis e preencha com CPF, CNPJ, nomes, e-mails, celulares e senhas válidos para testes de API, mocks e massas de dados.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+    "publisher": { "@type": "Organization", "name": "Faytor", "url": "https://www.faytor.com.br/" }
+  }
+  </script>
+
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Gerador principal</span>
+    <h1 id="json-title" class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de JSON com dados de teste</h1>
+    <p class="text-slate-600 dark:text-slate-400 mt-2">
+      Cole o seu modelo JSON, marque os campos com variáveis como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-sm text-slate-800 dark:text-slate-200">{{cpf}}</code> e gere payloads com CPF, CNPJ, nomes, e-mails, celulares e senhas válidos para testes de API, mocks e massas de dados.
+    </p>
+  </div>
+
+  <!-- Modelo e variáveis -->
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-4 sm:p-6 shadow-sm space-y-5">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+      <div>
+        <label for="json-template" class="text-lg font-bold text-slate-800 dark:text-slate-100">Modelo JSON</label>
+        <p id="json-template-help" class="text-sm text-slate-600 dark:text-slate-400 mt-1">Marque as variáveis com chaves duplas, como <code class="font-mono">{{nome}}</code>. As variáveis reconhecidas ficam destacadas em verde. Tab e Shift+Tab ajustam a indentação; para sair do editor pelo teclado, pressione Esc e depois Tab.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="relative w-full sm:w-auto">
+          <select :value="indentStyle" @change="changeIndent($event.target.value)" class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Indentação do JSON">
+            <option value="2" :selected="indentStyle === '2'">2 espaços</option>
+            <option value="4" :selected="indentStyle === '4'">4 espaços</option>
+            <option value="min" :selected="indentStyle === 'min'">Minificado</option>
+          </select>
+          <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+        </div>
+        <button type="button" @click="formatTemplate()" class="flex-1 sm:flex-none border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-4 py-2.5 rounded-xl text-sm transition-all flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h10M4 18h7" /></svg>
+          <span>Formatar JSON</span>
+        </button>
+        <button type="button" @click="openAdd()" :aria-expanded="adding.toString()" aria-controls="json-add-variable" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m-7-7h14" /></svg>
+          <span>Adicionar variável</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Inserção de variável no cursor ou no trecho selecionado -->
+    <form id="json-add-variable" x-show="adding" x-cloak @submit.prevent="confirmAdd()" @keydown.escape.prevent="cancelAdd()" class="rounded-2xl border border-primary/30 bg-blue-50/60 dark:bg-blue-900/10 p-4 space-y-3" aria-labelledby="json-add-title">
+      <p id="json-add-title" class="text-sm font-bold text-slate-800 dark:text-slate-100">Nova variável no ponto do cursor (ou no lugar do trecho selecionado)</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <label class="flex flex-col gap-1">
+          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nome da variável</span>
+          <input x-ref="newName" x-model="newName" list="json-variable-names" maxlength="40" autocomplete="off" spellcheck="false" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none" aria-describedby="json-add-hint">
+          <datalist id="json-variable-names">
+            <template x-for="variable in variables" :key="variable.name"><option :value="variable.name"></option></template>
+          </datalist>
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipo</span>
+          <div class="relative">
+            <select x-model="newType" :disabled="isExistingName(newName)" class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-60">
+              <option value="">Escolha o tipo</option>
+              <template x-for="type in types" :key="type.key"><option :value="type.key" x-text="type.label" :selected="type.key === newType"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Aspas</span>
+          <div class="relative">
+            <select x-model="newQuote" :disabled="isExistingName(newName)" class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none disabled:opacity-60">
+              <option value="double">Aspas duplas</option>
+              <option value="single">Aspas simples</option>
+              <option value="none">Sem aspas</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+      </div>
+      <p id="json-add-hint" class="text-xs text-slate-600 dark:text-slate-400" x-text="isExistingName(newName) ? 'Essa variável já existe: o mesmo valor será repetido neste ponto.' : 'Até 40 caracteres: letras, números, espaço, ponto, hífen ou sublinhado.'"></p>
+      <p x-show="addError" x-text="addError" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+      <div class="flex flex-wrap gap-2">
+        <button type="submit" class="bg-primary hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-md active:scale-95">Inserir variável</button>
+        <button type="button" @click="cancelAdd()" class="border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all">Cancelar</button>
+      </div>
+    </form>
+
+    <!-- Editor: o textarea transparente fica sobre o fundo com as variáveis destacadas -->
+    <div class="relative h-[24rem] sm:h-[32rem] overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus-within:ring-2 focus-within:ring-primary">
+      <pre x-ref="highlight" x-html="highlighted" class="json-editor-layer absolute inset-0 text-slate-800 dark:text-slate-200" aria-hidden="true"></pre>
+      <textarea
+        id="json-template"
+        x-ref="editor"
+        x-model="template"
+        @scroll="syncScroll($event)"
+        @keydown="onEditorKeydown($event)"
+        @blur="tabReleased = false"
+        :class="'json-editor-input'"
+        class="json-editor-layer absolute inset-0 h-full w-full resize-none bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none"
+        aria-describedby="json-template-help"
+        spellcheck="false"
+        autocapitalize="off"
+        autocomplete="off"
+      >{
+  "cliente": {
+    "nome": {{nome}},
+    "cpf": {{cpf}},
+    "email": {{email}},
+    "celular": {{celular}}
+  },
+  "empresa": {
+    "cnpj": {{cnpj}},
+    "responsavel": {{nome}}
+  },
+  "observacao": "Cadastro de teste de {{nome}}"
+}</textarea>
+    </div>
+    <p x-show="formatMessage" x-text="formatMessage" class="text-sm font-semibold" :class="formatOk ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" role="status"></p>
+
+    <!-- Lista de variáveis encontradas no modelo -->
+    <div class="space-y-3">
+      <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Variáveis <span class="text-sm font-semibold text-slate-500 dark:text-slate-400" x-text="`(${variables.length})`"></span></h2>
+      <p x-show="!variables.length" class="text-sm text-slate-600 dark:text-slate-400">Nenhuma variável no modelo. Use <strong>Adicionar variável</strong> ou escreva um nome entre chaves duplas, como <code class="font-mono">{{cpf}}</code>. Para remover uma variável, apague-a do modelo.</p>
+      <ul class="space-y-3">
+        <template x-for="(variable, index) in variables" :key="variable.name">
+          <li class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
+            <!-- A linha só é desenhada quando a configuração da variável já existe. -->
+            <template x-if="configs[variable.name]">
+            <div class="flex flex-col lg:flex-row lg:items-start gap-4">
+              <div class="lg:w-48 flex-shrink-0">
+                <mark class="json-variable font-mono text-sm px-1.5 py-0.5 break-all" x-text="`{{${variable.name}}}`"></mark>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-2" x-text="variable.count === 1 ? 'Usada 1 vez' : `Usada ${variable.count} vezes`"></p>
+              </div>
+              <div class="flex flex-1 flex-wrap items-end gap-4">
+                <label class="flex flex-col gap-1 w-full sm:w-44">
+                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tipo</span>
+                  <div class="relative">
+                    <select @change="setType(variable.name, $event.target.value)" :aria-label="`Tipo da variável ${variable.name}`" :aria-invalid="(!configs[variable.name]?.type).toString()" class="w-full appearance-none bg-white dark:bg-slate-900 border rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none" :class="configs[variable.name]?.type ? 'border-slate-300 dark:border-slate-700' : 'border-rose-500'">
+                      <option value="" :selected="!configs[variable.name]?.type">Escolha o tipo</option>
+                      <template x-for="type in types" :key="type.key"><option :value="type.key" x-text="type.label" :selected="configs[variable.name]?.type === type.key"></option></template>
+                    </select>
+                    <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+                  </div>
+                </label>
+
+                <template x-for="option in visibleOptions(variable.name)" :key="option.key">
+                  <div>
+                    <template x-if="option.type === 'switch'">
+                      <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300" x-text="option.label"></span>
+                        <input type="checkbox" class="peer sr-only" x-model="configs[variable.name].options[option.key]" :aria-label="`${option.label} na variável ${variable.name}`">
+                        <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 dark:bg-slate-700 dark:peer-checked:bg-primary" aria-hidden="true">
+                          <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="configs[variable.name].options[option.key] ? 'translate-x-6' : 'translate-x-1'"></span>
+                        </span>
+                      </label>
+                    </template>
+                    <template x-if="option.type === 'select'">
+                      <label class="flex flex-col gap-1 w-full sm:w-52">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300" x-text="option.label"></span>
+                        <div class="relative">
+                          <select x-model="configs[variable.name].options[option.key]" :aria-label="`${option.label} da variável ${variable.name}`" class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none">
+                            <template x-for="choice in option.options" :key="choice[0]"><option :value="choice[0]" x-text="choice[1]" :selected="configs[variable.name].options[option.key] === choice[0]"></option></template>
+                          </select>
+                          <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+                        </div>
+                      </label>
+                    </template>
+                    <template x-if="option.type === 'number'">
+                      <label class="flex flex-col gap-1 w-24">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300" x-text="option.label"></span>
+                        <input type="number" :inputmode="option.step === 'any' ? 'decimal' : 'numeric'" :step="option.step || 1" :min="option.min" :max="option.max" x-model.number="configs[variable.name].options[option.key]" :aria-label="`${option.label} da variável ${variable.name}`" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none">
+                      </label>
+                    </template>
+                  </div>
+                </template>
+
+                <label class="flex flex-col gap-1 w-full sm:w-40">
+                  <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Aspas</span>
+                  <div class="relative">
+                    <select x-model="configs[variable.name].quote" :aria-label="`Aspas da variável ${variable.name}`" class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-primary focus:outline-none">
+                      <option value="double" :selected="configs[variable.name]?.quote === 'double'">Aspas duplas</option>
+                      <option value="single" :selected="configs[variable.name]?.quote === 'single'">Aspas simples</option>
+                      <option value="none" :selected="configs[variable.name]?.quote === 'none'">Sem aspas</option>
+                    </select>
+                    <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+                  </div>
+                </label>
+              </div>
+            </div>
+            </template>
+          </li>
+        </template>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-4 sm:p-6 shadow-sm space-y-4" aria-labelledby="json-result-title">
+    <h2 id="json-result-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Resultado</h2>
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="14" :value="output" placeholder="Clique em Gerar para preencher o modelo." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-4 py-3.5 font-mono text-sm leading-6 text-slate-800 dark:text-slate-200 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none" aria-label="JSON gerado"></textarea>
+      <button type="button" @click="copy()" class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1" :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'" aria-label="Copiar JSON gerado">
+        <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+        <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+        <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+      </button>
+    </div>
+    <p x-show="outputError" x-text="outputError" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar JSON">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar JSON e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+      </div>
+      <p x-show="outputValid === true" class="text-sm font-semibold text-emerald-700 dark:text-emerald-400" role="status">JSON válido.</p>
+      <p x-show="outputValid === false" class="text-sm font-semibold text-amber-700 dark:text-amber-400" role="status">O resultado não é um JSON válido. Isso é esperado com aspas simples ou valores sem aspas fora de textos.</p>
+    </div>
+  </div>
+
+  <!-- Geração em lote -->
+  <section class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-4 sm:p-6 shadow-sm space-y-5" aria-labelledby="json-batch-title">
+    <div>
+      <h2 id="json-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar JSON em lote</h2>
+      <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Crie até 1.000 resultados com valores novos em cada um e exporte em JSON (array), JSON Lines ou TXT.</p>
+    </div>
+    <label class="flex flex-col gap-1 sm:w-40">
+      <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+      <input type="number" min="1" max="1000" inputmode="numeric" x-model.number="batchQuantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de JSONs do lote">
+    </label>
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="10" :value="batchOutput" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-4 py-3.5 font-mono text-sm leading-6 text-slate-800 dark:text-slate-200 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none" aria-label="Lote de JSONs gerados"></textarea>
+      <button type="button" @click="copyBatch()" class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1" :class="batchCopied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'" aria-label="Copiar lote de JSONs">
+        <span x-text="batchCopied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+        <svg x-show="!batchCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+        <svg x-show="batchCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+      </button>
+    </div>
+    <p x-show="batchError" x-text="batchError" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+    <p x-show="batchNeedsValidJson" class="text-sm font-semibold text-amber-700 dark:text-amber-400" role="status">Para exportar em JSON ou JSON Lines, cada resultado precisa ser um JSON válido. Ajuste o modelo ou escolha TXT.</p>
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generateBatch()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de JSONs">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateBatchAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de JSONs e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="batchFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="json">JSON (array)</option>
+              <option value="jsonl">JSON Lines</option>
+              <option value="txt">TXT</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="downloadBatch()" :disabled="!batchOutput" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de JSONs">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="batchItems.length" class="text-xs text-slate-600 dark:text-slate-400" x-text="`${batchItems.length} JSONs gerados.`"></p>
+    </div>
+  </section>
+
+  <!-- Conteúdo editorial -->
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é o gerador de JSON do Faytor</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O gerador de JSON monta <strong>payloads de API, mocks e massas de dados de teste</strong> no formato exato que o seu sistema espera. Você escreve ou cola o modelo, marca os campos que devem variar e escolhe o que cada um representa: CPF, CNPJ, nome, e-mail, celular, senha, número, palavras, Lorem Ipsum e outros. A cada clique, o Faytor preenche o modelo com dados fictícios válidos.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Geradores de JSON fake costumam impor uma estrutura pronta e dados em inglês. Aqui, a estrutura é sua, e os dados seguem as regras brasileiras: CPFs e CNPJs com dígitos verificadores corretos, celulares com DDD real do estado escolhido e nomes comuns no Brasil.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como usar, passo a passo</h2>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Escreva ou cole o modelo</strong> no editor. Escolha a indentação acima do editor (2 espaços, 4 espaços ou minificado) e use o botão <strong>Formatar JSON</strong> para reorganizar o modelo, mantendo as variáveis no lugar. No editor, <strong>Tab</strong> e <strong>Shift+Tab</strong> aumentam e diminuem a indentação da linha ou das linhas selecionadas; para sair do editor pelo teclado, pressione <strong>Esc</strong> e depois <strong>Tab</strong>.</li>
+      <li><strong>Marque as variáveis.</strong> Digite <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{nome da variável}}</code> ou posicione o cursor no ponto desejado (ou selecione um valor) e clique em <strong>Adicionar variável</strong>. O nome é sugerido a partir da chave à esquerda: em <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">"cpf": </code>, a sugestão é <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cpf</code>.</li>
+      <li><strong>Escolha o tipo e as opções</strong> de cada variável na lista abaixo do editor. Nomes como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cpf</code>, <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">email</code> ou <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">celular</code> já chegam com o tipo preenchido.</li>
+      <li><strong>Escolha as aspas:</strong> aspas duplas, aspas simples ou sem aspas.</li>
+      <li><strong>Clique em Gerar</strong> ou em <strong>Gerar e Copiar</strong>. Para muitos registros, use a seção <strong>Gerar JSON em lote</strong>.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Sintaxe das variáveis</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">As variáveis ficam entre chaves duplas, como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{cpf}}</code>, <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{cpf cliente}}</code> ou <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{email_2}}</code>. É o mesmo padrão usado pelo Postman, pelo Handlebars e pelo Mustache, e tem uma vantagem importante: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{</code> nunca aparece em um JSON válido, então não há risco de confundir uma variável com o conteúdo do modelo.</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li>O nome pode ter até 40 caracteres: letras (inclusive acentuadas), números, espaço, ponto, hífen e sublinhado.</li>
+      <li>Espaços nas pontas são ignorados: <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{ cpf }}</code> e <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{cpf}}</code> são a mesma variável.</li>
+      <li>Toda variável reconhecida fica destacada em verde no editor. Se um trecho entre chaves não ficar verde, o nome tem algum caractere não aceito.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">A mesma variável em vários lugares</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Dentro de um mesmo JSON, uma variável repete o mesmo valor em todos os lugares onde aparece. No modelo de exemplo, <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{nome}}</code> preenche o nome do cliente, o responsável pela empresa e o texto da observação, sempre com a mesma pessoa. Para valores diferentes, use nomes diferentes, como <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{cpf 1}}</code> e <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">{{cpf 2}}</code>. Os nomes são únicos: cada nome aparece uma vez na lista de variáveis, com a quantidade de usos ao lado.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Aspas: quando usar cada opção</h2>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left text-sm text-slate-600 dark:text-slate-300">
+        <thead><tr><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Opção</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Modelo</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Resultado</th></tr></thead>
+        <tbody>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Aspas duplas</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">"cpf": {{cpf}}</code></td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">"cpf": "123.456.789-09"</code></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Aspas simples</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cpf: {{cpf}}</code></td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">cpf: '123.456.789-09'</code></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Sem aspas</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">"cpf": {{cpf}}</code></td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">"cpf": 123.456.789-09</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"><strong>Aspas duplas</strong> é a opção para JSON. <strong>Aspas simples</strong> serve para objetos JavaScript e outros formatos que aceitam esse tipo de aspas. <strong>Sem aspas</strong> insere o valor exatamente como foi gerado, o que é útil para montar outros formatos de texto, como uma linha de CSV ou um comando SQL. Atenção: números com zero à esquerda, como o PIN <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">0482</code>, não são números JSON válidos.</p>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Quando a variável está <strong>dentro de um texto entre aspas</strong>, como em <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">"observacao": "Cliente {{nome}}"</code>, a opção de aspas é ignorada: o valor entra no texto, com os caracteres especiais escapados, e o JSON continua válido.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Conferindo o resultado</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Depois de gerar, o Faytor indica se o resultado é um JSON válido. Se não for, confira as vírgulas e chaves do modelo ou a opção de aspas das variáveis. Aspas simples e valores sem aspas fora de textos produzem resultados que não são JSON, o que pode ser intencional quando o destino é outro formato.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Exportar em lote: JSON, JSON Lines ou TXT</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar JSON em lote</strong> cria até 1.000 resultados de uma vez. Cada resultado recebe valores novos, e o formato do arquivo é escolhido ao lado do botão <strong>Baixar arquivo</strong>:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>JSON (array):</strong> todos os resultados em um único array. É o formato aceito como arquivo de dados pelo Collection Runner do Postman, em que cada objeto vira uma iteração, e pelo <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">mongoimport</code> com a opção <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">--jsonArray</code>.</li>
+      <li><strong>JSON Lines (.jsonl):</strong> um objeto compacto por linha, formato padrão do <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">mongoimport</code> e aceito em cargas de dados como o "newline-delimited JSON" do BigQuery.</li>
+      <li><strong>TXT:</strong> cada resultado separado por uma linha em branco. Funciona mesmo quando o modelo não é JSON.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Os formatos JSON e JSON Lines exigem que cada resultado seja um JSON válido.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Tipos de variável disponíveis</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Cada tipo usa as mesmas regras do gerador individual correspondente. Um CPF gerado aqui, por exemplo, passa no <a href="/validador-cpf/" @click.prevent="selectTab('validador-cpf')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Validador de CPF</a>.</p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left text-sm text-slate-600 dark:text-slate-300">
+        <thead><tr><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Tipo</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Opções</th><th scope="col" class="border-b border-slate-200 dark:border-slate-700 py-2 pr-4 font-semibold text-slate-800 dark:text-slate-100">Gerador individual</th></tr></thead>
+        <tbody>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Celular</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">pontuação e estado (DDD)</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-celular/" @click.prevent="selectTab('gerador-celular')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Celular</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">CNPJ</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">pontuação e formato numérico ou alfanumérico</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-cnpj/" @click.prevent="selectTab('gerador-cnpj')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de CNPJ</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">CNS</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">pontuação</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-cns/" @click.prevent="selectTab('gerador-cns')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de CNS</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">CPF</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">pontuação e estado de origem</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-cpf/" @click.prevent="selectTab('gerador-cpf')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de CPF</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">E-mail</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">domínio</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-email/" @click.prevent="selectTab('gerador-email')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de E-mail</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Hash</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">algoritmo (MD5, SHA-1, SHA-2 ou CRC32) e formato, a partir de um valor aleatório</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-hash/" @click.prevent="selectTab('gerador-hash')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Hash</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Lorem Ipsum</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">palavras, parágrafos ou caracteres e quantidade</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-lorem-ipsum/" @click.prevent="selectTab('gerador-lorem-ipsum')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Lorem Ipsum</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Nome</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">gênero, quantidade de prenomes e de sobrenomes</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-nomes/" @click.prevent="selectTab('gerador-nomes')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Nomes</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Número</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">inteiro, decimal ou dinheiro (R$ e US$), dígitos ou intervalo, casas decimais e separadores</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-numeros/" @click.prevent="selectTab('gerador-numeros')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Números</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Palavras</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">categoria, quantidade de palavras e maiúsculas ou minúsculas</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-palavras/" @click.prevent="selectTab('gerador-palavras')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Palavras</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">PIS/PASEP</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">pontuação</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-pis/" @click.prevent="selectTab('gerador-pis')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de PIS/PASEP</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">RG</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">pontuação</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-rg/" @click.prevent="selectTab('gerador-rg')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de RG</a></td></tr>
+          <tr><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">Senha</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4">modo (aleatório, fácil de lembrar ou PIN), tamanho e tipos de caractere</td><td class="border-b border-slate-100 dark:border-slate-800 py-2 pr-4"><a href="/gerador-senhas/" @click.prevent="selectTab('gerador-senhas')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Senhas</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O endereço ainda não está disponível como variável, porque cada endereço depende de consultas ao IBGE e ao ViaCEP. Para endereços reais, use o <a href="/gerador-endereco/" @click.prevent="selectTab('gerador-endereco')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Endereço</a>.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Usos comuns</h2>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Testes de API:</strong> gere o corpo de requisições POST e PUT com documentos válidos e cole no Postman, no Insomnia ou em testes automatizados.</li>
+      <li><strong>Mocks e protótipos:</strong> monte respostas de API realistas para o front-end avançar antes de o back-end ficar pronto.</li>
+      <li><strong>Massa de dados:</strong> exporte centenas de registros em JSON Lines e importe em bancos de homologação.</li>
+      <li><strong>Testes de validação:</strong> confirme que o sistema aceita CPF com e sem pontuação, CNPJ alfanumérico e nomes acentuados.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Privacidade e limites</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">O modelo e os valores são processados no seu navegador; nada é enviado para servidores. Para você continuar de onde parou, o modelo e as configurações das variáveis ficam salvos no próprio navegador, e limpar os dados do site apaga essas informações. Os valores são fictícios, mas podem coincidir com dados reais. Use-os apenas em ambientes de desenvolvimento e teste.</p>
+  </article>
+</section>

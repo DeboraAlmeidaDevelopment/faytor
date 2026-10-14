@@ -9,10 +9,10 @@
         Faytor Factory
       </span>
       <h1 class="text-3xl lg:text-4xl font-black tracking-tight leading-tight">
-        A Fábrica de Ferramentas Digitais de Alta Performance
+        Ferramentas para quem desenvolve e testa sistemas brasileiros
       </h1>
       <p class="text-sm lg:text-base text-blue-100 max-w-2xl">
-        Conectando desenvolvedores, estudantes e profissionais com utilitários velozes, eficientes, privados e 100% locais.
+        Geradores, validadores e utilitários que mostram como cada resultado é calculado, com os limites de cada ferramenta explicados na própria página.
       </p>
     </div>
   </div>
@@ -24,9 +24,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       </div>
-      <h3 class="font-bold text-slate-800 dark:text-slate-100">Velocidade Máxima</h3>
+      <h2 class="font-bold text-slate-800 dark:text-slate-100">Resultados explicados</h2>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
-        Processamento instantâneo feito diretamente no navegador, eliminando tempos de espera e chamadas lentas de rede.
+        Os validadores mostram o cálculo etapa por etapa, e cada página traz exemplos conferidos com a própria ferramenta.
       </p>
     </div>
 
@@ -36,7 +36,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       </div>
-      <h3 class="font-bold text-slate-800 dark:text-slate-100">Processamento local</h3>
+      <h2 class="font-bold text-slate-800 dark:text-slate-100">Processamento local</h2>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
         A formatação de textos e a verificação de dígitos acontecem no navegador. O gerador de endereço consulta serviços externos do IBGE e do ViaCEP; essas consultas usam a localização selecionada.
       </p>
@@ -48,7 +48,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
         </svg>
       </div>
-      <h3 class="font-bold text-slate-800 dark:text-slate-100">Foco em UX</h3>
+      <h2 class="font-bold text-slate-800 dark:text-slate-100">Foco em UX</h2>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
         Interface responsiva com suporte total a Light e Dark Mode, projetada para reduzir o cansaço visual no dia a dia.
       </p>
@@ -57,29 +57,52 @@
 
   <div class="bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-6 text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
     <div class="space-y-3">
-      <h2 class="text-xl font-bold text-slate-900 dark:text-white">O que é a Faytor?</h2>
+      <h2 class="text-xl font-bold text-slate-900 dark:text-white">O que é o Faytor?</h2>
       <p>
-        A <strong>Faytor</strong> nasceu do desejo de criar uma "fábrica" virtual de utilitários rápidos que resolvessem dores cotidianas sem burocracia ou lentidão. Queremos simplificar a vida de desenvolvedores de software, profissionais de marketing, redatores e analistas de sistemas através de ferramentas limpas, diretas ao ponto, com explicações sobre o funcionamento e os limites de cada resultado.
+        O <strong>Faytor</strong> nasceu do desejo de criar uma "fábrica" virtual de utilitários rápidos para dores cotidianas, sem burocracia ou lentidão. O foco são as tarefas de quem desenvolve e testa sistemas no Brasil: gerar documentos válidos para massa de testes, conferir dígitos verificadores, formatar JSON, converter Base64 e contar palavras.
       </p>
+    </div>
+
+    <div class="space-y-3">
+      <h2 class="text-xl font-bold text-slate-900 dark:text-white">Quem mantém o site</h2>
+      <p>
+        O Faytor é criado e mantido por Débora Almeida, engenheira de software. O código, os textos e as correções são feitos por ela. Você pode conhecer o trabalho dela no
+        <a href="https://github.com/DeboraAlmeidaDevelopment" target="_blank" rel="noopener noreferrer" class="font-semibold text-primary dark:text-blue-400 hover:underline">GitHub</a>
+        e no
+        <a href="https://www.linkedin.com/in/debora-almeida-dev/" target="_blank" rel="noopener noreferrer" class="font-semibold text-primary dark:text-blue-400 hover:underline">LinkedIn</a>.
+      </p>
+    </div>
+
+    <div class="space-y-3">
+      <h2 class="text-xl font-bold text-slate-900 dark:text-white">Como o conteúdo é produzido</h2>
+      <ul class="list-disc pl-5 space-y-2">
+        <li><strong>Regras implementadas, não apenas descritas:</strong> o cálculo explicado em cada página é o mesmo que a ferramenta executa. Os geradores e validadores de documentos compartilham um único módulo de regras, para que um número gerado sempre passe no validador correspondente.</li>
+        <li><strong>Exemplos conferidos:</strong> os números usados como exemplo nos textos são verificados com o próprio validador antes da publicação, e os trechos de código em JavaScript e Python são executados com esses mesmos exemplos.</li>
+        <li><strong>Limites declarados:</strong> cada página informa o que a ferramenta não faz. Um documento matematicamente válido não significa cadastro existente, titularidade ou situação regular, e isso é dito de forma explícita.</li>
+        <li><strong>Fontes públicas:</strong> as regras seguem a documentação pública dos algoritmos e as normas dos órgãos responsáveis, como a Instrução Normativa da Receita Federal sobre o CNPJ alfanumérico.</li>
+      </ul>
     </div>
 
     <div class="space-y-3">
       <h2 class="text-xl font-bold text-slate-900 dark:text-white">Como as ferramentas funcionam</h2>
       <p>
-        Assim como em uma fábrica bem projetada, cada processo na Faytor é otimizado para atingir o máximo desempenho. Em vez de carregar dependências pesadas de backend ou realizar chamadas de rede lentas para processar um texto, criamos uma arquitetura Single Page Application (SPA) modularizada. Nela, o seu navegador é quem opera como a linha de montagem, executando em frações de milissegundo as lógicas de validação e transformação de dados necessárias.
+        O site é uma Single Page Application (SPA) modular. A formatação de textos, a geração de documentos e a verificação de dígitos acontecem no seu navegador, sem que o conteúdo digitado seja enviado para processamento. A exceção é o gerador de endereço, que consulta cidades no IBGE e logradouros no ViaCEP para trazer endereços reais. Os detalhes sobre cookies e publicidade estão na
+        <a href="/politica-de-privacidade/" @click.prevent="selectTab('politica-de-privacidade')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Política de Privacidade</a>.
       </p>
+      <ul class="list-disc pl-5 space-y-2">
+        <li><strong>Tailwind CSS:</strong> estilização enxuta, com carregamento rápido mesmo em dispositivos móveis e redes instáveis.</li>
+        <li><strong>Alpine.js:</strong> estado reativo leve, sem o peso de frameworks maiores.</li>
+        <li><strong>HTML completo em cada endereço:</strong> o conteúdo de cada ferramenta é entregue na primeira resposta da página, sem depender de carregamentos adicionais para ser lido.</li>
+      </ul>
     </div>
 
     <div class="space-y-3">
-      <h2 class="text-xl font-bold text-slate-900 dark:text-white">Nosso Compromisso Técnico</h2>
+      <h2 class="text-xl font-bold text-slate-900 dark:text-white">Correções e sugestões</h2>
       <p>
-        Nossa arquitetura moderna se apoia sobre os pilares mais robustos da web contemporânea:
+        Encontrou um cálculo divergente, um texto desatualizado ou sentiu falta de alguma ferramenta? Envie uma mensagem pela
+        <a href="/contato/" @click.prevent="selectTab('contato')" class="font-semibold text-primary dark:text-blue-400 hover:underline">página de contato</a>.
+        As correções são aplicadas na própria página da ferramenta.
       </p>
-      <ul class="list-disc pl-5 space-y-2">
-        <li><strong>Tailwind CSS:</strong> Para estilização enxuta, garantindo carregamento rápido mesmo em dispositivos móveis e redes instáveis.</li>
-        <li><strong>Alpine.js:</strong> Para manter o estado reativo da aplicação de forma extremamente leve, evitando as complexidades e o peso de frameworks maiores.</li>
-        <li><strong>Processamento no navegador:</strong> Garantindo que lógicas como formatação JSON e validações matemáticas de algoritmos nacionais rodem puramente do lado do cliente.</li>
-      </ul>
     </div>
 
     <div class="pt-6 border-t border-slate-200 dark:border-darkBg-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -90,17 +113,18 @@
       <div class="flex space-x-3">
         <a
           @click.prevent="selectTab('contato')"
-          href="#"
+          href="/contato/"
           class="bg-primary hover:bg-primary-dark text-white font-semibold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm"
         >
           Entre em Contato
         </a>
-        <button
-          @click="selectTab('home')"
+        <a
+          href="/"
+          @click.prevent="selectTab('home')"
           class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold px-4 py-2 rounded-xl text-xs transition-colors"
         >
           Ir para a Home
-        </button>
+        </a>
       </div>
     </div>
   </div>

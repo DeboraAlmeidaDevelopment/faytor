@@ -61,6 +61,51 @@ window.pasteToInput = async inputId => {
   }
 };
 
+// Geração de senhas compartilhada pelo gerador individual e pela geração em lote.
+window.faytorPasswords = {
+  characterSets: ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '0123456789', '!@#$%^&*()_+[]{}|;:,.<>?'],
+  words: 'abacate|alegria|amigo|amizade|amora|arco|areia|aviao|banana|bicicleta|borboleta|brisa|caderno|cachorro|caminho|caneca|carinho|castelo|chuva|cidade|coelho|coragem|coruja|cristal|doce|estrela|familia|felicidade|flor|floresta|formiga|futuro|garrafa|girassol|golfinho|harmonia|janela|jardim|laranja|leao|livro|lua|macarrao|manha|melancia|montanha|musica|nuvem|oceano|passeio|peixe|pipoca|planeta|ponte|praia|presente|queijo|raposa|rio|sabor|sapo|segredo|sorriso|tempo|tesouro|tomate|universo|viagem|vento|verao|verde|vitoria'.split('|'),
+
+  randomIndex(max) {
+    if (window.crypto?.getRandomValues) {
+      const values = new Uint32Array(1);
+      window.crypto.getRandomValues(values);
+      return values[0] % max;
+    }
+    return Math.floor(Math.random() * max);
+  },
+
+  random(length, sets) {
+    const allCharacters = sets.join('');
+    return Array.from({ length }, () => allCharacters[this.randomIndex(allCharacters.length)]).join('');
+  },
+
+  easy(count, capitalize, complete) {
+    return Array.from({ length: count }, () => {
+      const word = this.words[this.randomIndex(this.words.length)];
+      const part = complete ? word : word.slice(0, Math.max(3, Math.ceil(word.length * 0.65)));
+      return capitalize ? part.charAt(0).toUpperCase() + part.slice(1) : part;
+    }).join('-');
+  },
+
+  pin(length) {
+    return Array.from({ length }, () => String(this.randomIndex(10))).join('');
+  },
+
+  // Lê o modo e as opções atuais da tela, com os mesmos limites do gerador individual.
+  fromPage() {
+    const field = id => document.getElementById(id);
+    const number = (id, min, max, fallback) => Math.min(max, Math.max(min, Number.parseInt(field(id)?.value, 10) || fallback));
+    const mode = document.querySelector('[data-password-mode][aria-selected="true"]')?.dataset.passwordMode || 'random';
+    if (mode === 'easy') return this.easy(number('easy-length', 2, 10, 4), field('easy-capitalize')?.checked, field('easy-complete')?.checked);
+    if (mode === 'pin') return this.pin(number('pin-length', 4, 32, 6));
+    const ids = ['password-uppercase', 'password-lowercase', 'password-numbers', 'password-special'];
+    const sets = this.characterSets.filter((_, index) => field(ids[index])?.checked);
+    return sets.length ? this.random(number('password-length', 4, 128, 16), sets) : '';
+  }
+};
+window.faytorBatchSources = Object.assign(window.faytorBatchSources || {}, { senha: () => window.faytorPasswords.fromPage() });
+
 window.handleCnpjFormatChange = event => {
   window.cnpjGenerator.format = event.target.value;
   window.saveCnpjPreferences();
@@ -100,20 +145,8 @@ window.formatCnpjValue = raw => window.cnpjGenerator.withPunctuation
   : raw;
 
 window.generateCnpj = () => {
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const valueOf = char => char >= '0' && char <= '9' ? Number(char) : char.charCodeAt(0) - 48;
-  const calculate = (source, weights) => {
-    const sum = source.split('').reduce((total, char, index) => total + valueOf(char) * weights[index], 0);
-    const remainder = sum % 11;
-    return remainder < 2 ? 0 : 11 - remainder;
-  };
-  const root = window.cnpjGenerator.format === 'numeric'
-    ? `${Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('')}0001`
-    : Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  const dv1 = calculate(root, [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
-  const dv2 = calculate(`${root}${dv1}`, [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]);
   const output = document.getElementById('cnpj-generated');
-  if (output) output.value = window.formatCnpjValue(`${root}${dv1}${dv2}`);
+  if (output) output.value = window.formatCnpjValue(window.faytorDocuments.cnpj.generate({ format: window.cnpjGenerator.format }));
 };
 
 window.copyCnpj = async () => {
@@ -154,6 +187,11 @@ document.addEventListener('alpine:init', () => {
       base64: 'views/base64.html',
       'gerador-cpf': 'views/gerador-cpf.html',
       'gerador-endereco': 'views/gerador-endereco.html',
+      'gerador-hash': 'views/gerador-hash.html',
+      'gerador-json': 'views/gerador-json.html',
+      'gerador-lorem-ipsum': 'views/gerador-lorem-ipsum.html',
+      'gerador-numeros': 'views/gerador-numeros.html',
+      'gerador-palavras': 'views/gerador-palavras.html',
       'gerador-cnpj': 'views/gerador-cnpj.html',
       'gerador-cns': 'views/gerador-cns.html',
       'gerador-rg': 'views/gerador-rg.html',
@@ -181,6 +219,11 @@ document.addEventListener('alpine:init', () => {
       base64: 'Codificador e Decodificador Base64 Online | Faytor',
       'gerador-cpf': 'Gerador de CPF Online - Gerar CPF Válido para Testes | Faytor',
       'gerador-endereco': 'Gerador de CEP e Endereço Online para Testes | Faytor',
+      'gerador-hash': 'Gerador de Hash MD5, SHA-1, SHA-256 e SHA-512 Online | Faytor',
+      'gerador-json': 'Gerador de JSON com Dados de Teste e Mock de API | Faytor',
+      'gerador-lorem-ipsum': 'Gerador de Lorem Ipsum Online | Faytor',
+      'gerador-numeros': 'Gerador de Números Aleatórios Online | Faytor',
+      'gerador-palavras': 'Gerador de Palavras Aleatórias Online | Faytor',
       'gerador-cnpj': 'Gerador de CNPJ Online - Gerar CNPJ Válido para Testes | Faytor',
       'gerador-cns': 'Gerador de CNS Online - Cartão Nacional de Saúde | Faytor',
       'gerador-rg': 'Gerador de RG Online - Gerar Registro Geral para Testes | Faytor',
@@ -207,6 +250,11 @@ document.addEventListener('alpine:init', () => {
       base64: 'Codifique e decodifique textos em Base64 online gratuitamente.',
       'gerador-cpf': 'Gere números de CPF válidos para testes e desenvolvimento.',
       'gerador-endereco': 'Gere endereços brasileiros reais consultados no ViaCEP para testes e desenvolvimento.',
+      'gerador-hash': 'Gere hash MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512 ou CRC32 de um texto ou valor aleatório, com HMAC, Base64 e comparação de hashes.',
+      'gerador-json': 'Gere JSON com CPF, CNPJ, nomes, e-mails e celulares válidos a partir do seu modelo. Crie payloads, mocks de API e massa de dados em lote (JSON e JSONL).',
+      'gerador-lorem-ipsum': 'Gere texto Lorem Ipsum por palavras, parágrafos ou caracteres para preencher layouts, protótipos e testes de interface. Copie com um clique.',
+      'gerador-numeros': 'Gere números aleatórios inteiros, decimais ou em dinheiro (R$ e US$), por quantidade de dígitos ou intervalo, com separadores brasileiro ou americano.',
+      'gerador-palavras': 'Sorteie palavras aleatórias por categoria: cores, animais, frutas, comidas, nomes, países, meios de transporte, profissões e esportes. Gere em lote.',
       'gerador-cnpj': 'Gere números de CNPJ válidos para testes e desenvolvimento.',
       'gerador-cns': 'Gere números de CNS válidos para testes e desenvolvimento.',
       'gerador-rg': 'Gere números de RG fictícios para testes e desenvolvimento.',
@@ -223,14 +271,30 @@ document.addEventListener('alpine:init', () => {
       'politica-de-privacidade': 'Leia a política de privacidade do Faytor.',
       'termos-de-uso': 'Leia os termos de uso do Faytor.',
       contato: 'Entre em contato com a equipe do Faytor.',
-      'sobre-nos': 'Conheça o Faytor e suas ferramentas online gratuitas.'
+      'sobre-nos': 'Conheça quem mantém o Faytor, como as ferramentas são feitas e como o conteúdo é conferido.'
     },
 
     init() {
       this.showCookieBanner = !this.cookieConsent;
+      // Abaixo de 1024 px o menu lateral é uma gaveta; fechada, ela fica invisível (fora do Tab).
+      // Ao abrir, o foco entra no menu depois que a gaveta volta a ficar visível.
+      this.$watch('mobileMenuOpen', open => {
+        if (open) window.setTimeout(() => this.$refs.closeMenuButton?.focus(), 50);
+      });
       this.isNetworkLoading = window.faytorPendingRequests > 0;
+      // Consultas em sequência (como IBGE e depois ViaCEP) zeram o contador por um instante.
+      // Esperar antes de esconder evita que o overlay pisque e que o Alpine interrompa a
+      // transição no meio, o que gera "Uncaught (in promise)" no console.
+      let hideOverlay;
       window.addEventListener('faytor:request-change', () => {
-        this.isNetworkLoading = window.faytorPendingRequests > 0;
+        window.clearTimeout(hideOverlay);
+        if (window.faytorPendingRequests > 0) {
+          this.isNetworkLoading = true;
+          return;
+        }
+        hideOverlay = window.setTimeout(() => {
+          this.isNetworkLoading = window.faytorPendingRequests > 0;
+        }, 200);
       });
 
       // O servidor entrega a view completa na primeira resposta. Mantemos esse
@@ -289,7 +353,7 @@ document.addEventListener('alpine:init', () => {
       const description = this.descriptions[tabName] || 'A página solicitada não foi encontrada.';
       const path = !this.views[tabName] ? window.location.pathname : (tabName === 'home' ? '/' : `/${tabName}/`);
       const canonical = new URL(path, 'https://www.faytor.com.br').href;
-      const noindexRoutes = ['politica-de-privacidade', 'termos-de-uso', 'contato', 'sobre-nos'];
+      const noindexRoutes = [];
 
       document.title = title;
       document.querySelector('meta[name="description"]')?.setAttribute('content', description);
@@ -358,6 +422,8 @@ document.addEventListener('alpine:init', () => {
         if (window.location.pathname !== newPath) {
           window.history.pushState({ tab: tabName }, '', newPath);
         }
+        // A gaveta fechada fica inerte; o foco vai para o conteúdo em vez de sumir com o link.
+        if (this.mobileMenuOpen) document.getElementById('main-content-area')?.focus({ preventScroll: true });
         this.mobileMenuOpen = false;
 
         // Retorna ao início do conteúdo selecionado.
@@ -548,7 +614,27 @@ document.addEventListener('alpine:init', () => {
         fields.forEach(field => { field.value = ''; });
         fields[1].value = 'Nenhum logradouro real encontrado para essa seleção';
       };
-      const addressText = () => `CEP: ${fields[0].value}\nEndereço: ${fields[1].value}\nNúmero: ${fields[2].value}\nBairro: ${fields[3].value}\nCidade: ${fields[4].value}\nEstado: ${fields[5].value}`;
+      const exportFormat = document.getElementById('address-export-format');
+      const downloadButton = document.getElementById('address-download');
+      const addressData = () => {
+        const [, stateName = fields[5].value, uf = ''] = fields[5].value.match(/^(.*) \(([A-Z]{2})\)$/) || [];
+        return { cep: fields[0].value, logradouro: fields[1].value, numero: fields[2].value, bairro: fields[3].value, cidade: fields[4].value, estado: stateName, uf };
+      };
+      // Copiar todos, Gerar e Copiar e Baixar arquivo usam o formato escolhido.
+      const addressText = () => {
+        const data = addressData();
+        if (exportFormat?.value === 'csv') {
+          const { csvCell } = window.faytorExport;
+          return `${Object.keys(data).join(';')}\n${Object.values(data).map(csvCell).join(';')}`;
+        }
+        if (exportFormat?.value === 'json') return JSON.stringify(data, null, 2);
+        return `CEP: ${fields[0].value}\nEndereço: ${fields[1].value}\nNúmero: ${fields[2].value}\nBairro: ${fields[3].value}\nCidade: ${fields[4].value}\nEstado: ${fields[5].value}`;
+      };
+      const downloadAddress = () => {
+        if (!fields[0].value) return;
+        const format = exportFormat?.value || 'txt';
+        window.faytorExport.download(addressText(), `endereco-${fields[0].value.replace(/\D/g, '')}.${format}`, window.faytorExport.mimes[format]);
+      };
       const setCopiedState = (button, copied) => {
         const label = button.querySelector('span');
         const icon = button.querySelector('svg');
@@ -576,6 +662,7 @@ document.addEventListener('alpine:init', () => {
       generateButton.addEventListener('click', runGenerate);
       generateCopyButton.addEventListener('click', async () => { try { await generate(); await navigator.clipboard?.writeText(addressText()); } catch (error) { showGenerationError(error); } });
       copyAllButton.addEventListener('click', async () => { await navigator.clipboard?.writeText(addressText()); });
+      downloadButton?.addEventListener('click', downloadAddress);
       copyButtons.forEach(button => button.addEventListener('click', () => copyField(button)));
       checkbox.dataset.initialized = 'true';
       updateSwitch();
@@ -596,12 +683,7 @@ document.addEventListener('alpine:init', () => {
 
       const storageKey = 'faytor.cpf.preferences';
       const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      const stateRegions = {
-        AC: 2, AL: 4, AP: 2, AM: 2, BA: 5, CE: 3, DF: 1, ES: 3,
-        GO: 1, MA: 3, MT: 1, MS: 1, MG: 6, PA: 2, PB: 4, PR: 9,
-        PE: 4, PI: 3, RJ: 7, RN: 4, RS: 0, RO: 2, RR: 2, SC: 9,
-        SP: 8, SE: 5, TO: 1
-      };
+      const stateRegions = window.faytorDocuments.cpf.stateRegions;
 
       checkbox.checked = saved.withPunctuation !== false;
       stateSelect.value = stateRegions[saved.state] !== undefined ? saved.state : 'random';
@@ -617,23 +699,7 @@ document.addEventListener('alpine:init', () => {
         : raw;
 
       const generate = () => {
-        const digits = [];
-        for (let i = 0; i < 8; i += 1) digits.push(Math.floor(Math.random() * 10));
-        digits.push(stateSelect.value === 'random'
-          ? Math.floor(Math.random() * 10)
-          : stateRegions[stateSelect.value]);
-
-        let sum = 0;
-        for (let i = 0; i < 9; i += 1) sum += digits[i] * (10 - i);
-        let remainder = sum % 11;
-        digits.push(remainder < 2 ? 0 : 11 - remainder);
-
-        sum = 0;
-        for (let i = 0; i < 10; i += 1) sum += digits[i] * (11 - i);
-        remainder = sum % 11;
-        digits.push(remainder < 2 ? 0 : 11 - remainder);
-
-        output.value = formatCpf(digits.join(''));
+        output.value = formatCpf(window.faytorDocuments.cpf.generate({ state: stateSelect.value }));
         localStorage.setItem(storageKey, JSON.stringify({
           withPunctuation: checkbox.checked,
           state: stateSelect.value
@@ -751,19 +817,10 @@ document.addEventListener('alpine:init', () => {
         track?.classList.toggle('dark:bg-slate-700', !checkbox.checked);
       });
       updateSwitches();
-      const characterSets = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz', '0123456789', '!@#$%^&*()_+[]{}|;:,.<>?'];
+      const passwords = window.faytorPasswords;
+      const characterSets = passwords.characterSets;
       const levelColors = ['bg-red-500', 'bg-amber-500', 'bg-lime-500', 'bg-emerald-500'];
       const levelNames = ['Fraca', 'Média', 'Forte', 'Muito forte'];
-      const portugueseWords = 'abacate|alegria|amigo|amizade|amora|arco|areia|aviao|banana|bicicleta|borboleta|brisa|caderno|cachorro|caminho|caneca|carinho|castelo|chuva|cidade|coelho|coragem|coruja|cristal|doce|estrela|familia|felicidade|flor|floresta|formiga|futuro|garrafa|girassol|golfinho|harmonia|janela|jardim|laranja|leao|livro|lua|macarrao|manha|melancia|montanha|musica|nuvem|oceano|passeio|peixe|pipoca|planeta|ponte|praia|presente|queijo|raposa|rio|sabor|sapo|segredo|sorriso|tempo|tesouro|tomate|universo|viagem|vento|verao|verde|vitoria'.split('|');
-
-      const randomIndex = max => {
-        if (window.crypto?.getRandomValues) {
-          const values = new Uint32Array(1);
-          window.crypto.getRandomValues(values);
-          return values[0] % max;
-        }
-        return Math.floor(Math.random() * max);
-      };
       const updateStrength = (length, selectedTypes) => {
         const typeCount = selectedTypes.length;
         const score = Math.min(4, (length >= 8 ? 1 : 0) + (length >= 12 ? 1 : 0) + (length >= 16 ? 1 : 0) + (typeCount >= 3 ? 1 : 0));
@@ -786,28 +843,21 @@ document.addEventListener('alpine:init', () => {
           Array.from(strength.children).forEach(bar => { bar.className = 'h-2 rounded-full bg-slate-200 dark:bg-slate-700'; });
           return;
         }
-        const allCharacters = selectedTypes.join('');
-        output.value = Array.from({ length }, () => allCharacters[randomIndex(allCharacters.length)]).join('');
+        output.value = passwords.random(length, selectedTypes);
         updateStrength(length, selectedTypes);
         localStorage.setItem(storageKey, JSON.stringify({ length, types: checkboxes.map(checkbox => checkbox.checked) }));
       };
       const generateEasy = () => {
         const count = Math.min(10, Math.max(2, Number.parseInt(easyLength.value, 10) || 4));
         easyLength.value = count;
-        const words = Array.from({ length: count }, () => {
-          const word = portugueseWords[randomIndex(portugueseWords.length)];
-          if (easyComplete.checked) return easyCapitalize.checked ? word.charAt(0).toUpperCase() + word.slice(1) : word;
-          const shortWord = word.slice(0, Math.max(3, Math.ceil(word.length * 0.65)));
-          return easyCapitalize.checked ? shortWord.charAt(0).toUpperCase() + shortWord.slice(1) : shortWord;
-        });
-        output.value = words.join('-');
-        updateStrength(output.value.length, words.length >= 4 ? ['palavras', 'hífens', 'comprimento'] : ['palavras']);
+        output.value = passwords.easy(count, easyCapitalize.checked, easyComplete.checked);
+        updateStrength(output.value.length, count >= 4 ? ['palavras', 'hífens', 'comprimento'] : ['palavras']);
         localStorage.setItem(storageKey, JSON.stringify({ easyLength: count, capitalize: easyCapitalize.checked, complete: easyComplete.checked, length: lengthInput.value, types: checkboxes.map(checkbox => checkbox.checked) }));
       };
       const generatePin = () => {
         const length = Math.min(32, Math.max(4, Number.parseInt(pinLength.value, 10) || 6));
         pinLength.value = length;
-        output.value = Array.from({ length }, () => String(randomIndex(10))).join('');
+        output.value = passwords.pin(length);
         updateStrength(length, ['números']);
         localStorage.setItem(storageKey, JSON.stringify({ pinLength: length, easyLength: easyLength.value, capitalize: easyCapitalize.checked, complete: easyComplete.checked, length: lengthInput.value, types: checkboxes.map(checkbox => checkbox.checked) }));
       };

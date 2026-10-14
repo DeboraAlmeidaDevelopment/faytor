@@ -1,0 +1,131 @@
+<!-- ==================== SUB-VIEW: GERADOR DE LOREM IPSUM ==================== -->
+<section
+  x-data="{
+    generated: '',
+    copied: false,
+    error: '',
+    options: Object.assign({ unit: 'paragraphs', amount: 3, startWithLorem: true }, (() => { try { return JSON.parse(localStorage.getItem('faytor.lorem.opcoes')) || {}; } catch { return {}; } })()),
+    units: window.faytorGenerators.optionLists.loremUnitOptions,
+    maximums: { words: 1000, paragraphs: 50, characters: 10000 },
+    unitNames: { words: 'palavras', paragraphs: 'parágrafos', characters: 'caracteres' },
+    get stats() {
+      const words = this.generated.split(/\s+/).filter(Boolean).length;
+      return this.generated ? `${words} ${words === 1 ? 'palavra' : 'palavras'} · ${this.generated.length} caracteres` : '';
+    },
+    generate() {
+      this.copied = false;
+      this.generated = window.faytorGenerators.lorem(this.options);
+    },
+    save() {
+      try { localStorage.setItem('faytor.lorem.opcoes', JSON.stringify(this.options)); } catch {}
+      this.generate();
+    },
+    copy() {
+      const value = this.generated;
+      if (!value || !navigator.clipboard) return;
+      navigator.clipboard.writeText(value);
+      this.copied = true;
+      setTimeout(() => { this.copied = false; }, 2000);
+    }
+  }"
+  x-init="$watch('options', () => save(), { deep: true }); queueMicrotask(() => generate())"
+  class="w-full max-w-4xl mx-auto space-y-6"
+  aria-label="Gerador de Lorem Ipsum"
+>
+  <div>
+    <span class="text-xs font-semibold text-primary dark:text-blue-400 uppercase tracking-widest">Texto</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Gerador de Lorem Ipsum</h1>
+    <p class="text-slate-500 dark:text-slate-400 mt-2">Gere texto de preenchimento Lorem Ipsum por palavras, parágrafos ou caracteres para layouts, protótipos e testes de interface.</p>
+  </div>
+
+  <div class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm">
+    <div class="flex flex-col space-y-4">
+      <!-- Options -->
+      <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-end justify-start gap-4 sm:gap-6">
+        <label class="flex w-full flex-col gap-1 sm:w-44">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Gerar por</span>
+          <div class="relative">
+            <select x-model="options.unit" class="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Selecionar unidade do texto">
+              <template x-for="option in units" :key="option[0]"><option :value="option[0]" x-text="option[1]" :selected="option[0] === options.unit"></option></template>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+        </label>
+        <label class="flex w-full flex-col gap-1 sm:w-36">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+          <input type="number" inputmode="numeric" step="1" min="1" :max="maximums[options.unit]" x-model.number="options.amount" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de palavras, parágrafos ou caracteres">
+        </label>
+        <label class="flex flex-col items-start gap-2 cursor-pointer select-none">
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Começar com "Lorem ipsum"</span>
+          <input type="checkbox" x-model="options.startWithLorem" class="peer sr-only" aria-label="Começar com Lorem ipsum dolor sit amet">
+          <span class="relative inline-flex h-7 w-12 items-center rounded-full bg-slate-300 transition-colors peer-checked:bg-primary peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:bg-slate-700 dark:peer-focus-visible:ring-offset-darkBg-card dark:peer-checked:bg-primary" aria-hidden="true">
+            <span class="inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform" :class="options.startWithLorem ? 'translate-x-6' : 'translate-x-1'"></span>
+          </span>
+        </label>
+      </div>
+
+      <p class="text-xs text-slate-500 dark:text-slate-400 -mt-1" x-text="`Até ${maximums[options.unit].toLocaleString('pt-BR')} ${unitNames[options.unit]}.`"></p>
+
+      <!-- Generator Box -->
+      <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+        <textarea readonly rows="12" x-model="generated" class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-4 text-sm leading-relaxed text-slate-800 dark:text-slate-200 focus:outline-none" aria-label="Texto Lorem Ipsum gerado"></textarea>
+        <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar texto Lorem Ipsum"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex gap-2">
+          <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar texto Lorem Ipsum">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <span>Gerar</span>
+          </button>
+          <button type="button" @click="generate(); copy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar texto Lorem Ipsum e copiar para a área de transferência">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <span>Gerar e Copiar</span>
+          </button>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400" x-text="stats" aria-live="polite"></p>
+      </div>
+      <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+    </div>
+  </div>
+
+  <!-- Conteúdo editorial -->
+  <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">O que é Lorem Ipsum</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Lorem Ipsum é um texto de preenchimento usado há décadas em tipografia e design para mostrar como um layout fica com conteúdo, antes de o texto definitivo existir. As palavras vêm de uma versão embaralhada de um trecho em latim do filósofo Cícero. Como não formam frases com sentido, a atenção de quem avalia o layout fica na tipografia, no espaçamento e na hierarquia visual, e não no conteúdo.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Como gerar</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Escolha como medir o texto em <strong>Gerar por</strong>:</p>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Palavras:</strong> de 1 a 1.000 palavras, organizadas em frases com ponto final.</li>
+      <li><strong>Parágrafos:</strong> de 1 a 50 parágrafos, separados por uma linha em branco.</li>
+      <li><strong>Caracteres:</strong> de 1 a 10.000 caracteres. O texto tem exatamente a quantidade pedida, contando espaços e pontuação, o que é útil para testar limites de campos, como uma descrição de até 255 caracteres.</li>
+    </ul>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Com <strong>Começar com "Lorem ipsum"</strong> ativado, o texto abre com a frase clássica "Lorem ipsum dolor sit amet, consectetur adipiscing elit." Desativado, o texto começa com palavras sorteadas.</p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Onde usar texto de preenchimento</h2>
+
+    <ul class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-2">
+      <li><strong>Protótipos e layouts:</strong> veja como títulos, cards e páginas se comportam com textos curtos e longos.</li>
+      <li><strong>Testes de interface:</strong> confira quebras de linha, rolagem, reticências e campos com limite de caracteres.</li>
+      <li><strong>Dados de teste:</strong> preencha descrições, comentários e observações em cadastros fictícios. No <a href="/gerador-json/" @click.prevent="selectTab('gerador-json')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de JSON</a>, o Lorem Ipsum está disponível como variável para preencher campos de texto de um payload.</li>
+    </ul>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Cuidados</h2>
+
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">Troque o texto de preenchimento antes de publicar. Lorem Ipsum esquecido em produção é um erro comum e passa a impressão de site inacabado. Ele também não substitui o teste com o conteúdo real: palavras em português costumam ser mais longas e têm acentos, o que muda a quebra de linhas. Para testar acentuação, combine com o <a href="/gerador-palavras/" @click.prevent="selectTab('gerador-palavras')" class="font-semibold text-primary dark:text-blue-400 hover:underline">Gerador de Palavras</a>.</p>
+  </article>
+</section>

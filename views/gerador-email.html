@@ -4,55 +4,12 @@
     generatedEmail: '',
     domain: localStorage.getItem('faytor.email.domain') || 'random',
     copied: false,
-    maleNames: [
-      'gabriel', 'lucas', 'pedro', 'mateus', 'guilherme', 'rafael', 'felipe', 'thiago',
-      'bruno', 'rodrigo', 'andre', 'gustavo', 'leonardo', 'daniel', 'marcos', 'marcelo',
-      'fernando', 'douglas', 'eduardo', 'henrique', 'arthur', 'bernardo', 'heitor',
-      'davi', 'samuel', 'lorenzo', 'enzo', 'alexandre', 'ricardo', 'caio', 'murilo',
-      'vinicius', 'vitor', 'igor', 'otavio', 'luiz', 'joao', 'francisco', 'antonio', 'carlos'
-    ],
-    femaleNames: [
-      'maria', 'ana', 'julia', 'yasmin', 'beatriz', 'mariana', 'leticia', 'camila',
-      'amanda', 'larissa', 'bruna', 'isabella', 'luana', 'carolina', 'gabriela', 'vitoria',
-      'heloisa', 'alice', 'sophia', 'laura', 'valentina', 'manuela', 'helena', 'giovanna',
-      'clara', 'eduarda', 'nicole', 'luiza', 'fernanda', 'rebeca', 'livia', 'sarah',
-      'lorena', 'rafaela', 'melissa', 'cecilia', 'esther', 'emanuelly', 'isadora'
-    ],
-    surnames: [
-      'silva', 'santos', 'oliveira', 'souza', 'rodrigues', 'ferreira', 'alves', 'pereira',
-      'lima', 'gomes', 'costa', 'ribeiro', 'martins', 'carvalho', 'almeida', 'lopes',
-      'soares', 'rocha', 'dias', 'nascimento', 'moreira', 'nunes', 'mendes', 'vieira',
-      'teixeira', 'cardoso', 'araujo', 'melo', 'cavalcanti', 'pinto', 'cabral', 'campos',
-      'figueiredo', 'andrade', 'fonseca', 'barros', 'miranda', 'freitas', 'castro'
-    ],
-    domains: [
-      '@gmail.com', '@hotmail.com', '@outlook.com', '@yahoo.com.br',
-      '@bol.com.br', '@uol.com.br', '@terra.com.br', '@ig.com.br',
-      '@proton.me', '@icloud.com'
-    ],
     generate() {
       this.copied = false;
-      const isMale = Math.random() < 0.5;
-      const first = isMale
-        ? this.maleNames[Math.floor(Math.random() * this.maleNames.length)]
-        : this.femaleNames[Math.floor(Math.random() * this.femaleNames.length)];
-      const last = this.surnames[Math.floor(Math.random() * this.surnames.length)];
-
-      const formats = [
-        `${first}.${last}`,
-        `${first}${last}`,
-        `${first}_${last}`,
-        `${first}${Math.floor(Math.random() * 90) + 10}`,
-        `${first}.${last}${Math.floor(Math.random() * 900) + 99}`
-      ];
-      const username = formats[Math.floor(Math.random() * formats.length)];
-
-      let selectedDomain = this.domain;
-      if (selectedDomain === 'random') {
-        selectedDomain = this.domains[Math.floor(Math.random() * this.domains.length)];
-      }
-
-      this.generatedEmail = `${username}${selectedDomain}`;
+      this.generatedEmail = this.buildEmail();
+    },
+    buildEmail() {
+      return window.faytorGenerators.email(this.domain);
     },
     saveDomain(val) {
       this.domain = val;
@@ -67,7 +24,7 @@
       setTimeout(() => { this.copied = false; }, 2000);
     }
   }"
-  x-init="generate()"
+  x-init="queueMicrotask(() => generate())"
   class="w-full max-w-4xl mx-auto space-y-6"
   aria-label="Gerador de E-mail"
 >
@@ -168,6 +125,66 @@
     </div>
   </div>
 
+  <!-- Geração em lote: reaproveita as opções do gerador individual -->
+  <section x-data="batchGenerator({ type: 'email', column: 'email', method: 'buildEmail', file: 'emails' })" class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 shadow-sm space-y-5" aria-labelledby="email-batch-title">
+    <div>
+      <h2 id="email-batch-title" class="text-lg font-bold text-slate-800 dark:text-slate-100">Gerar e-mails em lote</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Crie até 1.000 endereços sem repetição para testar cadastros com restrição de e-mail único. O lote usa o domínio escolhido acima.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex flex-col gap-1 sm:w-40">
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Quantidade</span>
+        <input type="number" min="1" max="1000" x-model.number="quantity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:outline-none" aria-label="Quantidade de e-mails do lote">
+      </label>
+    </div>
+
+    <div class="flex flex-col sm:flex-row overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+      <textarea readonly rows="8" :value="output" placeholder="Clique em Gerar para criar o lote." class="min-w-0 flex-1 resize-none bg-transparent border-0 px-5 py-3.5 font-mono text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none" aria-label="e-mails gerados em lote"></textarea>
+      <button
+            type="button"
+            @click="copy()"
+            class="w-full sm:w-28 flex-shrink-0 rounded-none border-t sm:border-t-0 sm:border-l text-white font-semibold px-3 py-3.5 text-sm transition-all flex items-center justify-center space-x-1"
+            :class="copied ? 'bg-emerald-500 border-emerald-500' : 'bg-primary hover:bg-blue-700 border-primary'"
+            aria-label="Copiar lote de e-mails"
+          >
+            <span x-text="copied ? 'Copiado!' : 'Copiar'" class="text-xs font-bold"></span>
+            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+            <svg x-show="copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+          </button>
+    </div>
+
+    <p x-show="error" x-text="error" class="text-sm font-semibold text-rose-600 dark:text-rose-400" role="alert"></p>
+
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-wrap gap-2">
+        <button type="button" @click="generate()" class="flex-1 sm:flex-none bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de e-mails">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          <span>Gerar</span>
+        </button>
+        <button type="button" @click="generateAndCopy()" class="flex-1 sm:flex-none bg-secondary hover:bg-secondary-dark text-white font-semibold px-6 py-3.5 rounded-xl text-sm transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2" aria-label="Gerar lote de e-mails e copiar para a área de transferência">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 8V6a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 8H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 8h6a2 2 0 012 2v6" /></svg>
+          <span>Gerar e Copiar</span>
+        </button>
+        <div class="flex w-full sm:w-auto overflow-hidden rounded-xl border border-slate-300 dark:border-slate-700">
+          <div class="relative">
+            <select x-model="exportFormat" class="h-full appearance-none bg-slate-50 dark:bg-slate-900 border-0 pl-4 pr-9 py-3.5 text-sm font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none" aria-label="Formato do arquivo para baixar">
+              <option value="txt">TXT</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+            </select>
+            <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" /></svg>
+          </div>
+          <button type="button" @click="download()" :disabled="!items.length" class="flex-1 sm:flex-none border-l border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold px-6 py-3.5 text-sm transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Baixar arquivo do lote de e-mails">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <span>Baixar arquivo</span>
+          </button>
+        </div>
+      </div>
+      <p x-show="items.length" class="text-xs text-slate-500 dark:text-slate-400" x-text="`${items.length} e-mails gerados.`"></p>
+    </div>
+  </section>
+
   <!-- SEO / Informative Content -->
   <article class="w-full bg-white dark:bg-darkBg-card rounded-2xl border border-slate-200 dark:border-darkBg-border p-6 lg:p-8 space-y-4">
     <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Por que utilizar um gerador de e-mail fictício para testes?</h2>
@@ -184,5 +201,8 @@
     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
       A geração combina nomes e domínios no navegador. Ela não cria uma conta, não oferece caixa de entrada e não recebe mensagens de confirmação. Como os domínios são reais, um endereço gerado pode coincidir com o de outra pessoa. Use os resultados apenas em testes com envio de e-mails desativado ou interceptado pelo seu ambiente de testes.
     </p>
+
+    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mt-6">Gerar e-mails em lote</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">A seção <strong>Gerar e-mails em lote</strong> cria até 1.000 endereços sem repetição, no domínio escolhido. Isso é útil para testar restrições de e-mail único no banco de dados, importações em massa e paginação de listas de usuários. A exportação pode ser em TXT, em CSV com o cabeçalho <code class="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">email</code> ou em JSON. Antes de importar o lote, confirme que o ambiente de testes não envia mensagens de verdade: os domínios existem, e um endereço gerado pode pertencer a outra pessoa.</p>
   </article>
 </section>
